@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DotNetZip" Version="1.13.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0005" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ChrisAkridge.Common">
+      <HintPath>..\..\..\..\Documents\Common\Common\ChrisAkridge.Common\ChrisAkridge.Common\bin\Debug\ChrisAkridge.Common.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,100 @@
+Celarix Compressed Image Format (CCIF, /see-sif/)
+A losslessly compressed image format
+All integers little endian
+
+Header:
+	- Magic Number "CLXI", 4 bytes
+	- Image Width, 4 byte unsigned integer
+	- Image Height, 4 byte unsigned integer
+	- Color Mode, 1 byte:
+		0x00: Reserved
+		0x01: 1 bit black/white
+		0x02: 4 bit paletted
+		0x03: 8 bit paletted
+		0x04: 7 bit paletted + 1 bit alpha
+		0x05: 16 bit paletted
+		0x06: 15 bit paletted + 1 bit alpha
+		0x07: 24 bit RGB
+		0x08: 32 bit RGBA
+	- Compression Mode, 1 byte:
+		0x00: No compression
+		0x01: Zlib Compression
+	- Palette
+	- Compressed Image Data Length, 4 byte unsigned integer
+	- Compressed Image Data
+	
+Palette:
+	- Starts with a four-byte unsigned integer indicating the number of defined colors in the palette, or 0 if there is no palette. Used to prevent storing a bunch of 0x00s if there are only 65 colors in an 8-bit palette.
+	- 0x01: 1 bit black/white, 0x07: 24 bit RGB, 0x08: 32 bit RGBA
+		- No palette stored
+	- 0x02: 4 bit paletted
+		- Consists of up to 48 bytes, each three mapping to an RGB triplet for 16 colors
+		- Image data uses values 0x00 through 0x0F to reference colors from this table
+	- 0x03: 8 bit paletted
+		- Consists of up to 768 bytes, each three mapping to an RGB triplet for 256 colors
+		- Image data uses values 0x00 through 0xFF to reference colors from this table
+	- 0x04: 7 bit paletted + 1 bit alpha
+		- Consists of up to 384 bytes, each three mapping to an RGB triplet for 128 colors
+		- Image data uses values 0x00 through 0x7F to reference colors from this table. 0x80 maps to a transparent pixel, 0x81-0xFF are invalid.
+	- 0x05: 16 bit paletted
+		- Consists of up to 196,608 bytes, each three mapping to an RGB triplet for 65,536 colors
+		- Image data uses values 0x0000 through 0xFFFF to reference colors from this table.
+	- 0x06: 15 bit paletted + 1 bit alpha
+		- Consists of up to 98,304 bytes, each three mapping to an RGB triplet for 32,768 colors
+		- Image data uses values 0x0000 through 0x7FFF to reference colors from this table. 0x8000 maps to a transparent pixel, 0x8001-0xFFFF are invalid.
+
+Image Data:
+	- Stored as chunks of up to 8x8 pixels
+	- Right and bottom edges have shortened edges for images > 8x8
+	- Chunks are stored from left to right, top to bottom - their coordinates are implied
+	- A chunk is "partial" if it is less than 8 pixels on either side, "complete" if it is 8x8
+	- Complete chunks start with an 0xFF byte
+	- Partial chunks start with a single byte:
+		- The top six bits are split into two groups of three
+		- The first three bits (0x80, 0x40, 0x20) store the width of the chunk from 1-7
+		- The second three bits (0x10, 0x08, 0x04) store the height of the chunk from 1-7
+		- Neither component can be zero
+		- The bottom two bits are ignored
+	- The pixels of the chunk follow. There are from 1 to 64 pixels per chunk.
+		- Pixels are stored left to right, top to bottom in the chunk, from lower addresses to higher ones
+		- 0x01: 1 bit black/white:
+			- Consists of 1 to 64 bits of image data. 
+			- If the number of bits is not divisible by 8, 0 bits are added as padding.
+			- Chunks are 2 to 9 bytes long.
+		- 0x02: 4 bit paletted
+			- Consists of 1 to 64 4-bit palette references.
+			- If there are an odd number of 4-bit palette references, four 0 bits are added as padding to the last byte.
+			- Chunks are 2 to 33 bytes long.
+		- 0x03: 8 bit paletted
+			- Consists of 1 to 64 8-bit palette references.
+			- Chunks are 2 to 65 bytes long.
+		- 0x04: 7 bit paletted + 1 bit alpha
+			- Consists of 1 to 64 8-bit palette references, or 0x80 bytes for transparent pixels.
+			- Chunks are 2 to 65 bytes long.
+		- 0x05: 16 bit paletted
+			- Consists of 1 to 64 16-bit palette references.
+			- Chunks are 3 to 129 bytes long.
+		- 0x06: 15 bit paletted + 1 bit alpha
+			- Consists of 1 to 64 16-bit palette references, or 0x8000 words for transparent pixels.
+			- Chunks are 3 to 129 bytes long.
+		- 0x07: 24 bit RGB.
+			- Consists of 1 to 64 24-bit RGB triplets.
+			- Chunks are 4 to 193 bytes long.
+		- 0x08: 32 bit RGBA.
+			- Consists of 1 to 64 32-bit RGBA quadruplets.
+			- Chunks are 5 to 257 bytes long.
+
+Compression:
+	- The image data is compressed using ZLib.
+	
+Color Mode Selection
+	- The color mode is selected based on the number of colors and presence of an alpha channel in the original image.
+	- If the image is black and white, 1 bit black/white is selected.
+	- If the image has 16 colors or less and no alpha channel, 4 bit paletted is selected.
+		- Each color then has the number of occurrences in the image taken and sorted. The most common color gets palette index 0, then next most common color gets index 1, and so forth. This applies for all paletted modes.
+	- If the image has 256 colors or less and no alpha channel, 8 bit paletted is selected.
+	- If the image has 65,536 colors or less and no alpha channel, 16 bit paletted is selected.
+	- If the image has more than 65,536 colors and has no alpha channel, 24 bit RGB is selected.
+	- If the image has 128 colors or less and has an alpha channel, and the alpha channel only ever has values 0 and 255, 7 bit paletted + 1 bit alpha is selected.
+	- If the image has 32,768 colors or less and has an alpha channel, and the alpha channel only ever has values 0 and 255, 15 bit paletted + 1 bit alpha is selected.
+	- If the image has an alpha channel that has more values than 0 and 255, 32 bit RGBA is selected.
