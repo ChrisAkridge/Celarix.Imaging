@@ -47,6 +47,8 @@ namespace Celarix.Imaging.Formats
             //      c. Write the pixels, left-to-right, top to bottom.
             // === Compress the Data ===
             //  1. Run the data through ZLib in another ExpandableMemoryStream, if required.
+
+            return null;
         }
 
         private static IEnumerable<Rgb24> GetDistinctColorsInCountOrder(Image<Rgba32> image)

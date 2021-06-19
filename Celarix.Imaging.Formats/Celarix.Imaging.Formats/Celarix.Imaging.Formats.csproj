@@ -9,10 +9,4 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0005" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="ChrisAkridge.Common">
-      <HintPath>..\..\..\..\Documents\Common\Common\ChrisAkridge.Common\ChrisAkridge.Common\bin\Debug\ChrisAkridge.Common.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
