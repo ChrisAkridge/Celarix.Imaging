@@ -159,5 +159,23 @@ namespace Celarix.Imaging.ZoomableCanvas
 
             progress?.Report($"Saved tile ({cellNumberX}, {cellNumberY}), {percentCompleted * 100d:F2}% complete");
         }
+
+        internal static void SaveLevel0CellImage(Point cellNumber,
+            Image<Rgba32> image,
+            string outputFolderPath)
+        {
+            var (cellNumberX, cellNumberY) = cellNumber;
+            var outputFilePath = Path.Combine(outputFolderPath, "0", $"{cellNumberY}", $"{cellNumberX}.png");
+
+            Directory.CreateDirectory(Path.GetDirectoryName(outputFilePath));
+
+            if (File.Exists(outputFilePath))
+            {
+                return;
+            }
+            
+            image.SaveAsPng(outputFilePath);
+            image.Dispose();
+        }
     }
 }

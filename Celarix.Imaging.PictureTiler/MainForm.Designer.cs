@@ -73,6 +73,7 @@
             this.FBDMain = new System.Windows.Forms.FolderBrowserDialog();
             this.SFDMain = new System.Windows.Forms.SaveFileDialog();
             this.OFDMain = new System.Windows.Forms.OpenFileDialog();
+            this.CheckTreatInputAsPathsFile = new System.Windows.Forms.CheckBox();
             this.TabsMain.SuspendLayout();
             this.TabTiler.SuspendLayout();
             this.GroupTilerOptions.SuspendLayout();
@@ -270,6 +271,7 @@
             // 
             // TabPacker
             // 
+            this.TabPacker.Controls.Add(this.CheckTreatInputAsPathsFile);
             this.TabPacker.Controls.Add(this.groupBox1);
             this.TabPacker.Controls.Add(this.ProgressPacker);
             this.TabPacker.Controls.Add(this.ButtonPackerCancel);
@@ -294,7 +296,7 @@
             this.groupBox1.Controls.Add(this.ButtonPackerSelectInputPath);
             this.groupBox1.Controls.Add(this.TextPackerOutputPath);
             this.groupBox1.Controls.Add(this.ButtonPackerSelectOutputPath);
-            this.groupBox1.Location = new System.Drawing.Point(8, 13);
+            this.groupBox1.Location = new System.Drawing.Point(8, 30);
             this.groupBox1.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(2);
@@ -353,16 +355,16 @@
             this.StaticLabelPackerInputPath.Location = new System.Drawing.Point(4, 15);
             this.StaticLabelPackerInputPath.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.StaticLabelPackerInputPath.Name = "StaticLabelPackerInputPath";
-            this.StaticLabelPackerInputPath.Size = new System.Drawing.Size(74, 15);
+            this.StaticLabelPackerInputPath.Size = new System.Drawing.Size(38, 15);
             this.StaticLabelPackerInputPath.TabIndex = 0;
-            this.StaticLabelPackerInputPath.Text = "Input Folder:";
+            this.StaticLabelPackerInputPath.Text = "Input:";
             // 
             // TextPackerInputPath
             // 
-            this.TextPackerInputPath.Location = new System.Drawing.Point(88, 13);
+            this.TextPackerInputPath.Location = new System.Drawing.Point(46, 13);
             this.TextPackerInputPath.Margin = new System.Windows.Forms.Padding(2);
             this.TextPackerInputPath.Name = "TextPackerInputPath";
-            this.TextPackerInputPath.Size = new System.Drawing.Size(204, 23);
+            this.TextPackerInputPath.Size = new System.Drawing.Size(246, 23);
             this.TextPackerInputPath.TabIndex = 1;
             // 
             // ButtonPackerSelectInputPath
@@ -418,7 +420,7 @@
             // LabelPackerStatus
             // 
             this.LabelPackerStatus.AutoSize = true;
-            this.LabelPackerStatus.Location = new System.Drawing.Point(8, 163);
+            this.LabelPackerStatus.Location = new System.Drawing.Point(8, 180);
             this.LabelPackerStatus.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.LabelPackerStatus.Name = "LabelPackerStatus";
             this.LabelPackerStatus.Size = new System.Drawing.Size(57, 15);
@@ -559,6 +561,17 @@
             this.OFDMain.Filter = "All files|*.*";
             this.OFDMain.Title = "PictureTiler";
             // 
+            // CheckTreatInputAsPathsFile
+            // 
+            this.CheckTreatInputAsPathsFile.AutoSize = true;
+            this.CheckTreatInputAsPathsFile.Location = new System.Drawing.Point(8, 6);
+            this.CheckTreatInputAsPathsFile.Name = "CheckTreatInputAsPathsFile";
+            this.CheckTreatInputAsPathsFile.Size = new System.Drawing.Size(260, 19);
+            this.CheckTreatInputAsPathsFile.TabIndex = 10;
+            this.CheckTreatInputAsPathsFile.Text = "Input names a file that contains image paths";
+            this.CheckTreatInputAsPathsFile.UseVisualStyleBackColor = true;
+            this.CheckTreatInputAsPathsFile.CheckedChanged += new System.EventHandler(this.CheckTreatInputAsPathsFile_CheckedChanged);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -637,6 +650,7 @@
 		private System.Windows.Forms.Label LabelCanvasStatus;
 		private System.Windows.Forms.Button ButtonCanvasCancel;
 		private System.Windows.Forms.OpenFileDialog OFDMain;
-	}
+        private System.Windows.Forms.CheckBox CheckTreatInputAsPathsFile;
+    }
 }
 

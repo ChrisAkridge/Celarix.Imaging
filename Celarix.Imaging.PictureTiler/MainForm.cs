@@ -107,8 +107,15 @@ namespace Celarix.Imaging.PictureTiler
         }
 
 		private void ButtonPackerSelectInputPath_Click(object sender, EventArgs e)
-		{
-            if (FBDMain.ShowDialog() == DialogResult.OK) { TextPackerInputPath.Text = FBDMain.SelectedPath; }
+        {
+            if (!CheckTreatInputAsPathsFile.Checked)
+            {
+                if (FBDMain.ShowDialog() == DialogResult.OK) { TextPackerInputPath.Text = FBDMain.SelectedPath; }
+            }
+            else
+            {
+                if (OFDMain.ShowDialog() == DialogResult.OK) { TextPackerInputPath.Text = OFDMain.FileName; }
+            }
         }
 
 		private void ButtonPackerSelectOutputPath_Click(object sender, EventArgs e)
@@ -170,14 +177,22 @@ namespace Celarix.Imaging.PictureTiler
 
             var recursive = CheckPackerRecursive.Checked;
             var zoomableCanvas = CheckPackerMultipicture.Checked;
+            var inputPathIsPathsFile = CheckTreatInputAsPathsFile.Checked;
 
-            var options = new PackingOptions
-            {
-                InputFolderPath = TextPackerInputPath.Text,
-                OutputPath = TextPackerOutputPath.Text,
-                Multipicture = zoomableCanvas,
-                Recursive = recursive
-            };
+            var options = inputPathIsPathsFile
+                ? (PackingOptions)new PathListPackingOptions
+                {
+                    PathListFilePath = TextPackerInputPath.Text,
+                    OutputPath = TextPackerOutputPath.Text,
+                    Multipicture = zoomableCanvas
+                }
+                : new FolderPackingOptions
+                {
+                    InputFolderPath = TextPackerInputPath.Text,
+                    OutputPath = TextPackerOutputPath.Text,
+                    Multipicture = zoomableCanvas,
+                    Recursive = recursive
+                };
 
             var progress = new Progress<string>();
 
@@ -203,6 +218,16 @@ namespace Celarix.Imaging.PictureTiler
             ButtonPackerCancel.Enabled = false;
             ProgressPacker.Value = 0;
             LabelPackerStatus.Text = "Waiting...";
+        }
+
+        private void CheckTreatInputAsPathsFile_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckPackerRecursive.Enabled = !CheckTreatInputAsPathsFile.Checked;
+
+            if (!CheckTreatInputAsPathsFile.Checked && CheckPackerRecursive.Checked)
+            {
+                CheckPackerRecursive.Checked = false;
+            }
         }
     }
 }

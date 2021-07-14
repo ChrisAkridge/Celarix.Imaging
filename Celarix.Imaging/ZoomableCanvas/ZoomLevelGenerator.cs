@@ -81,7 +81,7 @@ namespace Celarix.Imaging.ZoomableCanvas
                         if (bottomRight != paddingImage) { bottomRight.Dispose(); }
                         canvas.Dispose();
 
-                        progress?.Report($"Saved level {nextZoomLevel} tile ({x / 2}, {y / 2}). Bounds: {levelWidth} by {levelHeight} tiles.");
+                        progress?.Report($"Saved level {nextZoomLevel} tile ({x / 2}, {y / 2}). Bounds: {Math.Ceiling(levelWidth / 2d)} by {Math.Ceiling(levelHeight / 2d)} tiles.");
                     }
                     catch
                     {

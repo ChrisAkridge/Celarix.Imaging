@@ -4,12 +4,25 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Authors>Chris Akridge</Authors>
     <Company>Akridgetech</Company>
+    <Description>A library to perform various imaging tasks, such as drawing any file as a series of pixels, or combining many images into a single image or zoomable canvas.</Description>
+    <Copyright>Copyright 2020-2021 Chris Akridge</Copyright>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/ChrisAkridge/Celarix.Imaging</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ChrisAkridge/Celarix.Imaging</RepositoryUrl>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0013" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.1" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0010" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\Common\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

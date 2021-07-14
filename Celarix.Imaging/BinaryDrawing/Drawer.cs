@@ -1,29 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Celarix.Imaging.Collections;
-using Celarix.Imaging.Extensions;
 using Celarix.Imaging.IO;
 using Celarix.Imaging.Progress;
+using Celarix.Imaging.ZoomableCanvas;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
-using SixLabors.ImageSharp.ColorSpaces;
-using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+
 namespace Celarix.Imaging.BinaryDrawing
 {
 	public static class Drawer
     {
-        private const long ReportEveryNPixels = 8192;
+        private const long ReportEveryNPixels = 1048576;
 
         public static Image<Rgba32> Draw(Stream stream,
             int bitDepth,
@@ -56,6 +51,83 @@ namespace Celarix.Imaging.BinaryDrawing
 
             return image;
         }
+
+        public static void DrawCanvas(Stream stream,
+            string outputFolderPath,
+            int bitDepth,
+            IReadOnlyList<Rgba32> palette,
+            CancellationToken cancellationToken,
+            IProgress<DrawingProgress> progress)
+        {
+            // TODO: refactor
+            ValidateBitDepthAndPalette(bitDepth, palette?.Count);
+
+            var pixelCount = GetPixelCount(stream, bitDepth);
+            var size = Utilities.GetSizeFromCount(pixelCount);
+            var (canvasWidth, canvasHeight) = Utilities.GetCanvasSizeFromImageSize(size);
+            var pixelEnumerator = GetPixelEnumeratorFromStream(stream, bitDepth);
+            var drawnPixels = 0;
+            var rowsDrawnForTileRow = 0;
+            var pixelYPosition = 0;
+            var pixelsDrawnOnRow = 0;
+            var rowImages = new Image<Rgba32>[canvasWidth];
+            
+            InitializeCanvasRowImages(rowImages);
+
+            foreach (var pixel in pixelEnumerator)
+            {
+                if (pixelsDrawnOnRow == size.Width)
+                {
+                    // A row has been drawn, move to the next one.
+                    pixelsDrawnOnRow = 0;
+                    rowsDrawnForTileRow += 1;
+                    pixelYPosition += 1;
+                }
+
+                if (rowsDrawnForTileRow == 256)
+                {
+                    // We've finished drawing 256 rows, so we can save all the images.
+                    var tileIndexY = (pixelYPosition / 256) - 1;
+
+                    for (var tileIndexX = 0; tileIndexX < rowImages.Length; tileIndexX++)
+                    {
+                        var rowImage = rowImages[tileIndexX];
+                        CanvasGenerator.SaveLevel0CellImage(new Point(tileIndexX, tileIndexY), rowImage, outputFolderPath);
+                        rowImage.Dispose();
+                    }
+                    
+                    InitializeCanvasRowImages(rowImages);
+                    rowsDrawnForTileRow = 0;
+                }
+
+                var pixelXTile = pixelsDrawnOnRow / 256;
+                var pixelXPositionInTile = pixelsDrawnOnRow % 256;
+                var pixelYPositionInTile = pixelYPosition % 256;
+                SetPixelOnImage(rowImages[pixelXTile], pixelXPositionInTile, pixelYPositionInTile, pixel, bitDepth, palette);
+                pixelsDrawnOnRow += 1;
+                drawnPixels += 1;
+
+                if (drawnPixels % ReportEveryNPixels != 0) { continue; }
+
+                if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
+
+                progress?.Report(new DrawingProgress
+                {
+                    DrawnPixels = drawnPixels, TotalPixels = pixelCount
+                });
+            }
+
+            var lastTileIndexY = pixelYPosition / 256;
+
+            // TODO: maybe move this into its own method?
+            for (var tileIndexX = 0; tileIndexX < rowImages.Length; tileIndexX++)
+            {
+                var rowImage = rowImages[tileIndexX];
+                CanvasGenerator.SaveLevel0CellImage(new Point(tileIndexX, lastTileIndexY), rowImage, outputFolderPath);
+                rowImage.Dispose();
+            }
+        }
+        
         public static Image<Rgba32> DrawFixedSize(Size size,
             Stream stream,
             int bitDepth,
@@ -322,5 +394,13 @@ namespace Celarix.Imaging.BinaryDrawing
                 32 => (long)Math.Ceiling(stream.Length / 4m),
                 _ => throw new ArgumentException(nameof(bitDepth))
             };
+
+        private static void InitializeCanvasRowImages(Image<Rgba32>[] images)
+        {
+            for (int i = 0; i < images.Length; i++)
+            {
+                images[i] = new Image<Rgba32>(256, 256, Color.Black);
+            }
+        }
 	}
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -20,7 +19,10 @@ namespace Celarix.Imaging.Packing
             CancellationToken cancellationToken,
             IProgress<string> progress)
         {
-            var job = new PackingJob { Options = options };
+            var job = new PackingJob
+            {
+                Options = options
+            };
             JobManager.SaveJobFile(JobSources.Packer, job);
             
             PackImplementation(job, cancellationToken, progress);
@@ -29,7 +31,7 @@ namespace Celarix.Imaging.Packing
         public static void ResumePack(CancellationToken cancellationToken,
             IProgress<string> progress)
         {
-            JobManager.TryLoadLatestJobFromFile<PackingJob>(JobSources.Packer, out PackingJob job);
+            JobManager.TryLoadLatestJobFromFile<PackingJob>(JobSources.Packer, out var job);
 
             PackImplementation(job, cancellationToken, progress);
         }
@@ -40,14 +42,17 @@ namespace Celarix.Imaging.Packing
         {
             if (job.ImagesAndSizes == null)
             {
-                var files = GetFiles(job.Options.InputFolderPath, job.Options.Recursive);
+                var files = job.Options.GetImagePaths();
                 job.ImagesAndSizes = GetImageSizes(files, progress, cancellationToken);
                 JobManager.SaveJobFile(JobSources.Packer, job);
             }
 
             job.Blocks ??= job.ImagesAndSizes
                 .OrderByDescending(kvp => kvp.Value.Width)
-                .Select(kvp => new Block { ImageFilePath = kvp.Key, Size = kvp.Value })
+                .Select(kvp => new Block
+                {
+                    ImageFilePath = kvp.Key, Size = kvp.Value
+                })
                 .ToList();
 
             var packer = new Packer();
@@ -75,28 +80,6 @@ namespace Celarix.Imaging.Packing
             }
             
             JobManager.CompleteJob(JobSources.Packer);
-        }
-
-        private static IEnumerable<string> GetFiles(string inputFolderPath, bool recursive)
-        {
-            if (!Directory.Exists(inputFolderPath))
-            {
-                throw new DirectoryNotFoundException($"Invalid path {inputFolderPath}: path does not exist");
-            }
-
-            var files = Directory.EnumerateFiles(inputFolderPath,
-                "*",
-                new EnumerationOptions
-                {
-                    RecurseSubdirectories = recursive,
-                    IgnoreInaccessible = true
-                });
-            var filteredFiles = files.Where(f => f.EndsWith("gif", StringComparison.InvariantCultureIgnoreCase)
-                || f.EndsWith("jpg", StringComparison.InvariantCultureIgnoreCase)
-                || f.EndsWith("jpeg", StringComparison.InvariantCultureIgnoreCase)
-                || f.EndsWith("png", StringComparison.InvariantCultureIgnoreCase));
-
-            return filteredFiles;
         }
 
         private static Dictionary<string, Size> GetImageSizes(IEnumerable<string> imageFilePaths,

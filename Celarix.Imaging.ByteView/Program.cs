@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Celarix.Imaging.BinaryDrawing;
 
 namespace Celarix.Imaging.ByteView
 {
@@ -21,7 +24,11 @@ namespace Celarix.Imaging.ByteView
             //       that has two little-endian Int32s at the beginning which
             //       store the width and height of the image.
             // TODO: Package into an installer and figure out version numbering.
+            var testFilePath = @"G:\Documents\comics.xlsx";
+            var testOutputPath = @"G:\Documents\comics_bytes";
+            Drawer.DrawCanvas(File.OpenRead(testFilePath), testOutputPath, 24, null, CancellationToken.None, null);
 
+            return;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 

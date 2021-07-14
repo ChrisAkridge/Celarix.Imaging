@@ -18,13 +18,21 @@ namespace Celarix.Imaging
             else
             {
                 long height = squareRoot;
-                long remainder = count - squareRoot * squareRoot;
+                long remainder = count - (squareRoot * squareRoot);
                 height += (int)Math.Ceiling((double)remainder / squareRoot);
 
                 result = new Size((int)squareRoot, (int)height);
             }
 
             return result;
+        }
+
+        public static Size GetCanvasSizeFromImageSize(Size size)
+        {
+            var canvasHeight = (int)Math.Ceiling(size.Height / 256d);
+            var canvasWidth = (int)Math.Ceiling(size.Width / 256d);
+            
+            return new Size(canvasWidth, canvasHeight);
         }
 
         /// <summary>
@@ -80,5 +88,11 @@ namespace Celarix.Imaging
             using var image = Image.Load(imageFilePath);
             return image.Size();
         }
+
+        internal static bool ExtensionImpliesFileIsImage(string filePath) =>
+            filePath.EndsWith("gif", StringComparison.InvariantCultureIgnoreCase)
+            || filePath.EndsWith("jpg", StringComparison.InvariantCultureIgnoreCase)
+            || filePath.EndsWith("jpeg", StringComparison.InvariantCultureIgnoreCase)
+            || filePath.EndsWith("png", StringComparison.InvariantCultureIgnoreCase);
     }
 }
