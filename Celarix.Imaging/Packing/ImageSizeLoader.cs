@@ -12,45 +12,78 @@ namespace Celarix.Imaging.Packing
         private static readonly Dictionary<byte[], Func<BinaryReader, Size>> imageFormatDecoders =
             new Dictionary<byte[], Func<BinaryReader, Size>>
             {
-                { new byte[] { 0x42, 0x4D }, DecodeBitmap },
-                { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 }, DecodeGif },
-                { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 }, DecodeGif },
-                { new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }, DecodePng },
-                { new byte[] { 0xff, 0xd8 }, DecodeJfif }
+                {
+                    new byte[]
+                    {
+                        0x42, 0x4D
+                    },
+                    DecodeBitmap
+                },
+                {
+                    new byte[]
+                    {
+                        0x47, 0x49, 0x46, 0x38, 0x37,
+                        0x61
+                    },
+                    DecodeGif
+                },
+                {
+                    new byte[]
+                    {
+                        0x47, 0x49, 0x46, 0x38, 0x39,
+                        0x61
+                    },
+                    DecodeGif
+                },
+                {
+                    new byte[]
+                    {
+                        0x89, 0x50, 0x4E, 0x47, 0x0D,
+                        0x0A, 0x1A, 0x0A
+                    },
+                    DecodePng
+                },
+                {
+                    new byte[]
+                    {
+                        0xff, 0xd8
+                    },
+                    DecodeJfif
+                }
             };
 
         /// <summary>
         /// Gets the dimensions of an image.
         /// </summary>
         /// <param name="path">The path of the image to get the dimensions of.</param>
+        /// <param name="size">The variable that will contain the size of the image, if found.</param>
         /// <returns>The dimensions of the specified image.</returns>
         /// <exception cref="ArgumentException">The image was of an unrecognized format.</exception>
         public static bool TryGetSize(string path, out Size size)
         {
-            using BinaryReader binaryReader = new BinaryReader(File.OpenRead(path));
+            using var binaryReader = new BinaryReader(File.OpenRead(path));
             return TryGetSize(binaryReader, out size);
         }
 
         /// <summary>
         /// Gets the dimensions of an image.
         /// </summary>
-        /// <param name="path">The path of the image to get the dimensions of.</param>
+        /// <param name="binaryReader">A stream containing an image wrapped in a BinaryReader.</param>
+        /// <param name="size">The variable that will contain the size of the image, if found.</param>
         /// <returns>The dimensions of the specified image.</returns>
         /// <exception cref="ArgumentException">The image was of an unrecognized format.</exception>    
         public static bool TryGetSize(BinaryReader binaryReader, out Size size)
         {
             int maxMagicBytesLength = imageFormatDecoders.Keys.OrderByDescending(x => x.Length).First().Length;
 
-            byte[] magicBytes = new byte[maxMagicBytesLength];
+            var magicBytes = new byte[maxMagicBytesLength];
 
             for (int i = 0; i < maxMagicBytesLength; i += 1)
             {
                 magicBytes[i] = binaryReader.ReadByte();
 
-                foreach (var kvPair in imageFormatDecoders)
+                foreach (var kvPair in imageFormatDecoders.Where(kvPair => magicBytes.StartsWith(kvPair.Key)))
                 {
-                    if (!magicBytes.StartsWith(kvPair.Key)) { continue; }
-
                     size = kvPair.Value(binaryReader);
                     return size != Size.Empty;
                 }
@@ -60,9 +93,9 @@ namespace Celarix.Imaging.Packing
             return false;
         }
 
-        private static bool StartsWith(this byte[] thisBytes, byte[] thatBytes)
+        private static bool StartsWith(this IReadOnlyList<byte> thisBytes, IReadOnlyList<byte> thatBytes)
         {
-            for (int i = 0; i < thatBytes.Length; i += 1)
+            for (int i = 0; i < thatBytes.Count; i += 1)
             {
                 if (thisBytes[i] != thatBytes[i])
                 {
@@ -74,7 +107,7 @@ namespace Celarix.Imaging.Packing
 
         private static short ReadLittleEndianInt16(this BinaryReader binaryReader)
         {
-            byte[] bytes = new byte[sizeof(short)];
+            var bytes = new byte[sizeof(short)];
             for (int i = 0; i < sizeof(short); i += 1)
             {
                 bytes[sizeof(short) - 1 - i] = binaryReader.ReadByte();
@@ -84,7 +117,7 @@ namespace Celarix.Imaging.Packing
 
         private static int ReadLittleEndianInt32(this BinaryReader binaryReader)
         {
-            byte[] bytes = new byte[sizeof(int)];
+            var bytes = new byte[sizeof(int)];
             for (int i = 0; i < sizeof(int); i += 1)
             {
                 bytes[sizeof(int) - 1 - i] = binaryReader.ReadByte();

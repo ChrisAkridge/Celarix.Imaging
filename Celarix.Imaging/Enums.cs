@@ -12,14 +12,6 @@ namespace Celarix.Imaging
         Paletted
     }
 
-    public enum OrderTilesBy
-    {
-        Default,
-        Name,
-        DateCreated,
-        Size
-    }
-
     public enum CCIFCompressionMode : byte
     {
         NoCompression,

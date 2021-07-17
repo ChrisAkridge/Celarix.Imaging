@@ -9,15 +9,15 @@ namespace Celarix.Imaging.BinaryDrawing
 {
 	public static class DefaultPalettes
     {
-        private static Rgba32[] oneBppGrayscale;
-        private static Rgba32[] twoBppGrayscale;
-        private static Rgba32[] fourBppGrayscale;
-        private static Rgba32[] fourBppRgb121;
-        private static Rgba32[] eightBppGrayscale;
-        private static Rgba32[] eightBppRgb332;
-        private static Rgba32[] eightBppArgb2222;
-        private static Rgba32[] sixteenBppRgb565;
-        private static Rgba32[] sixteenBppArgb4444;
+        private static readonly Rgba32[] oneBppGrayscale;
+        private static readonly Rgba32[] twoBppGrayscale;
+        private static readonly Rgba32[] fourBppGrayscale;
+        private static readonly Rgba32[] fourBppRgb121;
+        private static readonly Rgba32[] eightBppGrayscale;
+        private static readonly Rgba32[] eightBppRgb332;
+        private static readonly Rgba32[] eightBppArgb2222;
+        private static readonly Rgba32[] sixteenBppRgb565;
+        private static readonly Rgba32[] sixteenBppArgb4444;
 
         /// <summary>
         /// Contains the default 1 bit per pixel grayscale palette.
@@ -117,7 +117,7 @@ namespace Celarix.Imaging.BinaryDrawing
                         case 16: return SixteenBppArgb4444;
                     }
                     break;
-                default: throw new ArgumentException("No default palette for this color mode.");
+                default: throw new ArgumentException($"No default palette for this color mode ({bitDepth}-bit {mode}).");
             }
 
             throw new InvalidOperationException("Unreachable code.");
@@ -128,11 +128,11 @@ namespace Celarix.Imaging.BinaryDrawing
         /// </summary>
         private static void CreatePalettes()
         {
-            byte[] twoBitRange = GenerateRange(4);
-            byte[] threeBitRange = GenerateRange(8);
-            byte[] fourBitRange = GenerateRange(16);
-            byte[] fiveBitRange = GenerateRange(32);
-            byte[] sixBitRange = GenerateRange(64);
+            var twoBitRange = GenerateRange(4);
+            var threeBitRange = GenerateRange(8);
+            var fourBitRange = GenerateRange(16);
+            var fiveBitRange = GenerateRange(32);
+            var sixBitRange = GenerateRange(64);
 
             // 1bpp grayscale
             oneBppGrayscale[0] = Color.Black;
@@ -153,9 +153,9 @@ namespace Celarix.Imaging.BinaryDrawing
             // 4bpp RGB
             for (var i = 0; i < 16; i++)
             {
-                byte red = (byte)(0xFF * ((i & 0x08) >> 3)); // 0x08 == 1000_2
-                byte green = twoBitRange[(i & 0x06) >> 1]; // 0x06 == 0110_2
-                byte blue = (byte)(0xFF * (i & 0x01));
+                byte red = (byte)(0xFF * ((i & 0b1000) >> 3));
+                byte green = twoBitRange[(i & 0b0110) >> 1];
+                byte blue = (byte)(0xFF * (i & 0b0001));
                 fourBppRgb121[i] = new Rgba32(red, green, blue, 255);
             }
 
@@ -169,38 +169,38 @@ namespace Celarix.Imaging.BinaryDrawing
             // 8bpp RGB
             for (var i = 0; i < 256; i++)
             {
-                byte red = threeBitRange[(i & 0xE0) >> 5]; // 0xE0 == 11100000_2
-                byte green = threeBitRange[(i & 0x1C) >> 2]; // 0x1C = 00011100_2
-                byte blue = threeBitRange[i & 0x03]; // 0x03 == 00000011_2
+                byte red = threeBitRange[(i & 0b11100000) >> 5];
+                byte green = threeBitRange[(i & 0b00011100) >> 2];
+                byte blue = threeBitRange[i & 0b00000011];
                 eightBppRgb332[i] = new Rgba32(red, green, blue, 255);
             }
 
             // 8bpp ARGB
             for (var i = 0; i < 256; i++)
             {
-                byte alpha = twoBitRange[(i & 0xC0) >> 6]; // 0xC0 == 11000000_2
-                byte red = twoBitRange[(i & 0x30) >> 4]; // 0x30 == 00110000_2
-                byte green = twoBitRange[(i & 0x0C) >> 2]; // 0x0C == 00001100_2
-                byte blue = twoBitRange[i & 0x03]; // 0x03 == 00000011_2
+                byte alpha = twoBitRange[(i & 0b11000000) >> 6];
+                byte red = twoBitRange[(i & 0b00110000) >> 4];
+                byte green = twoBitRange[(i & 0b00001100) >> 2];
+                byte blue = twoBitRange[i & 0b00000011];
                 eightBppArgb2222[i] = new Rgba32(red, green, blue, alpha);
             }
 
             // 16bpp RGB
             for (var i = 0; i < 65536; i++)
             {
-                byte red = fiveBitRange[(i & 0xF800) >> 11]; // 0xF800 == 11111000 00000000_2
-                byte green = sixBitRange[(i & 0x07E0) >> 5]; // 0x07E0 == 00000111 11100000_2
-                byte blue = fiveBitRange[i & 0x001F]; // 0x001F == 00000000 00011111_2
+                byte red = fiveBitRange[(i & 0b11111000_00000000) >> 11];
+                byte green = sixBitRange[(i & 0b00000111_11100000) >> 5];
+                byte blue = fiveBitRange[i & 0b00000000_00011111];
                 sixteenBppRgb565[i] = new Rgba32(red, green, blue, 255);
             }
 
             // 16bpp ARGB
             for (var i = 0; i < 65536; i++)
             {
-                byte alpha = fourBitRange[(i & 0xF000) >> 12]; // 0xF000 == 11110000 00000000_2
-                byte red = fourBitRange[(i & 0x0F00) >> 8]; // 0x0F000 == 00001111 00000000_2
-                byte green = fourBitRange[(i & 0x00F0) >> 4]; // 0x00F0 == 00000000 11110000_2
-                byte blue = fourBitRange[i & 0x000F]; // 0x000F == 00000000 00001111_2
+                byte alpha = fourBitRange[(i & 0b11110000_00000000) >> 12]; // 0xF000 == 11110000 00000000_2
+                byte red = fourBitRange[(i & 0b00001111_00000000) >> 8]; // 0x0F000 == 00001111 00000000_2
+                byte green = fourBitRange[(i & 0b00000000_11110000) >> 4]; // 0x00F0 == 00000000 11110000_2
+                byte blue = fourBitRange[i & 0b00000000_00001111]; // 0x000F == 00000000 00001111_2
                 sixteenBppArgb4444[i] = new Rgba32(red, green, blue, alpha);
             }
         }

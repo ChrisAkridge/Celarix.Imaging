@@ -25,7 +25,7 @@ namespace Celarix.Imaging.BinaryDrawing
             return pixels;
         }
 
-        private static int[] BufferTo1bppPixels(byte[] buffer, int count)
+        private static int[] BufferTo1bppPixels(IReadOnlyList<byte> buffer, int count)
         {
             var result = new int[count * 8];
 
@@ -45,7 +45,7 @@ namespace Celarix.Imaging.BinaryDrawing
             return result;
         }
 
-        private static int[] BufferTo2bppPixels(byte[] buffer, int count)
+        private static int[] BufferTo2bppPixels(IReadOnlyList<byte> buffer, int count)
         {
             var result = new int[count * 4];
 
@@ -61,7 +61,7 @@ namespace Celarix.Imaging.BinaryDrawing
             return result;
         }
 
-        private static int[] BufferTo4bppPixels(byte[] buffer, int count)
+        private static int[] BufferTo4bppPixels(IReadOnlyList<byte> buffer, int count)
         {
             var result = new int[count * 2];
 
@@ -75,7 +75,7 @@ namespace Celarix.Imaging.BinaryDrawing
             return result;
         }
 
-        private static int[] BufferTo8bppPixels(byte[] buffer, int count)
+        private static int[] BufferTo8bppPixels(IReadOnlyList<byte> buffer, int count)
         {
             var result = new int[count];
 
@@ -84,7 +84,7 @@ namespace Celarix.Imaging.BinaryDrawing
             return result;
         }
 
-        private static int[] BufferTo16bppPixels(byte[] buffer, int count)
+        private static int[] BufferTo16bppPixels(IReadOnlyList<byte> buffer, int count)
         {
             var resultSize = (int)Math.Ceiling(count / 2f);
             var result = new int[resultSize];
@@ -102,7 +102,7 @@ namespace Celarix.Imaging.BinaryDrawing
             return result;
         }
 
-        private static int[] BufferTo24bppPixels(byte[] buffer, int count)
+        private static int[] BufferTo24bppPixels(IReadOnlyList<byte> buffer, int count)
         {
             var resultSize = (int)Math.Ceiling(count / 3f);
             var result = new int[resultSize];
@@ -124,7 +124,7 @@ namespace Celarix.Imaging.BinaryDrawing
             return result;
         }
 
-        private static int[] BufferTo32BppPixels(byte[] buffer, int count)
+        private static int[] BufferTo32BppPixels(IReadOnlyList<byte> buffer, int count)
         {
             var resultSize = (int)Math.Ceiling(count / 4f);
             var result = new int[resultSize];

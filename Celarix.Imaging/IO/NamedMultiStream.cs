@@ -8,14 +8,14 @@ namespace Celarix.Imaging.IO
 	public sealed class NamedMultiStream : Stream
     {
         private readonly List<NamedStream> streams;
-        private readonly long length;
         private int currentStreamIndex;
         private long position;
 
         public override bool CanRead => true;
         public override bool CanSeek => true;
         public override bool CanWrite => false;
-        public override long Length => length;
+        public override long Length { get; }
+
         public List<string> NameBuffer { get; set; }
 
         public override long Position
@@ -39,7 +39,7 @@ namespace Celarix.Imaging.IO
             {
                 this.streams.Add(new NamedStream(name, stream, offset));
                 offset += stream.Length;
-                length += stream.Length;
+                Length += stream.Length;
             }
         }
 

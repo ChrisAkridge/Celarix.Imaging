@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Celarix.Imaging.JobRecovery;
-using Celarix.Imaging.Progress;
 using Celarix.Imaging.ZoomableCanvas;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+// ReSharper disable AccessToDisposedClosure
 
 namespace Celarix.Imaging.Packing
 {

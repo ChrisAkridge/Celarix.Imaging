@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Celarix.Imaging.Packing;
 using SixLabors.ImageSharp;
 
@@ -29,8 +28,9 @@ namespace Celarix.Imaging
 
         public static Size GetCanvasSizeFromImageSize(Size size)
         {
-            var canvasHeight = (int)Math.Ceiling(size.Height / 256d);
-            var canvasWidth = (int)Math.Ceiling(size.Width / 256d);
+            var (width, height) = size;
+            var canvasHeight = (int)Math.Ceiling(height / 256d);
+            var canvasWidth = (int)Math.Ceiling(width / 256d);
             
             return new Size(canvasWidth, canvasHeight);
         }
@@ -55,12 +55,12 @@ namespace Celarix.Imaging
         public static bool TryShortenFilePath(string text, out string result)
         {
             char pathSeparator = Path.DirectorySeparatorChar;
-            List<string> parts = text.Split(pathSeparator).ToList();
+            var parts = text.Split(pathSeparator).ToList();
 
             string driveLetter = parts[0];
             parts.RemoveAt(0);
 
-            string fileName = parts[parts.Count - 1];
+            string fileName = parts[^1];
             parts.RemoveAt(parts.Count - 1);
 
             string longestPart = parts.OrderByDescending(p => p.Length).First();
@@ -78,12 +78,9 @@ namespace Celarix.Imaging
             return true;
         }
 
-        internal static string GetLFPImageText(IList<string> fileNameList) =>
-            fileNameList.Count == 1 ? fileNameList.First() : $"{fileNameList.First()} + {fileNameList.Count - 1}";
-
         internal static Size GetImageSize(string imageFilePath)
         {
-            if (ImageSizeLoader.TryGetSize(imageFilePath, out Size size)) { return size; }
+            if (ImageSizeLoader.TryGetSize(imageFilePath, out var size)) { return size; }
 
             using var image = Image.Load(imageFilePath);
             return image.Size();
@@ -94,5 +91,8 @@ namespace Celarix.Imaging
             || filePath.EndsWith("jpg", StringComparison.InvariantCultureIgnoreCase)
             || filePath.EndsWith("jpeg", StringComparison.InvariantCultureIgnoreCase)
             || filePath.EndsWith("png", StringComparison.InvariantCultureIgnoreCase);
+
+        public static string FormatException(Exception ex) =>
+            $"{ex.GetType().Name}: {ex.Message}{Environment.NewLine}{ex.StackTrace}";
     }
 }

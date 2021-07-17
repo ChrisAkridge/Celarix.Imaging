@@ -38,7 +38,7 @@ namespace Celarix.Imaging.Collections
                 bytesRead = stream.Read(buffer, 0, bufferSize);
 
                 var pixels = PixelBufferer.BufferToPixels(buffer, bytesRead, bitDepth);
-                for (var i = 0; i < pixels.Length; i++) { yield return pixels[i]; }
+                foreach (var pixel in pixels) { yield return pixel; }
             } while (bytesRead == bufferSize);
         }
 

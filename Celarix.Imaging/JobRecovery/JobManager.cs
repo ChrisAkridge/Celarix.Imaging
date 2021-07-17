@@ -15,7 +15,10 @@ namespace Celarix.Imaging.JobRecovery
             CompleteJob(jobSource);
             string fileName = $"{jobSource}_{DateTimeOffset.Now:yyyyMMddHHmmss}.json";
             string filePath = Path.Combine(GetApplicationJobFolder(), fileName);
-            string jobJson = JsonSerializer.Serialize(job, new JsonSerializerOptions { MaxDepth = 1048576 });
+            string jobJson = JsonSerializer.Serialize(job, new JsonSerializerOptions
+            {
+                MaxDepth = 1048576
+            });
             File.WriteAllText(filePath, jobJson, Encoding.UTF8);
         }
 
@@ -37,7 +40,10 @@ namespace Celarix.Imaging.JobRecovery
             }
 
             var jobJson = File.ReadAllText(latestJobFilePath, Encoding.UTF8);
-            job = JsonSerializer.Deserialize<T>(jobJson, new JsonSerializerOptions { MaxDepth = 1048576 });
+            job = JsonSerializer.Deserialize<T>(jobJson, new JsonSerializerOptions
+            {
+                MaxDepth = 1048576
+            });
 
             return true;
         }

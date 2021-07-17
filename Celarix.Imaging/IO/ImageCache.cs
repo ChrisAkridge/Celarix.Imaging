@@ -12,10 +12,7 @@ namespace Celarix.Imaging.IO
         private readonly int cacheSize;
         private readonly Dictionary<string, Image<Rgba32>> cache = new Dictionary<string, Image<Rgba32>>();
 
-        public ImageCache(int cacheSize)
-        {
-            this.cacheSize = cacheSize;
-        }
+        public ImageCache(int cacheSize) => this.cacheSize = cacheSize;
 
         public Image<Rgba32> Load(string path)
         {

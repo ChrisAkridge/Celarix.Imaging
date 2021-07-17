@@ -46,7 +46,11 @@ namespace Celarix.Imaging.BinaryDrawing
 				if (drawnPixels % ReportEveryNPixels != 0) { continue; }
 
 				if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
-				progress?.Report(new DrawingProgress { DrawnPixels = drawnPixels, TotalPixels = pixelCount });
+
+                progress?.Report(new DrawingProgress
+                {
+                    DrawnPixels = drawnPixels, TotalPixels = pixelCount
+                });
 			}
 
             return image;
@@ -59,12 +63,11 @@ namespace Celarix.Imaging.BinaryDrawing
             CancellationToken cancellationToken,
             IProgress<DrawingProgress> progress)
         {
-            // TODO: refactor
             ValidateBitDepthAndPalette(bitDepth, palette?.Count);
 
             var pixelCount = GetPixelCount(stream, bitDepth);
             var size = Utilities.GetSizeFromCount(pixelCount);
-            var (canvasWidth, canvasHeight) = Utilities.GetCanvasSizeFromImageSize(size);
+            var (canvasWidth, _) = Utilities.GetCanvasSizeFromImageSize(size);
             var pixelEnumerator = GetPixelEnumeratorFromStream(stream, bitDepth);
             var drawnPixels = 0;
             var rowsDrawnForTileRow = 0;
@@ -119,7 +122,6 @@ namespace Celarix.Imaging.BinaryDrawing
 
             var lastTileIndexY = pixelYPosition / 256;
 
-            // TODO: maybe move this into its own method?
             for (var tileIndexX = 0; tileIndexX < rowImages.Length; tileIndexX++)
             {
                 var rowImage = rowImages[tileIndexX];
@@ -136,17 +138,18 @@ namespace Celarix.Imaging.BinaryDrawing
             IProgress<DrawingProgress> progress)
 		{
 			ValidateBitDepthAndPalette(bitDepth, palette?.Count);
-			var totalPixels = (long)size.Width * size.Height;
-            var totalBytes = (int)Math.Ceiling(totalPixels * bitDepth / 8m);
+            var (width, height) = size;
+            var totalPixels = (long)width * height;
+            var totalBytes = (int)Math.Ceiling((totalPixels * bitDepth) / 8m);
 			var pixelEnumerator = GetPixelEnumeratorFromStream(stream, bitDepth, totalBytes);
 
-			var image = new Image<Rgba32>(size.Width, size.Height);
+			var image = new Image<Rgba32>(width, height);
 			var drawnPixels = 0L;
 
 			foreach (var pixel in pixelEnumerator)
 			{
-				var x = (int)(drawnPixels % size.Width);
-				var y = (int)(drawnPixels / size.Width);
+				var x = (int)(drawnPixels % width);
+				var y = (int)(drawnPixels / width);
 
 				SetPixelOnImage(image, x, y, pixel, bitDepth, palette);
 
@@ -156,7 +159,10 @@ namespace Celarix.Imaging.BinaryDrawing
 
 				if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
 
-				progress?.Report(new DrawingProgress { DrawnPixels = drawnPixels, TotalPixels = totalPixels });
+                progress?.Report(new DrawingProgress
+                {
+                    DrawnPixels = drawnPixels, TotalPixels = totalPixels
+                });
 			}
 
             return image;
@@ -172,18 +178,19 @@ namespace Celarix.Imaging.BinaryDrawing
             ValidateBitDepthAndPalette(bitDepth, palette?.Count);
 
             stream.NameBuffer = new List<string>();
-            var textHeight = Utilities.GetTextHeight(size.Height);
-            var totalPixels = (long)size.Width * (size.Height - textHeight);
-            var totalBytes = (int)Math.Ceiling(totalPixels * bitDepth / 8m);
+            var (width, height) = size;
+            var textHeight = Utilities.GetTextHeight(height);
+            var totalPixels = (long)width * (height - textHeight);
+            var totalBytes = (int)Math.Ceiling((totalPixels * bitDepth) / 8m);
             var pixelEnumerator = GetPixelEnumeratorFromStream(stream, bitDepth, totalBytes);
 
-            var image = new Image<Rgba32>(size.Width, size.Height, Color.Black);
+            var image = new Image<Rgba32>(width, height, Color.Black);
             var drawnPixels = 0L;
 
             foreach (var pixel in pixelEnumerator)
             {
-                var x = (int)(drawnPixels % size.Width);
-                var y = (int)((drawnPixels / size.Width) + textHeight);
+                var x = (int)(drawnPixels % width);
+                var y = (int)((drawnPixels / width) + textHeight);
 
                 SetPixelOnImage(image, x, y, pixel, bitDepth, palette);
 
@@ -194,7 +201,10 @@ namespace Celarix.Imaging.BinaryDrawing
 
                 if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
 
-                progress?.Report(new DrawingProgress { DrawnPixels = drawnPixels, TotalPixels = totalPixels });
+                progress?.Report(new DrawingProgress
+                {
+                    DrawnPixels = drawnPixels, TotalPixels = totalPixels
+                });
             }
 
             var fileNames = stream.NameBuffer.Distinct().ToList();
@@ -220,7 +230,11 @@ namespace Celarix.Imaging.BinaryDrawing
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
-                progress?.Report(new DrawingProgress { DrawnPixels = y * image.Width, TotalPixels = image.Width * image.Height * 2});
+
+                progress?.Report(new DrawingProgress
+                {
+                    DrawnPixels = y * image.Width, TotalPixels = image.Width * image.Height * 2
+                });
             }
 
             var sortedPixels = pixels.OrderBy(p => (p.R << 24) | (p.G << 16) | (p.B << 8) | p.A).ToList();
@@ -250,7 +264,7 @@ namespace Celarix.Imaging.BinaryDrawing
             CancellationToken cancellationToken,
             IProgress<DrawingProgress> progress)
         {
-            var pixels = new List<Rgba32>();
+            var pixels = new HashSet<Rgba32>();
 
             for (int y = 0; y < image.Height; y++)
             {
@@ -258,10 +272,12 @@ namespace Celarix.Imaging.BinaryDrawing
 
                 cancellationToken.ThrowIfCancellationRequested();
                 progress?.Report(new DrawingProgress
-                    { DrawnPixels = y * image.Width, TotalPixels = image.Width * image.Height * 2 });
+                {
+                    DrawnPixels = y * image.Width, TotalPixels = image.Width * image.Height * 2
+                });
             }
 
-            var uniqueColors = pixels.Distinct().ToList();
+            var uniqueColors = pixels.ToList();
             var (uniqueImageWidth, uniqueImageHeight) = Utilities.GetSizeFromCount(uniqueColors.Count);
             var uniqueImage = new Image<Rgba32>(uniqueImageWidth, uniqueImageHeight);
 
@@ -298,7 +314,7 @@ namespace Celarix.Imaging.BinaryDrawing
                 for (int x = 0; x < image.Width; x++)
                 {
                     var pixel = image[x, y];
-                    var byteIndex = (y * image.Height) + x * image.Width * 4;
+                    var byteIndex = (y * image.Height) + (x * image.Width * 4);
 
                     bytes[byteIndex] = pixel.R;
                     bytes[byteIndex + 1] = pixel.G;
@@ -317,11 +333,8 @@ namespace Celarix.Imaging.BinaryDrawing
             return bytes;
         }
 
-        private static IEnumerable<int> GetPixelEnumeratorFromStream(Stream stream, int bitDepth, int bufferSize = 1048576)
-        {
-            var streamEnumerable = new StreamEnumerable(stream);
-            return streamEnumerable.EnumeratePixels(bitDepth, bufferSize);
-        }
+        private static IEnumerable<int> GetPixelEnumeratorFromStream(Stream stream, int bitDepth, int bufferSize = 1048576) =>
+            new StreamEnumerable(stream).EnumeratePixels(bitDepth, bufferSize);
 
         private static void SetPixelOnImage(Image<Rgba32> image,
             int x,
@@ -395,9 +408,9 @@ namespace Celarix.Imaging.BinaryDrawing
                 _ => throw new ArgumentException(nameof(bitDepth))
             };
 
-        private static void InitializeCanvasRowImages(Image<Rgba32>[] images)
+        private static void InitializeCanvasRowImages(IList<Image<Rgba32>> images)
         {
-            for (int i = 0; i < images.Length; i++)
+            for (int i = 0; i < images.Count; i++)
             {
                 images[i] = new Image<Rgba32>(256, 256, Color.Black);
             }

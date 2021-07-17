@@ -2,21 +2,19 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Celarix.Imaging.IO;
-using Celarix.Imaging.Packing;
-using Celarix.Imaging.Progress;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
 namespace Celarix.Imaging.ZoomableCanvas
 {
-	public static class CanvasGenerator
+    public static class CanvasGenerator
     {
         private static readonly ImageCache cache = new ImageCache(2);
+        private const string exceptionsFilePath = "exceptions.txt";
         
         public static void Generate(string imageFilePath,
             Size cellSize,
@@ -64,16 +62,15 @@ namespace Celarix.Imaging.ZoomableCanvas
 
             var currentZoomLevel = 0;
 
-            if (createHigherZoomLevels)
+            if (!createHigherZoomLevels) { return; }
+
+            string folderToCombine;
+            do
             {
-                string folderToCombine;
-                do
-                {
-                    folderToCombine = Path.Combine(outputFolderPath, $"{currentZoomLevel}");
-                    if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
-                } while (
-                    ZoomLevelGenerator.TryCombineImagesForNextZoomLevel(cellSize, folderToCombine, outputFolderPath, ++currentZoomLevel, progress));
-            }
+                folderToCombine = Path.Combine(outputFolderPath, $"{currentZoomLevel}");
+                if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
+            } while (
+                ZoomLevelGenerator.TryCombineImagesForNextZoomLevel(cellSize, folderToCombine, outputFolderPath, ++currentZoomLevel, progress));
         }
 
         private static Dictionary<Point, List<PositionedImage>> BuildTileMap(IEnumerable<PositionedImage> images,
@@ -151,7 +148,10 @@ namespace Celarix.Imaging.ZoomableCanvas
                     var imageToDraw = cache.Load(image.ImageFilePath);
                     cellImage.Mutate(ci => ci.DrawImage(imageToDraw, image.Position, 1f));
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    File.WriteAllText(Path.Combine(outputFolderPath, $"exception_{cellNumberX}_{cellNumberY}.txt"), Utilities.FormatException(ex));
+                }
             }
 
             cellImage.SaveAsPng(outputFilePath);

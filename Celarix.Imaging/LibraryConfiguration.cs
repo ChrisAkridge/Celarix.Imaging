@@ -4,9 +4,10 @@ using System.Text;
 
 namespace Celarix.Imaging
 {
-    // TODO: figure out how to actually use this without DI and singletons
     public sealed class LibraryConfiguration
     {
+        public static LibraryConfiguration Instance { get; set; }
+        
         /// <summary>
         /// Gets or sets a value indicating how many pixels are drawn by types in
         /// BinaryDrawing before it invokes a progress callback.
