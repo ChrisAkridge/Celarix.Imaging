@@ -14,10 +14,8 @@ namespace Celarix.Imaging.ZoomableCanvas
     public static class CanvasGenerator
     {
         private static readonly ImageCache cache = new ImageCache(2);
-        private const string exceptionsFilePath = "exceptions.txt";
         
         public static void Generate(string imageFilePath,
-            Size cellSize,
             string outputFolderPath,
             CancellationToken cancellationToken,
             IProgress<string> progress,
@@ -33,7 +31,6 @@ namespace Celarix.Imaging.ZoomableCanvas
                         Size = imageSize
                     }
                 },
-                cellSize,
                 outputFolderPath,
                 cancellationToken,
                 progress,
@@ -41,12 +38,12 @@ namespace Celarix.Imaging.ZoomableCanvas
         }
 
         public static void Generate(IEnumerable<PositionedImage> images,
-            Size cellSize, 
             string outputFolderPath,
             CancellationToken cancellationToken,
             IProgress<string> progress,
             bool createHigherZoomLevels = true)
         {
+            var cellSize = new Size(LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength);
             var level0Tiles = BuildTileMap(images, cellSize);
             int tilesComplete = 0;
             int totalTiles = level0Tiles.Count;
@@ -70,7 +67,7 @@ namespace Celarix.Imaging.ZoomableCanvas
                 folderToCombine = Path.Combine(outputFolderPath, $"{currentZoomLevel}");
                 if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
             } while (
-                ZoomLevelGenerator.TryCombineImagesForNextZoomLevel(cellSize, folderToCombine, outputFolderPath, ++currentZoomLevel, progress));
+                ZoomLevelGenerator.TryCombineImagesForNextZoomLevel(folderToCombine, outputFolderPath, ++currentZoomLevel, progress));
         }
 
         private static Dictionary<Point, List<PositionedImage>> BuildTileMap(IEnumerable<PositionedImage> images,

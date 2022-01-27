@@ -419,8 +419,7 @@ namespace Celarix.Imaging.ByteView
             };
 
             var nextZoomLevel = 0;
-            while (await Task.Run(() => ZoomLevelGenerator.TryCombineImagesForNextZoomLevel(tileSize,
-                Path.Combine(outputFolder, nextZoomLevel.ToString()),
+            while (await Task.Run(() => ZoomLevelGenerator.TryCombineImagesForNextZoomLevel(Path.Combine(outputFolder, nextZoomLevel.ToString()),
                 outputFolder,
                 nextZoomLevel + 1,
                 levelGeneratorProgress))) { nextZoomLevel += 1; }

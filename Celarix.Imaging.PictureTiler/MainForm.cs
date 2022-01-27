@@ -27,7 +27,13 @@ namespace Celarix.Imaging.PictureTiler
 		public MainForm()
 		{
 			InitializeComponent();
-		}
+
+            LibraryConfiguration.Instance = new LibraryConfiguration
+            {
+                BinaryDrawingReportsProgressEveryNPixels = 1048576,
+                ZoomableCanvasTileEdgeLength = 137
+            };
+        }
 
         private async void MainForm_Load(object sender, EventArgs e)
         {
@@ -150,7 +156,6 @@ namespace Celarix.Imaging.PictureTiler
             try
             {
                 await Task.Run(() => CanvasGenerator.Generate(TextCanvasInputPath.Text,
-                    new SixLabors.ImageSharp.Size(256, 256),
                     TextCanvasOutputPath.Text,
                     tokenSource.Token,
                     progress));

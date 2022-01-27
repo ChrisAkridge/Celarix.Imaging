@@ -74,7 +74,7 @@ namespace Celarix.Imaging.Packing
                         ImageFilePath = b.ImageFilePath, Position = b.Fit.Location, Size = b.Size
                     });
 
-                CanvasGenerator.Generate(images, new Size(256, 256), job.Options.OutputPath, cancellationToken,
+                CanvasGenerator.Generate(images, job.Options.OutputPath, cancellationToken,
                     progress);
             }
             

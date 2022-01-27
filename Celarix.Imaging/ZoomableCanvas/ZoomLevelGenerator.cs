@@ -11,12 +11,12 @@ namespace Celarix.Imaging.ZoomableCanvas
 {
 	public static class ZoomLevelGenerator
 	{
-        public static bool TryCombineImagesForNextZoomLevel(Size cellSize,
-            string inputFolderPath,
+        public static bool TryCombineImagesForNextZoomLevel(string inputFolderPath,
             string outputFolderPath,
             int nextZoomLevel,
             IProgress<string> progress)
         {
+            var cellSize = new Size(LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength);
             var paddingImage = new Image<Rgba32>(cellSize.Width, cellSize.Height, Rgba32.ParseHex("ffffffff"));
             var files = LoadFilesFromZoomLevel(inputFolderPath);
             if (files.Count <= 1) { return false; }

@@ -29,8 +29,8 @@ namespace Celarix.Imaging
         public static Size GetCanvasSizeFromImageSize(Size size)
         {
             var (width, height) = size;
-            var canvasHeight = (int)Math.Ceiling(height / 256d);
-            var canvasWidth = (int)Math.Ceiling(width / 256d);
+            var canvasHeight = (int)Math.Ceiling(height / (double)LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength);
+            var canvasWidth = (int)Math.Ceiling(width / (double)LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength);
             
             return new Size(canvasWidth, canvasHeight);
         }

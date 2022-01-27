@@ -18,8 +18,6 @@ namespace Celarix.Imaging.BinaryDrawing
 {
 	public static class Drawer
     {
-        private const long ReportEveryNPixels = 1048576;
-
         public static Image<Rgba32> Draw(Stream stream,
             int bitDepth,
             IReadOnlyList<Rgba32> palette,
@@ -43,7 +41,7 @@ namespace Celarix.Imaging.BinaryDrawing
                 SetPixelOnImage(image, x, y, pixel, bitDepth, palette);
 
 				drawnPixels += 1;
-				if (drawnPixels % ReportEveryNPixels != 0) { continue; }
+				if (drawnPixels % LibraryConfiguration.Instance.BinaryDrawingReportsProgressEveryNPixels != 0) { continue; }
 
 				if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
 
@@ -68,6 +66,7 @@ namespace Celarix.Imaging.BinaryDrawing
             var pixelCount = GetPixelCount(stream, bitDepth);
             var size = Utilities.GetSizeFromCount(pixelCount);
             var (canvasWidth, _) = Utilities.GetCanvasSizeFromImageSize(size);
+            var tileEdgeLength = LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength;
             var pixelEnumerator = GetPixelEnumeratorFromStream(stream, bitDepth);
             var drawnPixels = 0;
             var rowsDrawnForTileRow = 0;
@@ -87,10 +86,10 @@ namespace Celarix.Imaging.BinaryDrawing
                     pixelYPosition += 1;
                 }
 
-                if (rowsDrawnForTileRow == 256)
+                if (rowsDrawnForTileRow == tileEdgeLength)
                 {
                     // We've finished drawing 256 rows, so we can save all the images.
-                    var tileIndexY = (pixelYPosition / 256) - 1;
+                    var tileIndexY = (pixelYPosition / tileEdgeLength) - 1;
 
                     for (var tileIndexX = 0; tileIndexX < rowImages.Length; tileIndexX++)
                     {
@@ -103,14 +102,14 @@ namespace Celarix.Imaging.BinaryDrawing
                     rowsDrawnForTileRow = 0;
                 }
 
-                var pixelXTile = pixelsDrawnOnRow / 256;
-                var pixelXPositionInTile = pixelsDrawnOnRow % 256;
-                var pixelYPositionInTile = pixelYPosition % 256;
+                var pixelXTile = pixelsDrawnOnRow / tileEdgeLength;
+                var pixelXPositionInTile = pixelsDrawnOnRow % tileEdgeLength;
+                var pixelYPositionInTile = pixelYPosition % tileEdgeLength;
                 SetPixelOnImage(rowImages[pixelXTile], pixelXPositionInTile, pixelYPositionInTile, pixel, bitDepth, palette);
                 pixelsDrawnOnRow += 1;
                 drawnPixels += 1;
 
-                if (drawnPixels % ReportEveryNPixels != 0) { continue; }
+                if (drawnPixels % LibraryConfiguration.Instance.BinaryDrawingReportsProgressEveryNPixels != 0) { continue; }
 
                 if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
 
@@ -120,7 +119,7 @@ namespace Celarix.Imaging.BinaryDrawing
                 });
             }
 
-            var lastTileIndexY = pixelYPosition / 256;
+            var lastTileIndexY = pixelYPosition / tileEdgeLength;
 
             for (var tileIndexX = 0; tileIndexX < rowImages.Length; tileIndexX++)
             {
@@ -155,7 +154,7 @@ namespace Celarix.Imaging.BinaryDrawing
 
 				drawnPixels += 1;
 				if (drawnPixels == totalPixels) { break; }
-				if (drawnPixels % ReportEveryNPixels != 0) { continue; }
+				if (drawnPixels % LibraryConfiguration.Instance.BinaryDrawingReportsProgressEveryNPixels != 0) { continue; }
 
 				if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
 
@@ -197,7 +196,7 @@ namespace Celarix.Imaging.BinaryDrawing
                 drawnPixels += 1;
                 if (drawnPixels == totalPixels) { break; }
 
-                if (drawnPixels % ReportEveryNPixels != 0) { continue; }
+                if (drawnPixels % LibraryConfiguration.Instance.BinaryDrawingReportsProgressEveryNPixels != 0) { continue; }
 
                 if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
 
@@ -412,7 +411,8 @@ namespace Celarix.Imaging.BinaryDrawing
         {
             for (int i = 0; i < images.Count; i++)
             {
-                images[i] = new Image<Rgba32>(256, 256, Color.Black);
+                images[i] = new Image<Rgba32>(LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength,
+                    LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength, Color.Black);
             }
         }
 	}
