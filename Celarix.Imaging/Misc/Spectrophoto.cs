@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -10,57 +11,82 @@ namespace Celarix.Imaging.Misc
     {
         // Ported from https://github.com/kylophone/spectrophoto/
         // Licensed with the MIT license
-        private const int SampleRate = 48000;
-        
-        public static float[] ConvertImageToSpectrogram(Image<Rgb24> image,
-            int durationInSeconds)
+        private const int SAMPLE_RATE = 48000;
+
+        private static void column_to_PCM(float[] buf, float[] column, int nb_samples, int height, float[][] sin_lut)
         {
-            int totalSamples = (durationInSeconds * SampleRate);
+            float sample = 0f;
 
-            if (totalSamples < 0)
+            for (int i = 0; i < nb_samples; i++)
             {
-                throw new ArgumentException(nameof(durationInSeconds), $"Duration {durationInSeconds} is negative");
+                for (int j = 0; j < height; j++)
+                {
+                    sample += (column[j] * sin_lut[j][i]) / height;
+                }
+
+                sample *= 0.9f;
+                buf[i] = sample;
+            }
+        }
+
+        private static float get_pixel_intensity(Rgb24 pixel, int n)
+        {
+            int RGB_sum = pixel.R + pixel.G + pixel.B;
+
+            float intensity = (float)RGB_sum / n / 255f;
+
+            return intensity;
+        }
+
+        public static void ImageToSpectrogram(Image<Rgb24> image, int duration, string outputFilePath)
+        {
+            int x = image.Width;
+            int y = image.Height;
+            int n = 3;
+
+            int nb_samples = (duration * SAMPLE_RATE) / x;
+
+            if (nb_samples < 0)
+            {
+                throw new ArgumentException($"Duration {duration} is negative", nameof(duration));
             }
 
-            var imageHeight = image.Height;
-            var imageWidth = image.Width;
-            // var sineTable = new float[totalSamples, image.Height];
-            var sineTable = new float[imageHeight][];
-            var nyquist = SampleRate / 2f;
-            var hertzStep = nyquist / imageHeight;
-            var result = new float[totalSamples * image.Width];
-            var resultPosition = 0;
+            using var output_file = File.Open(outputFilePath, FileMode.Create, FileAccess.ReadWrite);
+            using var writer = new BinaryWriter(output_file);
 
-            for (int y = 0; y < imageHeight; y++)
+            var column = new float[y];
+            var buf = new float[nb_samples];
+            var sin_lut = new float[y][];
+
+            for (int i = 0; i < y; i++)
             {
-                sineTable[y] = new float[totalSamples];
-                for (int x = 0; x < totalSamples; x++)
+                sin_lut[i] = new float[nb_samples];
+            }
+
+            float nyquist = SAMPLE_RATE / 2f;
+            float hz_step = nyquist / y;
+
+            for (int i = 0; i < y; i++)
+            {
+                for (int j = 0; j < nb_samples; j++)
                 {
-                    var frequency = nyquist - (hertzStep * y);
-                    var envelope = (float)Math.Sin(2f * Math.PI * ((float)x / totalSamples));
-                    sineTable[y][x] = envelope * (float)Math.Sin(2f * Math.PI * frequency * ((float)x / SampleRate));
+                    var freq = nyquist - (hz_step * i);
+                    var env = Math.Sin(2 * Math.PI * ((float)j / nb_samples));
+                    sin_lut[i][j] = (float)(env * Math.Sin(2 * Math.PI * freq * ((float)j / SAMPLE_RATE)));
                 }
             }
 
-            for (var x = 0; x < imageWidth; x++)
+            for (int i = 0; i < x; i++)
             {
-                var sample = 0f;
-
-                for (var s = 0; s < totalSamples; s++)
+                for (int j = 0; j < y; j++)
                 {
-                    for (var y = 0; y < imageHeight; y++)
-                    {
-                        var pixel = image[x, y];
-                        sample += (((pixel.R + pixel.G + pixel.B) / 255f) * sineTable[y][s]) / imageHeight;
-                    }
-
-                    sample *= 0.9f;
+                    var intensity = get_pixel_intensity(image[i, j], 1);
+                    column[j] = intensity;
                 }
+                column_to_PCM(buf, column, nb_samples, y, sin_lut);
 
-                result[resultPosition++] = sample;
+                foreach (var f in buf) { writer.Write(f); }
             }
-
-            return result;
         }
     }
 }

@@ -15,18 +15,11 @@ namespace Celarix.Imaging.PictureTiler
 		[STAThread]
         private static void Main()
         {
-            var audio = Spectrophoto.ConvertImageToSpectrogram(
-                Image.Load<Rgb24>(@"G:\Documents\Files\Pictures\Pictures\S Series\5s Series\5s000143.png"),
-                10);
-            using var stream = File.Create(@"G:\Documents\audio.raw");
-            using var writer = new BinaryWriter(stream);
+            Spectrophoto.ImageToSpectrogram(
+                Image.Load<Rgb24>(@"G:\Documents\Files\Pictures\Pictures\Cordilan Group\Roseate Series\r068.png"),
+                10, @"G:\Documents\out0.raw");
 
-            foreach (var f in audio)
-            {
-                writer.Write(f);
-            }
-
-            writer.Close();
+            return;
             
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
 			Application.EnableVisualStyles();
