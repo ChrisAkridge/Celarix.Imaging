@@ -15,12 +15,6 @@ namespace Celarix.Imaging.PictureTiler
 		[STAThread]
         private static void Main()
         {
-            Spectrophoto.ImageToSpectrogram(
-                Image.Load<Rgb24>(@"G:\Documents\Files\Pictures\Pictures\Cordilan Group\Roseate Series\r068.png"),
-                10, @"G:\Documents\out0.raw");
-
-            return;
-            
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
