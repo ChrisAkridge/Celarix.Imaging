@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Celarix.Imaging.Utilities;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -17,7 +18,7 @@ namespace Celarix.Imaging.Tiling
             IProgress<int> progress) where TPixel : unmanaged, IPixel<TPixel>
         {
             var images = inputImages;
-            var imagesOnCanvas = Utilities.GetSizeFromCount(imageCount);
+            var imagesOnCanvas = Helpers.GetSizeFromCount(imageCount);
             var canvas = CreateCanvas<TPixel>(imageCount, new Size(tileOptions.TileWidth, tileOptions.TileHeight));
             var (aspectWidth, aspectHeight) = GetAspectRatio(tileOptions.TileWidth, tileOptions.TileHeight);
 
@@ -79,7 +80,7 @@ namespace Celarix.Imaging.Tiling
 
         private static Size GetCanvasSize(int imageCount, Size imageSize)
         {
-            var (tilesAcross, tilesDown) = Utilities.GetSizeFromCount(imageCount);
+            var (tilesAcross, tilesDown) = Helpers.GetSizeFromCount(imageCount);
             var (width, height) = imageSize;
             return new Size(tilesAcross * width, tilesDown * height);
         }

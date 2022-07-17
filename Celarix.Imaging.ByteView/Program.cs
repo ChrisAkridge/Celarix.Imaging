@@ -24,6 +24,12 @@ namespace Celarix.Imaging.ByteView
             //       that has two little-endian Int32s at the beginning which
             //       store the width and height of the image.
             // TODO: Package into an installer and figure out version numbering.
+            LibraryConfiguration.Instance = new LibraryConfiguration
+            {
+                BinaryDrawingReportsProgressEveryNPixels = 1048576,
+                ZoomableCanvasTileEdgeLength = 1024
+            };
+            
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 

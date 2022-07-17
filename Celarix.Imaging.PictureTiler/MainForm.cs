@@ -31,7 +31,7 @@ namespace Celarix.Imaging.PictureTiler
             LibraryConfiguration.Instance = new LibraryConfiguration
             {
                 BinaryDrawingReportsProgressEveryNPixels = 1048576,
-                ZoomableCanvasTileEdgeLength = 137
+                ZoomableCanvasTileEdgeLength = 1024
             };
         }
 
@@ -78,7 +78,8 @@ namespace Celarix.Imaging.PictureTiler
             };
 
 			var imagesInFolder = Directory.GetFiles(TextTilerInputFolder.Text, "*", SearchOption.TopDirectoryOnly)
-				.Where(Utilities.IsFileAnImage).ToList();
+				.Where(Utilities.IsFileAnImage)
+                .ToList();
 
             var images = Utilities.ImageEnumerable(imagesInFolder);
             ProgressTiler.Maximum = imagesInFolder.Count;
@@ -183,21 +184,15 @@ namespace Celarix.Imaging.PictureTiler
             var recursive = CheckPackerRecursive.Checked;
             var zoomableCanvas = CheckPackerMultipicture.Checked;
             var inputPathIsPathsFile = CheckTreatInputAsPathsFile.Checked;
-
-            var options = inputPathIsPathsFile
-                ? (PackingOptions)new PathListPackingOptions
-                {
-                    PathListFilePath = TextPackerInputPath.Text,
-                    OutputPath = TextPackerOutputPath.Text,
-                    Multipicture = zoomableCanvas
-                }
-                : new FolderPackingOptions
-                {
-                    InputFolderPath = TextPackerInputPath.Text,
-                    OutputPath = TextPackerOutputPath.Text,
-                    Multipicture = zoomableCanvas,
-                    Recursive = recursive
-                };
+            
+            var options = new PackingOptions
+            {
+                InputNamesPathListFile = inputPathIsPathsFile,
+                InputPath = TextPackerInputPath.Text,
+                Multipicture = zoomableCanvas,
+                OutputPath = TextPackerOutputPath.Text,
+                Recursive = !inputPathIsPathsFile && recursive
+            };
 
             var progress = new Progress<string>();
 

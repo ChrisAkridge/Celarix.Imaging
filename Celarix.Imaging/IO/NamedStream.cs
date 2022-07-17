@@ -5,17 +5,11 @@ using System.Text;
 
 namespace Celarix.Imaging.IO
 {
-	internal sealed class NamedStream
-	{
-		public string Name { get; }
-		public Stream Stream { get; }
-		public long Offset { get; }
-
-        public NamedStream(string name, Stream stream, long offset)
-        {
-            Name = name;
-            Stream = stream;
-            Offset = offset;
-        }
-	}
+    internal sealed class NamedStream
+    {
+        public string Name { get; set; }
+        public int StreamIndex { get; set; }
+        public long Offset { get; set; }
+        public long Length { get; set; }
+    }
 }

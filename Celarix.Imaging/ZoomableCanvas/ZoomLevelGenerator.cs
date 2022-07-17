@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Celarix.Imaging.Utilities;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -67,7 +68,7 @@ namespace Celarix.Imaging.ZoomableCanvas
                     catch (Exception ex)
                     {
                         File.WriteAllText(Path.Combine(outputFolderPath, $"exception_{x}_{y}.txt"),
-                            Utilities.FormatException(ex));
+                            Helpers.FormatException(ex));
                     }
                 }
             }

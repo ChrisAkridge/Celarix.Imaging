@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Celarix.Imaging.IO;
+using Celarix.Imaging.Utilities;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -21,7 +22,7 @@ namespace Celarix.Imaging.ZoomableCanvas
             IProgress<string> progress,
             bool createHigherZoomLevels = true)
         {
-            var imageSize = Utilities.GetImageSize(imageFilePath);
+            var imageSize = Helpers.GetImageSize(imageFilePath);
             Generate(new List<PositionedImage>
                 {
                     new PositionedImage
@@ -147,7 +148,7 @@ namespace Celarix.Imaging.ZoomableCanvas
                 }
                 catch (Exception ex)
                 {
-                    File.WriteAllText(Path.Combine(outputFolderPath, $"exception_{cellNumberX}_{cellNumberY}.txt"), Utilities.FormatException(ex));
+                    File.WriteAllText(Path.Combine(outputFolderPath, $"exception_{cellNumberX}_{cellNumberY}.txt"), Helpers.FormatException(ex));
                 }
             }
 

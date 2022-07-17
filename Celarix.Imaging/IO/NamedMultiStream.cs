@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Celarix.Imaging.Collections;
 
 namespace Celarix.Imaging.IO
 {
 	public sealed class NamedMultiStream : Stream
     {
-        private readonly List<NamedStream> streams;
+        private readonly List<NamedStream> namedStreams;
+        private readonly SingleItemLazyList<Stream> lazyStreamList;
         private int currentStreamIndex;
         private long position;
 
@@ -23,23 +25,39 @@ namespace Celarix.Imaging.IO
             get => position;
             set
             {
-                var newStream = streams.First(s => s.Offset + s.Stream.Length >= value);
-                currentStreamIndex = streams.IndexOf(newStream);
-                newStream.Stream.Seek(value - newStream.Stream.Position, SeekOrigin.Begin);
+                var newNamedStream = namedStreams.First(s => s.Offset + s.Length >= value);
+                currentStreamIndex = namedStreams.IndexOf(newNamedStream);
+
+                var newStream = lazyStreamList.GetItem(newNamedStream.StreamIndex);
+                newStream.Seek(value - newStream.Position, SeekOrigin.Begin);
                 position = value;
             }
         }
 
-        public NamedMultiStream(IEnumerable<KeyValuePair<string, Stream>> streams)
+        public NamedMultiStream(IEnumerable<string> filePaths)
         {
-            this.streams = new List<NamedStream>();
+            namedStreams = new List<NamedStream>();
+            lazyStreamList = new SingleItemLazyList<Stream>();
+            var i = 0;
             var offset = 0L;
 
-            foreach (var (name, stream) in streams)
+            foreach (var filePath in filePaths)
             {
-                this.streams.Add(new NamedStream(name, stream, offset));
-                offset += stream.Length;
-                Length += stream.Length;
+                var fileInfo = new FileInfo(filePath);
+
+                namedStreams.Add(new NamedStream
+                {
+                    Name = filePath,
+                    Length = fileInfo.Length,
+                    Offset = offset,
+                    StreamIndex = i
+                });
+                
+                lazyStreamList.Add(() => File.OpenRead(filePath));
+
+                offset += fileInfo.Length;
+                Length += fileInfo.Length;
+                i++;
             }
         }
 
@@ -49,22 +67,23 @@ namespace Celarix.Imaging.IO
         {
             var totalBytesRead = 0;
 
-            while (count > 0 && currentStreamIndex < streams.Count)
+            while (count > 0 && currentStreamIndex < namedStreams.Count)
             {
-                var currentStream = streams[currentStreamIndex];
+                var currentNamedStream = namedStreams[currentStreamIndex];
                 if (NameBuffer != null && NameBuffer.Count == 0)
                 {
-                    NameBuffer.Add(currentStream.Name);
+                    NameBuffer.Add(currentNamedStream.Name);
                 }
 
-                var bytesRead = currentStream.Stream.Read(buffer, offset, count);
+                var currentStream = lazyStreamList.GetItem(currentNamedStream.StreamIndex);
+                var bytesRead = currentStream.Read(buffer, offset, count);
 
                 if (bytesRead == 0)
                 {
-                    if (currentStreamIndex + 1 < streams.Count)
+                    if (currentStreamIndex + 1 < namedStreams.Count)
                     {
                         currentStreamIndex += 1;
-                        NameBuffer?.Add(streams[currentStreamIndex].Name);
+                        NameBuffer?.Add(namedStreams[currentStreamIndex].Name);
                     }
                     else { return totalBytesRead; }
                 }
@@ -89,7 +108,7 @@ namespace Celarix.Imaging.IO
                     Position += offset;
                     break;
                 case SeekOrigin.End:
-                    long totalLength = streams.Sum(s => s.Stream.Length);
+                    long totalLength = namedStreams.Sum(s => s.Length);
                     Position = totalLength - offset;
                     break;
                 default: throw new ArgumentOutOfRangeException(nameof(origin), origin, null);
@@ -99,10 +118,5 @@ namespace Celarix.Imaging.IO
         }
         public override void SetLength(long value) => throw new NotImplementedException();
         public override void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();
-
-        public void DisposeAll()
-        {
-            foreach (var stream in streams) { stream.Stream.Dispose(); }
-        }
     }
 }

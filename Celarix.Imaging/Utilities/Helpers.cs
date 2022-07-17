@@ -5,9 +5,9 @@ using System.Linq;
 using Celarix.Imaging.Packing;
 using SixLabors.ImageSharp;
 
-namespace Celarix.Imaging
+namespace Celarix.Imaging.Utilities
 {
-	internal static class Utilities
+	internal static class Helpers
 	{
         public static Size GetSizeFromCount(long count)
         {

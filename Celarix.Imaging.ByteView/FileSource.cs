@@ -85,25 +85,20 @@ namespace Celarix.Imaging.ByteView
             int byteIndex = 0;
             for (int i = 0; i < filePaths.Length; i++)
             {
-                using (var reader = new BinaryReader(File.Open(filePaths[i], FileMode.Open)))
+                using var reader = new BinaryReader(File.Open(filePaths[i], FileMode.Open));
+
+                int bytesRead = reader.Read(result, byteIndex, fileSizes[i]);
+                if (bytesRead != fileSizes[i])
                 {
-                    int bytesRead = reader.Read(result, byteIndex, fileSizes[i]);
-                    if (bytesRead != fileSizes[i])
-                    {
-                        throw new IOException(
-                            $"Read only {bytesRead} bytes out of a {fileSizes[i]}-byte file.");
-                    }
-                    byteIndex += fileSizes[i];
+                    throw new IOException(
+                        $"Read only {bytesRead} bytes out of a {fileSizes[i]}-byte file.");
                 }
+                byteIndex += fileSizes[i];
             }
 
             return result;
         }
 
-        public NamedMultiStream GetStream()
-        {
-            var streams = filePaths.ToDictionary<string, string, Stream>(filePath => filePath, File.OpenRead);
-            return new NamedMultiStream(streams);
-        }
+        public NamedMultiStream GetStream() => new NamedMultiStream(filePaths);
     }
 }

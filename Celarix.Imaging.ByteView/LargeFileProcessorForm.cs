@@ -298,10 +298,8 @@ namespace Celarix.Imaging.ByteView
 
         private async Task GenerateImages()
         {
-            var fileStreams = sourceFiles.ToDictionary(
-                kvp => kvp.Key,
-                kvp => (Stream)File.OpenRead(kvp.Key));
-			var stream = new NamedMultiStream(fileStreams);
+            var filePaths = sourceFiles.Select(kvp => kvp.Key);
+			var stream = new NamedMultiStream(filePaths);
             var imageByteCount = GetImageByteCount();
             var imageSize = new SixLabors.ImageSharp.Size(ImageWidth, ImageHeight);
             var allFilesSize = sourceFiles.Sum(kvp => kvp.Value.Length);
@@ -364,10 +362,8 @@ namespace Celarix.Imaging.ByteView
 
         private async Task GenerateZoomableTiles()
         {
-            var fileStreams = sourceFiles.ToDictionary(
-                kvp => kvp.Key,
-                kvp => (Stream)File.OpenRead(kvp.Key));
-            var stream = new NamedMultiStream(fileStreams);
+            var filePaths = sourceFiles.Select(kvp => kvp.Key);
+            var stream = new NamedMultiStream(filePaths);
             var totalBytes = stream.Length;
             var imageBytes = (int)(256m * 256m * (bitDepth / 8m));
             var level0Tiles = (int)Math.Ceiling((decimal)totalBytes / imageBytes);

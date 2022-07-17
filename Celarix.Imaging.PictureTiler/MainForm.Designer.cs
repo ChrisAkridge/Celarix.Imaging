@@ -46,6 +46,7 @@
             this.StaticLabelTilerTileWidth = new System.Windows.Forms.Label();
             this.ButtonTilerSelectOutputPath = new System.Windows.Forms.Button();
             this.TabPacker = new System.Windows.Forms.TabPage();
+            this.CheckTreatInputAsPathsFile = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.CheckPackerMultipicture = new System.Windows.Forms.CheckBox();
             this.CheckPackerRecursive = new System.Windows.Forms.CheckBox();
@@ -73,7 +74,6 @@
             this.FBDMain = new System.Windows.Forms.FolderBrowserDialog();
             this.SFDMain = new System.Windows.Forms.SaveFileDialog();
             this.OFDMain = new System.Windows.Forms.OpenFileDialog();
-            this.CheckTreatInputAsPathsFile = new System.Windows.Forms.CheckBox();
             this.TabsMain.SuspendLayout();
             this.TabTiler.SuspendLayout();
             this.GroupTilerOptions.SuspendLayout();
@@ -285,6 +285,17 @@
             this.TabPacker.Text = "Packer";
             this.TabPacker.UseVisualStyleBackColor = true;
             // 
+            // CheckTreatInputAsPathsFile
+            // 
+            this.CheckTreatInputAsPathsFile.AutoSize = true;
+            this.CheckTreatInputAsPathsFile.Location = new System.Drawing.Point(8, 6);
+            this.CheckTreatInputAsPathsFile.Name = "CheckTreatInputAsPathsFile";
+            this.CheckTreatInputAsPathsFile.Size = new System.Drawing.Size(260, 19);
+            this.CheckTreatInputAsPathsFile.TabIndex = 10;
+            this.CheckTreatInputAsPathsFile.Text = "Input names a file that contains image paths";
+            this.CheckTreatInputAsPathsFile.UseVisualStyleBackColor = true;
+            this.CheckTreatInputAsPathsFile.CheckedChanged += new System.EventHandler(this.CheckTreatInputAsPathsFile_CheckedChanged);
+            // 
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.CheckPackerMultipicture);
@@ -372,7 +383,7 @@
             this.ButtonPackerSelectInputPath.Location = new System.Drawing.Point(292, 12);
             this.ButtonPackerSelectInputPath.Margin = new System.Windows.Forms.Padding(2);
             this.ButtonPackerSelectInputPath.Name = "ButtonPackerSelectInputPath";
-            this.ButtonPackerSelectInputPath.Size = new System.Drawing.Size(29, 20);
+            this.ButtonPackerSelectInputPath.Size = new System.Drawing.Size(29, 24);
             this.ButtonPackerSelectInputPath.TabIndex = 2;
             this.ButtonPackerSelectInputPath.Text = "...";
             this.ButtonPackerSelectInputPath.UseVisualStyleBackColor = true;
@@ -388,10 +399,10 @@
             // 
             // ButtonPackerSelectOutputPath
             // 
-            this.ButtonPackerSelectOutputPath.Location = new System.Drawing.Point(292, 34);
+            this.ButtonPackerSelectOutputPath.Location = new System.Drawing.Point(292, 35);
             this.ButtonPackerSelectOutputPath.Margin = new System.Windows.Forms.Padding(2);
             this.ButtonPackerSelectOutputPath.Name = "ButtonPackerSelectOutputPath";
-            this.ButtonPackerSelectOutputPath.Size = new System.Drawing.Size(29, 20);
+            this.ButtonPackerSelectOutputPath.Size = new System.Drawing.Size(29, 23);
             this.ButtonPackerSelectOutputPath.TabIndex = 2;
             this.ButtonPackerSelectOutputPath.Text = "...";
             this.ButtonPackerSelectOutputPath.UseVisualStyleBackColor = true;
@@ -399,7 +410,7 @@
             // 
             // ProgressPacker
             // 
-            this.ProgressPacker.Location = new System.Drawing.Point(8, 133);
+            this.ProgressPacker.Location = new System.Drawing.Point(8, 150);
             this.ProgressPacker.Margin = new System.Windows.Forms.Padding(2);
             this.ProgressPacker.Name = "ProgressPacker";
             this.ProgressPacker.Size = new System.Drawing.Size(325, 20);
@@ -560,17 +571,6 @@
             this.OFDMain.DefaultExt = "png";
             this.OFDMain.Filter = "All files|*.*";
             this.OFDMain.Title = "PictureTiler";
-            // 
-            // CheckTreatInputAsPathsFile
-            // 
-            this.CheckTreatInputAsPathsFile.AutoSize = true;
-            this.CheckTreatInputAsPathsFile.Location = new System.Drawing.Point(8, 6);
-            this.CheckTreatInputAsPathsFile.Name = "CheckTreatInputAsPathsFile";
-            this.CheckTreatInputAsPathsFile.Size = new System.Drawing.Size(260, 19);
-            this.CheckTreatInputAsPathsFile.TabIndex = 10;
-            this.CheckTreatInputAsPathsFile.Text = "Input names a file that contains image paths";
-            this.CheckTreatInputAsPathsFile.UseVisualStyleBackColor = true;
-            this.CheckTreatInputAsPathsFile.CheckedChanged += new System.EventHandler(this.CheckTreatInputAsPathsFile_CheckedChanged);
             // 
             // MainForm
             // 

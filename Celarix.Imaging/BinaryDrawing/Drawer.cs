@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Celarix.Imaging.Collections;
 using Celarix.Imaging.IO;
 using Celarix.Imaging.Progress;
+using Celarix.Imaging.Utilities;
 using Celarix.Imaging.ZoomableCanvas;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -27,7 +28,7 @@ namespace Celarix.Imaging.BinaryDrawing
             ValidateBitDepthAndPalette(bitDepth, palette?.Count);
 
             var pixelCount = GetPixelCount(stream, bitDepth);
-            var (width, height) = Utilities.GetSizeFromCount(pixelCount);
+            var (width, height) = Helpers.GetSizeFromCount(pixelCount);
             var pixelEnumerator = GetPixelEnumeratorFromStream(stream, bitDepth);
 
             var image = new Image<Rgba32>(width, height);
@@ -64,8 +65,8 @@ namespace Celarix.Imaging.BinaryDrawing
             ValidateBitDepthAndPalette(bitDepth, palette?.Count);
 
             var pixelCount = GetPixelCount(stream, bitDepth);
-            var size = Utilities.GetSizeFromCount(pixelCount);
-            var (canvasWidth, _) = Utilities.GetCanvasSizeFromImageSize(size);
+            var size = Helpers.GetSizeFromCount(pixelCount);
+            var (canvasWidth, _) = Helpers.GetCanvasSizeFromImageSize(size);
             var tileEdgeLength = LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength;
             var pixelEnumerator = GetPixelEnumeratorFromStream(stream, bitDepth);
             var drawnPixels = 0;
@@ -178,7 +179,7 @@ namespace Celarix.Imaging.BinaryDrawing
 
             stream.NameBuffer = new List<string>();
             var (width, height) = size;
-            var textHeight = Utilities.GetTextHeight(height);
+            var textHeight = Helpers.GetTextHeight(height);
             var totalPixels = (long)width * (height - textHeight);
             var totalBytes = (int)Math.Ceiling((totalPixels * bitDepth) / 8m);
             var pixelEnumerator = GetPixelEnumeratorFromStream(stream, bitDepth, totalBytes);
@@ -277,7 +278,7 @@ namespace Celarix.Imaging.BinaryDrawing
             }
 
             var uniqueColors = pixels.ToList();
-            var (uniqueImageWidth, uniqueImageHeight) = Utilities.GetSizeFromCount(uniqueColors.Count);
+            var (uniqueImageWidth, uniqueImageHeight) = Helpers.GetSizeFromCount(uniqueColors.Count);
             var uniqueImage = new Image<Rgba32>(uniqueImageWidth, uniqueImageHeight);
 
             int pixelIndex = 0;
@@ -368,7 +369,7 @@ namespace Celarix.Imaging.BinaryDrawing
 
             while (TextMeasurer.Measure(text, new RendererOptions(font)).Width > image.Width)
             {
-                if (!Utilities.TryShortenFilePath(text, out text)) { break; }
+                if (!Helpers.TryShortenFilePath(text, out text)) { break; }
             }
 
             image.Mutate(ctx => ctx.DrawText(text, font, Color.White, PointF.Empty));
