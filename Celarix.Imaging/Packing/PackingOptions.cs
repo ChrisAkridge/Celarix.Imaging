@@ -24,7 +24,7 @@ namespace Celarix.Imaging.Packing
                     {
                         RecurseSubdirectories = Recursive, IgnoreInaccessible = true
                     })
-                    .Where(Helpers.ExtensionImpliesFileIsImage);
+                    .Where(ImageIdentifier.IsValidImageFile);
             }
 
             return File.ReadAllLines(InputPath);
