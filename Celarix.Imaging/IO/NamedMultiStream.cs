@@ -6,7 +6,7 @@ using Celarix.Imaging.Collections;
 
 namespace Celarix.Imaging.IO
 {
-	public sealed class NamedMultiStream : Stream
+	public class NamedMultiStream : Stream
     {
         private readonly List<NamedStream> namedStreams;
         private readonly SingleItemLazyList<Stream> lazyStreamList;
@@ -33,6 +33,8 @@ namespace Celarix.Imaging.IO
                 position = value;
             }
         }
+        
+        internal NamedMultiStream() { }
 
         public NamedMultiStream(IEnumerable<string> filePaths)
         {
