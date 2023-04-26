@@ -61,6 +61,31 @@ namespace Celarix.Imaging.IO
             }
         }
 
+        public NamedMultiStream(IEnumerable<FilePathWithSize> filePathsWithSizes)
+        {
+            namedStreams = new List<NamedStream>();
+            lazyStreamList = new SingleItemLazyList<Stream>();
+            var i = 0;
+            var offset = 0L;
+
+            foreach (var filePath in filePathsWithSizes)
+            {
+                namedStreams.Add(new NamedStream
+                {
+                    Name = filePath.FilePath,
+                    Length = filePath.Size,
+                    Offset = offset,
+                    StreamIndex = i
+                });
+                
+                lazyStreamList.Add(() => File.OpenRead(filePath.FilePath));
+
+                offset += filePath.Size;
+                Length += filePath.Size;
+                i += 1;
+            }
+        }
+
         public override void Flush() => throw new NotImplementedException();
 
         public override int Read(byte[] buffer, int offset, int count)
