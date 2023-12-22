@@ -180,6 +180,7 @@ namespace Celarix.Imaging.PictureTiler
         private async Task Pack(bool resuming)
         {
             ButtonPackerCancel.Enabled = true;
+            LabelPackerStatus.Text = "Beginning job...";
 
             var recursive = CheckPackerRecursive.Checked;
             var zoomableCanvas = CheckPackerMultipicture.Checked;

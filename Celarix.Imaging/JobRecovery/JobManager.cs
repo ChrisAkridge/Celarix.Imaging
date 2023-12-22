@@ -5,21 +5,20 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Celarix.Imaging.Packing;
 
 namespace Celarix.Imaging.JobRecovery
 {
     public static class JobManager
     {
-        public static void SaveJobFile(string jobSource, object job)
+        public static void SaveJobFile(string jobSource, IBinaryJob job)
         {
             CompleteJob(jobSource);
             string fileName = $"{jobSource}_{DateTimeOffset.Now:yyyyMMddHHmmss}.json";
             string filePath = Path.Combine(GetApplicationJobFolder(), fileName);
-            string jobJson = JsonSerializer.Serialize(job, new JsonSerializerOptions
-            {
-                MaxDepth = 1048576
-            });
-            File.WriteAllText(filePath, jobJson, Encoding.UTF8);
+
+            using var writer = new BinaryWriter(File.OpenWrite(filePath), Encoding.UTF8);
+            job.Save(writer);
         }
 
         public static void CompleteJob(string jobSource)
@@ -39,12 +38,19 @@ namespace Celarix.Imaging.JobRecovery
                 return false;
             }
 
-            var jobJson = File.ReadAllText(latestJobFilePath, Encoding.UTF8);
-            job = JsonSerializer.Deserialize<T>(jobJson, new JsonSerializerOptions
+            if (JobFileIsVersion1(latestJobFilePath))
             {
-                MaxDepth = 1048576
-            });
+                var jobJson = File.ReadAllText(latestJobFilePath, Encoding.UTF8);
+                job = JsonSerializer.Deserialize<T>(jobJson, new JsonSerializerOptions
+                {
+                    MaxDepth = 1048576
+                });
 
+                return true;
+            }
+
+            var reader = new BinaryReader(File.OpenRead(latestJobFilePath), Encoding.UTF8);
+            job = IBinaryJob.Load<T>(reader);
             return true;
         }
 
@@ -69,6 +75,13 @@ namespace Celarix.Imaging.JobRecovery
         {
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             return Path.Combine(appData, "Celarix.Imaging");
+        }
+
+        private static bool JobFileIsVersion1(string jobFilePath)
+        {
+            using var streamReader = new StreamReader(jobFilePath, Encoding.UTF8);
+
+            return (char)streamReader.Read() == '{';
         }
     }
 }

@@ -20,7 +20,9 @@ namespace Celarix.Imaging.Packing
         {
             var job = new PackingJob
             {
-                Options = options
+                Options = options,
+                ImagesAndSizes = new Dictionary<string, Size>(),
+                Blocks = new List<Block>()
             };
             JobManager.SaveJobFile(JobSources.Packer, job);
             
@@ -39,20 +41,23 @@ namespace Celarix.Imaging.Packing
             CancellationToken cancellationToken,
             IProgress<string> progress)
         {
-            if (job.ImagesAndSizes == null)
+            if (job.ImagesAndSizes == null || !job.ImagesAndSizes.Any())
             {
                 var files = job.Options.GetImagePaths();
-                job.ImagesAndSizes = GetImageSizes(files, progress, cancellationToken);
+                job.ImagesAndSizes = GetImageSizes(files, progress, job.Options.OutputPath, cancellationToken);
                 JobManager.SaveJobFile(JobSources.Packer, job);
             }
 
-            job.Blocks ??= job.ImagesAndSizes
-                .OrderByDescending(kvp => kvp.Value.Width)
-                .Select(kvp => new Block
-                {
-                    ImageFilePath = kvp.Key, Size = kvp.Value
-                })
-                .ToList();
+            if (job.Blocks?.Any() != true)
+            {
+                job.Blocks = job.ImagesAndSizes
+                    .OrderByDescending(kvp => kvp.Value.Width)
+                    .Select(kvp => new Block
+                    {
+                        ImageFilePath = kvp.Key, Size = kvp.Value
+                    })
+                    .ToList();
+            }
 
             var packer = new Packer();
             packer.Fit(job.Blocks, progress);
@@ -83,11 +88,12 @@ namespace Celarix.Imaging.Packing
 
         private static Dictionary<string, Size> GetImageSizes(IEnumerable<string> imageFilePaths,
             IProgress<string> progress,
+            string outputPath,
             CancellationToken cancellationToken)
         {
-            var filesAndSizes = new Dictionary<string, Size>();
+            var filesAndSizes = ImageSizeDictionary.ResumeOrStartNew(outputPath);
 
-            foreach (var file in imageFilePaths)
+            foreach (var file in imageFilePaths.Where(f => !filesAndSizes.ContainsKey(f)))
             {
                 try
                 {
@@ -104,7 +110,7 @@ namespace Celarix.Imaging.Packing
                 if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
             }
 
-            return filesAndSizes;
+            return new Dictionary<string, Size>(filesAndSizes);
         }
         
         private static void DrawImage(IList<Block> blocks,

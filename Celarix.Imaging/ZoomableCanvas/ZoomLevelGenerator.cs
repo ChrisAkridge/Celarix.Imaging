@@ -19,7 +19,7 @@ namespace Celarix.Imaging.ZoomableCanvas
         {
             var cellSize = new Size(LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength);
             var paddingImage = new Image<Rgba32>(cellSize.Width, cellSize.Height, Rgba32.ParseHex("ffffffff"));
-            var files = LoadFilesFromZoomLevel(inputFolderPath);
+            var files = LoadFilesFromZoomLevel(inputFolderPath, progress);
             if (files.Count <= 1) { return false; }
             
             Directory.CreateDirectory(Path.Combine(outputFolderPath, $"{nextZoomLevel}"));
@@ -29,6 +29,8 @@ namespace Celarix.Imaging.ZoomableCanvas
 
             for (var y = 0; y < levelHeight; y += 2)
             {
+                progress?.Report($"Beginning row {y}...");
+                
                 Directory.CreateDirectory(Path.Combine(outputFolderPath, $"{nextZoomLevel}", $"{y / 2}"));
                 for (var x = 0; x < levelWidth; x += 2)
                 {
@@ -47,11 +49,21 @@ namespace Celarix.Imaging.ZoomableCanvas
                         var topRightCell = new Point(x + 1, y);
                         var bottomLeftCell = new Point(x, y + 1);
                         var bottomRightCell = new Point(x + 1, y + 1);
+                        
+                        var topLeftExists = files.ContainsKey(topLeftCell);
+                        var topRightExists = files.ContainsKey(topRightCell);
+                        var bottomLeftExists = files.ContainsKey(bottomLeftCell);
+                        var bottomRightExists = files.ContainsKey(bottomRightCell);
 
-                        var topLeft = files.ContainsKey(topLeftCell) ? Image.Load(files[topLeftCell]) : paddingImage;
-                        var topRight = files.ContainsKey(topRightCell) ? Image.Load(files[topRightCell]) : paddingImage;
-                        var bottomLeft = files.ContainsKey(bottomLeftCell) ? Image.Load(files[bottomLeftCell]) : paddingImage;
-                        var bottomRight = files.ContainsKey(bottomRightCell) ? Image.Load(files[bottomRightCell]) : paddingImage;
+                        if (!topLeftExists && !topRightExists && !bottomLeftExists && !bottomRightExists)
+                        {
+                            continue;
+                        }
+
+                        var topLeft = topLeftExists ? Image.Load(files[topLeftCell]) : paddingImage;
+                        var topRight = topRightExists ? Image.Load(files[topRightCell]) : paddingImage;
+                        var bottomLeft = bottomLeftExists ? Image.Load(files[bottomLeftCell]) : paddingImage;
+                        var bottomRight = bottomRightExists ? Image.Load(files[bottomRightCell]) : paddingImage;
 
                         var canvas = new Image<Rgba32>(cellSize.Width * 2, cellSize.Height * 2, Rgba32.ParseHex("ffffffff"));
                         canvas.Mutate(c => DrawImagesOnCell(c, cellSize, topLeft, topRight, bottomLeft, bottomRight));
@@ -76,20 +88,24 @@ namespace Celarix.Imaging.ZoomableCanvas
             return true;
         }
 
-        private static Dictionary<Point, string> LoadFilesFromZoomLevel(string inputFolderPath)
+        private static Dictionary<Point, string> LoadFilesFromZoomLevel(string inputFolderPath,
+            IProgress<string> logger)
         {
-            return Directory.GetFiles(inputFolderPath, "*.png", SearchOption.AllDirectories)
-                .Select(f =>
-                {
-                    var xTileNumber = Path.GetFileNameWithoutExtension(f);
-                    var yTileNumber = Path.GetFileName(Path.GetDirectoryName(f));
-                    return new
-                    {
-                        CellNumber = new Point(int.Parse(xTileNumber), int.Parse(yTileNumber ?? throw new InvalidOperationException($"Invalid canvas zoom level file {f}"))),
-                        FilePath = f
-                    };
-                })
-                .ToDictionary(a => a.CellNumber, a => a.FilePath);
+            var foundFileCount = 0;
+            var files = new Dictionary<Point, string>();
+
+            foreach (var file in Directory.EnumerateFiles(inputFolderPath, "*.png", SearchOption.AllDirectories))
+            {
+                foundFileCount += 1;
+
+                if (foundFileCount % 10000 == 0) { logger?.Report($"Found {foundFileCount} files in {inputFolderPath}, most recent is {file}"); }
+                
+                var xTileNumber = Path.GetFileNameWithoutExtension(file);
+                var yTileNumber = Path.GetFileName(Path.GetDirectoryName(file));
+                files.Add(new Point(int.Parse(xTileNumber), int.Parse(yTileNumber!)), file);
+            }
+
+            return files;
         }
 
         private static void DrawImagesOnCell(IImageProcessingContext c, Size cellSize, Image topLeft, Image topRight,

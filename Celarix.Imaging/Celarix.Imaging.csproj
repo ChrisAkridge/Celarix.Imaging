@@ -5,11 +5,11 @@
     <Authors>Chris Akridge</Authors>
     <Company>Akridgetech</Company>
     <Description>A library to perform various imaging tasks, such as drawing any file as a series of pixels, or combining many images into a single image or zoomable canvas.</Description>
-    <Copyright>Copyright 2020-2022 Chris Akridge</Copyright>
+    <Copyright>Copyright 2020-2023 Chris Akridge</Copyright>
     <PackageLicenseFile>.\LICENSE.md</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/ChrisAkridge/Celarix.Imaging</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ChrisAkridge/Celarix.Imaging</RepositoryUrl>
-    <Version>1.0.3</Version>
+    <Version>1.0.5</Version>
     <AssemblyVersion>1.0.2.0</AssemblyVersion>
     <FileVersion>1.0.2.0</FileVersion>
   </PropertyGroup>

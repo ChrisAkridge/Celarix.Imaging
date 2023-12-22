@@ -23,8 +23,8 @@ namespace Celarix.Imaging.Packing
                     .EnumerateFiles(InputPath, "*", new EnumerationOptions
                     {
                         RecurseSubdirectories = Recursive, IgnoreInaccessible = true
-                    })
-                    .Where(ImageIdentifier.IsValidImageFile);
+                    });
+                // .Where(ImageIdentifier.IsValidImageFile);
             }
 
             return File.ReadAllLines(InputPath);

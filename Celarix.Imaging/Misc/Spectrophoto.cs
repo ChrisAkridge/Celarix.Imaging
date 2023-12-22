@@ -11,17 +11,17 @@ namespace Celarix.Imaging.Misc
     {
         // Ported from https://github.com/kylophone/spectrophoto/
         // Licensed with the MIT license
-        private const int SAMPLE_RATE = 48000;
+        private const int SampleRate = 48000;
 
-        private static void column_to_PCM(float[] buf, float[] column, int nb_samples, int height, float[][] sin_lut)
+        private static void ColumnToPCM(float[] buf, float[] column, int sampleCount, int height, float[][] sineTable)
         {
             float sample = 0f;
 
-            for (int i = 0; i < nb_samples; i++)
+            for (int i = 0; i < sampleCount; i++)
             {
                 for (int j = 0; j < height; j++)
                 {
-                    sample += (column[j] * sin_lut[j][i]) / height;
+                    sample += (column[j] * sineTable[j][i]) / height;
                 }
 
                 sample *= 0.9f;
@@ -29,50 +29,47 @@ namespace Celarix.Imaging.Misc
             }
         }
 
-        private static float get_pixel_intensity(Rgb24 pixel, int n)
+        private static float GetPixelIntensity(Rgb24 pixel, int n)
         {
-            int RGB_sum = pixel.R + pixel.G + pixel.B;
+            int rgbSum = pixel.R + pixel.G + pixel.B;
 
-            float intensity = (float)RGB_sum / n / 255f;
-
-            return intensity;
+            return (float)rgbSum / n / 255f;
         }
 
         public static void ImageToSpectrogram(Image<Rgb24> image, int duration, string outputFilePath)
         {
             int x = image.Width;
             int y = image.Height;
-            int n = 3;
 
-            int nb_samples = (duration * SAMPLE_RATE) / x;
+            int bufferSize = (duration * SampleRate) / x;
 
-            if (nb_samples < 0)
+            if (bufferSize < 0)
             {
                 throw new ArgumentException($"Duration {duration} is negative", nameof(duration));
             }
 
-            using var output_file = File.Open(outputFilePath, FileMode.Create, FileAccess.ReadWrite);
-            using var writer = new BinaryWriter(output_file);
+            using var outputFile = File.Open(outputFilePath, FileMode.Create, FileAccess.ReadWrite);
+            using var writer = new BinaryWriter(outputFile);
 
             var column = new float[y];
-            var buf = new float[nb_samples];
-            var sin_lut = new float[y][];
+            var buf = new float[bufferSize];
+            var sineTable = new float[y][];
 
             for (int i = 0; i < y; i++)
             {
-                sin_lut[i] = new float[nb_samples];
+                sineTable[i] = new float[bufferSize];
             }
 
-            float nyquist = SAMPLE_RATE / 2f;
-            float hz_step = nyquist / y;
+            float nyquist = SampleRate / 2f;
+            float hzStep = nyquist / y;
 
             for (int i = 0; i < y; i++)
             {
-                for (int j = 0; j < nb_samples; j++)
+                for (int j = 0; j < bufferSize; j++)
                 {
-                    var freq = nyquist - (hz_step * i);
-                    var env = Math.Sin(2 * Math.PI * ((float)j / nb_samples));
-                    sin_lut[i][j] = (float)(env * Math.Sin(2 * Math.PI * freq * ((float)j / SAMPLE_RATE)));
+                    var freq = nyquist - (hzStep * i);
+                    var env = Math.Sin(2 * Math.PI * ((float)j / bufferSize));
+                    sineTable[i][j] = (float)(env * Math.Sin(2 * Math.PI * freq * ((float)j / SampleRate)));
                 }
             }
 
@@ -80,10 +77,10 @@ namespace Celarix.Imaging.Misc
             {
                 for (int j = 0; j < y; j++)
                 {
-                    var intensity = get_pixel_intensity(image[i, j], 1);
+                    var intensity = GetPixelIntensity(image[i, j], 1);
                     column[j] = intensity;
                 }
-                column_to_PCM(buf, column, nb_samples, y, sin_lut);
+                ColumnToPCM(buf, column, bufferSize, y, sineTable);
 
                 foreach (var f in buf) { writer.Write(f); }
             }
