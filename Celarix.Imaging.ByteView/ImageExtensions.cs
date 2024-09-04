@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -29,7 +30,7 @@ namespace Celarix.Imaging.ByteView
             var stream = new MemoryStream();
             image.Save(stream, ImageFormat.Png);
             stream.Seek(0L, SeekOrigin.Begin);
-            return Image.Load<TPixel>(stream, new PngDecoder());
+            return Image.Load<TPixel>(stream);
         }
     }
 }

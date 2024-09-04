@@ -47,30 +47,33 @@
 			TSBZoomOut = new ToolStripButton();
 			TSTZoomLevel = new ToolStripTextBox();
 			TSBZoomIn = new ToolStripButton();
-			CMSImage = new ContextMenuStrip(components);
-			TSMIStandardMode = new ToolStripMenuItem();
-			TSMIComicMode = new ToolStripMenuItem();
-			TSMIBinaryDrawingMode = new ToolStripMenuItem();
-			TSMIBitplaneMode = new ToolStripMenuItem();
-			CMSTSS1 = new ToolStripSeparator();
-			TSMISortByRGB = new ToolStripMenuItem();
-			TSMISortByHSV = new ToolStripMenuItem();
-			TSMIUniqueColors = new ToolStripMenuItem();
-			TSMIOpenAnimatedControls = new ToolStripMenuItem();
-			TSMIBuildRGBGamut = new ToolStripMenuItem();
-			TSMIBuildHSVGamut = new ToolStripMenuItem();
-			CMSTSS2 = new ToolStripSeparator();
-			TSMIZoomModeSelector = new ToolStripMenuItem();
 			TSBRotateCCW = new ToolStripButton();
 			TSBRotateCW = new ToolStripButton();
 			TSS4 = new ToolStripSeparator();
 			TSBMarkImage = new ToolStripButton();
 			TSBViewMarkedImages = new ToolStripButton();
+			CMSImage = new ContextMenuStrip(components);
+			TSMIStandardMode = new ToolStripMenuItem();
+			TSMIComicMode = new ToolStripMenuItem();
+			TSMIBinaryDrawingMode = new ToolStripMenuItem();
+			TSMIBitplaneMode = new ToolStripMenuItem();
+			TSMIOpenAnimatedControls = new ToolStripMenuItem();
+			CMSTSS1 = new ToolStripSeparator();
+			TSMISortByRGB = new ToolStripMenuItem();
+			TSMISortByHSV = new ToolStripMenuItem();
+			TSMIBuildRGBGamut = new ToolStripMenuItem();
+			TSMIBuildHSVGamut = new ToolStripMenuItem();
+			TSMIUniqueColors = new ToolStripMenuItem();
+			CMSTSS2 = new ToolStripSeparator();
+			TSMIZoomModeSelector = new ToolStripMenuItem();
 			SSMain = new StatusStrip();
 			TSSImageInfo = new ToolStripStatusLabel();
+			PanelViewerContainer = new Panel();
+			ImageViewer = new Controls.ImageViewerControl();
 			TSMain.SuspendLayout();
 			CMSImage.SuspendLayout();
 			SSMain.SuspendLayout();
+			PanelViewerContainer.SuspendLayout();
 			SuspendLayout();
 			// 
 			// TSMain
@@ -78,7 +81,7 @@
 			TSMain.Items.AddRange(new ToolStripItem[] { TSBOpenFile, TSBImageProperties, TSS1, TSBPreviousFile, TSTFileIndex, TSBNextFile, TSS2, TSBSortFileName, TSSSortByDate, TSBSortBySize, TSBSortAscending, TSBSortDescending, TSS3, TSBZoomOut, TSTZoomLevel, TSBZoomIn, TSBRotateCCW, TSBRotateCW, TSS4, TSBMarkImage, TSBViewMarkedImages });
 			TSMain.Location = new Point(0, 0);
 			TSMain.Name = "TSMain";
-			TSMain.Size = new Size(1048, 25);
+			TSMain.Size = new Size(1028, 25);
 			TSMain.TabIndex = 0;
 			TSMain.Text = "toolStrip1";
 			// 
@@ -214,91 +217,6 @@
 			TSBZoomIn.Size = new Size(56, 22);
 			TSBZoomIn.Text = "Zoom In";
 			// 
-			// CMSImage
-			// 
-			CMSImage.Items.AddRange(new ToolStripItem[] { TSMIStandardMode, TSMIComicMode, TSMIBinaryDrawingMode, TSMIBitplaneMode, TSMIOpenAnimatedControls, CMSTSS1, TSMISortByRGB, TSMISortByHSV, TSMIBuildRGBGamut, TSMIBuildHSVGamut, TSMIUniqueColors, CMSTSS2, TSMIZoomModeSelector });
-			CMSImage.Name = "CMSImage";
-			CMSImage.Size = new Size(218, 258);
-			// 
-			// TSMIStandardMode
-			// 
-			TSMIStandardMode.Checked = true;
-			TSMIStandardMode.CheckState = CheckState.Checked;
-			TSMIStandardMode.Name = "TSMIStandardMode";
-			TSMIStandardMode.Size = new Size(217, 22);
-			TSMIStandardMode.Text = "Standard Mode";
-			// 
-			// TSMIComicMode
-			// 
-			TSMIComicMode.Name = "TSMIComicMode";
-			TSMIComicMode.Size = new Size(217, 22);
-			TSMIComicMode.Text = "Comic Mode";
-			// 
-			// TSMIBinaryDrawingMode
-			// 
-			TSMIBinaryDrawingMode.Name = "TSMIBinaryDrawingMode";
-			TSMIBinaryDrawingMode.Size = new Size(217, 22);
-			TSMIBinaryDrawingMode.Text = "Binary Drawing Mode";
-			// 
-			// TSMIBitplaneMode
-			// 
-			TSMIBitplaneMode.Name = "TSMIBitplaneMode";
-			TSMIBitplaneMode.Size = new Size(217, 22);
-			TSMIBitplaneMode.Text = "Bitplane Mode";
-			// 
-			// CMSTSS1
-			// 
-			CMSTSS1.Name = "CMSTSS1";
-			CMSTSS1.Size = new Size(214, 6);
-			// 
-			// TSMISortByRGB
-			// 
-			TSMISortByRGB.Name = "TSMISortByRGB";
-			TSMISortByRGB.Size = new Size(217, 22);
-			TSMISortByRGB.Text = "Sort by color (RGB)";
-			// 
-			// TSMISortByHSV
-			// 
-			TSMISortByHSV.Name = "TSMISortByHSV";
-			TSMISortByHSV.Size = new Size(217, 22);
-			TSMISortByHSV.Text = "Sort by color (HSV)";
-			// 
-			// TSMIUniqueColors
-			// 
-			TSMIUniqueColors.Name = "TSMIUniqueColors";
-			TSMIUniqueColors.Size = new Size(217, 22);
-			TSMIUniqueColors.Text = "Unique colors";
-			// 
-			// TSMIOpenAnimatedControls
-			// 
-			TSMIOpenAnimatedControls.Enabled = false;
-			TSMIOpenAnimatedControls.Name = "TSMIOpenAnimatedControls";
-			TSMIOpenAnimatedControls.Size = new Size(217, 22);
-			TSMIOpenAnimatedControls.Text = "Animated image controls...";
-			// 
-			// TSMIBuildRGBGamut
-			// 
-			TSMIBuildRGBGamut.Name = "TSMIBuildRGBGamut";
-			TSMIBuildRGBGamut.Size = new Size(217, 22);
-			TSMIBuildRGBGamut.Text = "Build color gamut (RGB)";
-			// 
-			// TSMIBuildHSVGamut
-			// 
-			TSMIBuildHSVGamut.Name = "TSMIBuildHSVGamut";
-			TSMIBuildHSVGamut.Size = new Size(217, 22);
-			TSMIBuildHSVGamut.Text = "Build color gamut (HSV)";
-			// 
-			// CMSTSS2
-			// 
-			CMSTSS2.Name = "CMSTSS2";
-			CMSTSS2.Size = new Size(214, 6);
-			// 
-			// TSMIZoomModeSelector
-			// 
-			TSMIZoomModeSelector.Name = "TSMIZoomModeSelector";
-			TSMIZoomModeSelector.Size = new Size(217, 22);
-			TSMIZoomModeSelector.Text = "Non-smoothing zoom";
-			// 
 			// TSBRotateCCW
 			// 
 			TSBRotateCCW.DisplayStyle = ToolStripItemDisplayStyle.Text;
@@ -340,12 +258,97 @@
 			TSBViewMarkedImages.Size = new Size(88, 22);
 			TSBViewMarkedImages.Text = "View Marked...";
 			// 
+			// CMSImage
+			// 
+			CMSImage.Items.AddRange(new ToolStripItem[] { TSMIStandardMode, TSMIComicMode, TSMIBinaryDrawingMode, TSMIBitplaneMode, TSMIOpenAnimatedControls, CMSTSS1, TSMISortByRGB, TSMISortByHSV, TSMIBuildRGBGamut, TSMIBuildHSVGamut, TSMIUniqueColors, CMSTSS2, TSMIZoomModeSelector });
+			CMSImage.Name = "CMSImage";
+			CMSImage.Size = new Size(218, 258);
+			// 
+			// TSMIStandardMode
+			// 
+			TSMIStandardMode.Checked = true;
+			TSMIStandardMode.CheckState = CheckState.Checked;
+			TSMIStandardMode.Name = "TSMIStandardMode";
+			TSMIStandardMode.Size = new Size(217, 22);
+			TSMIStandardMode.Text = "Standard Mode";
+			// 
+			// TSMIComicMode
+			// 
+			TSMIComicMode.Name = "TSMIComicMode";
+			TSMIComicMode.Size = new Size(217, 22);
+			TSMIComicMode.Text = "Comic Mode";
+			// 
+			// TSMIBinaryDrawingMode
+			// 
+			TSMIBinaryDrawingMode.Name = "TSMIBinaryDrawingMode";
+			TSMIBinaryDrawingMode.Size = new Size(217, 22);
+			TSMIBinaryDrawingMode.Text = "Binary Drawing Mode";
+			// 
+			// TSMIBitplaneMode
+			// 
+			TSMIBitplaneMode.Name = "TSMIBitplaneMode";
+			TSMIBitplaneMode.Size = new Size(217, 22);
+			TSMIBitplaneMode.Text = "Bitplane Mode";
+			// 
+			// TSMIOpenAnimatedControls
+			// 
+			TSMIOpenAnimatedControls.Enabled = false;
+			TSMIOpenAnimatedControls.Name = "TSMIOpenAnimatedControls";
+			TSMIOpenAnimatedControls.Size = new Size(217, 22);
+			TSMIOpenAnimatedControls.Text = "Animated image controls...";
+			// 
+			// CMSTSS1
+			// 
+			CMSTSS1.Name = "CMSTSS1";
+			CMSTSS1.Size = new Size(214, 6);
+			// 
+			// TSMISortByRGB
+			// 
+			TSMISortByRGB.Name = "TSMISortByRGB";
+			TSMISortByRGB.Size = new Size(217, 22);
+			TSMISortByRGB.Text = "Sort by color (RGB)";
+			// 
+			// TSMISortByHSV
+			// 
+			TSMISortByHSV.Name = "TSMISortByHSV";
+			TSMISortByHSV.Size = new Size(217, 22);
+			TSMISortByHSV.Text = "Sort by color (HSV)";
+			// 
+			// TSMIBuildRGBGamut
+			// 
+			TSMIBuildRGBGamut.Name = "TSMIBuildRGBGamut";
+			TSMIBuildRGBGamut.Size = new Size(217, 22);
+			TSMIBuildRGBGamut.Text = "Build color gamut (RGB)";
+			// 
+			// TSMIBuildHSVGamut
+			// 
+			TSMIBuildHSVGamut.Name = "TSMIBuildHSVGamut";
+			TSMIBuildHSVGamut.Size = new Size(217, 22);
+			TSMIBuildHSVGamut.Text = "Build color gamut (HSV)";
+			// 
+			// TSMIUniqueColors
+			// 
+			TSMIUniqueColors.Name = "TSMIUniqueColors";
+			TSMIUniqueColors.Size = new Size(217, 22);
+			TSMIUniqueColors.Text = "Unique colors";
+			// 
+			// CMSTSS2
+			// 
+			CMSTSS2.Name = "CMSTSS2";
+			CMSTSS2.Size = new Size(214, 6);
+			// 
+			// TSMIZoomModeSelector
+			// 
+			TSMIZoomModeSelector.Name = "TSMIZoomModeSelector";
+			TSMIZoomModeSelector.Size = new Size(217, 22);
+			TSMIZoomModeSelector.Text = "Non-smoothing zoom";
+			// 
 			// SSMain
 			// 
 			SSMain.Items.AddRange(new ToolStripItem[] { TSSImageInfo });
-			SSMain.Location = new Point(0, 428);
+			SSMain.Location = new Point(0, 452);
 			SSMain.Name = "SSMain";
-			SSMain.Size = new Size(1048, 22);
+			SSMain.Size = new Size(1028, 22);
 			SSMain.TabIndex = 1;
 			SSMain.Text = "statusStrip1";
 			// 
@@ -355,11 +358,31 @@
 			TSSImageInfo.Size = new Size(595, 17);
 			TSSImageInfo.Text = "Browsing files | 0 of 0 | 0 x 0 @ 0 BPP | 0 pixels | 0.00 KB (0.00 KB uncompressed, N/A%) | 1970-01-01 12:00:00 AM";
 			// 
+			// PanelViewerContainer
+			// 
+			PanelViewerContainer.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			PanelViewerContainer.BorderStyle = BorderStyle.Fixed3D;
+			PanelViewerContainer.Controls.Add(ImageViewer);
+			PanelViewerContainer.Location = new Point(0, 28);
+			PanelViewerContainer.Name = "PanelViewerContainer";
+			PanelViewerContainer.Size = new Size(1028, 421);
+			PanelViewerContainer.TabIndex = 2;
+			// 
+			// ImageViewer
+			// 
+			ImageViewer.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			ImageViewer.BackColor = SystemColors.ActiveCaption;
+			ImageViewer.Location = new Point(0, 0);
+			ImageViewer.Name = "ImageViewer";
+			ImageViewer.Size = new Size(1026, 419);
+			ImageViewer.TabIndex = 0;
+			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(1048, 450);
+			ClientSize = new Size(1028, 474);
+			Controls.Add(PanelViewerContainer);
 			Controls.Add(SSMain);
 			Controls.Add(TSMain);
 			Name = "MainForm";
@@ -369,6 +392,7 @@
 			CMSImage.ResumeLayout(false);
 			SSMain.ResumeLayout(false);
 			SSMain.PerformLayout();
+			PanelViewerContainer.ResumeLayout(false);
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -413,5 +437,7 @@
 		private ToolStripButton TSBViewMarkedImages;
 		private StatusStrip SSMain;
 		private ToolStripStatusLabel TSSImageInfo;
+		private Panel PanelViewerContainer;
+		private Controls.ImageViewerControl ImageViewer;
 	}
 }

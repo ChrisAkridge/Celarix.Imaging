@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Celarix.Imaging.Packing;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Celarix.Imaging.Utilities
 {
@@ -83,7 +84,7 @@ namespace Celarix.Imaging.Utilities
             if (ImageSizeLoader.TryGetSize(imageFilePath, out var size)) { return size; }
 
             using var image = Image.Load(imageFilePath);
-            return image.Size();
+            return image.Size;
         }
 
         internal static bool ExtensionImpliesFileIsImage(string filePath) =>

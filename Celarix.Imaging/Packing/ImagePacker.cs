@@ -146,11 +146,11 @@ namespace Celarix.Imaging.Packing
             }
 
             using var image = Image.Load(imageFilePath);
-            var (width, height) = image.Size();
+            var (width, height) = image.Size;
 
             if (width < 1048576 && height < 1048576)
             {
-                return image.Size();
+                return image.Size;
             }
             else
             {

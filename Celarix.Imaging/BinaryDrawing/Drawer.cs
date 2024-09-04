@@ -367,7 +367,7 @@ namespace Celarix.Imaging.BinaryDrawing
         {
             var font = SystemFonts.CreateFont("Consolas", 20f);
 
-            while (TextMeasurer.Measure(text, new RendererOptions(font)).Width > image.Width)
+            while (TextMeasurer.MeasureSize(text, new TextOptions(font)).Width > image.Width)
             {
                 if (!Helpers.TryShortenFilePath(text, out text)) { break; }
             }

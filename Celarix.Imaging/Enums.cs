@@ -37,4 +37,31 @@ namespace Celarix.Imaging
         OneBitAlpha,
         EightBitAlpha
     }
+    
+    public enum ColorChannel
+    {
+	    Red,
+	    Green,
+	    Blue,
+	    Alpha,
+	    Y,
+	    Cb,
+	    Cr,
+	    CbPlusCr,
+	    Hue,
+	    Saturation,
+	    Value
+    }
+    
+    public enum ChromaSubsamplingMode
+	{
+		// Full-resolution chroma
+	    YCbCr444,
+	    // 2x1 block of chroma
+	    YCbCr422,
+	    // 2x2 block of chroma
+	    YCbCr420,
+	    // 4x1 block of chroma
+	    YCbCr411
+	}
 }

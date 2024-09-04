@@ -1,0 +1,23 @@
+Which features are in ImageView? Which features would we want in a successor?
+	- Image viewing
+	- WebP image viewing
+	- (want) Animated WebP viewing
+	- (we'll try) Integrated VLC for video files
+	- (don't want) Empty Edit and View menus
+	- Order By
+	- IVPL Playlist support
+	- (want) Non-smoothing zooming
+	- (don't want) Open In menu
+	- Comic Mode
+	- File Marker
+	- Image info
+	- (want) Integrated binary drawing mode that can open any file
+	- (want) Images centered in viewport
+	- (don't want) Draw box to zoom
+	- (want) Bitplane viewer
+	- (want) Editable file number and zoom textboxes
+	- (want) Color gamut viewer to see the colors in an image
+	- (want) Unique and sorted color buttons
+	- (want) Animated image viewer frame controls
+	- (want) Indicator that there are marked pictures
+	- (want) Warning when trying to close the app if there are marked pictures

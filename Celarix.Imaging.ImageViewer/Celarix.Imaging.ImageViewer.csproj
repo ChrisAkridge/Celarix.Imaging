@@ -8,4 +8,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Celarix.Imaging\Celarix.Imaging.csproj" />
+  </ItemGroup>
+
 </Project>

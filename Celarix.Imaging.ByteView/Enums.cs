@@ -4,4 +4,9 @@
 
 namespace Celarix.Imaging.ByteView
 {
+	public enum DisplayedChromaPlaygroundImage
+	{
+		RGB,
+		YCbCr
+	}
 }
