@@ -12,6 +12,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
+using Path = System.IO.Path;
 
 namespace Celarix.Imaging.ByteView
 {
@@ -24,8 +25,11 @@ namespace Celarix.Imaging.ByteView
 		private string imageFileName;
 		private bool shouldRunEventHandlers = true;
 
-		public ChromaPlaygroundForm()
+		private readonly MainForm byteViewForm;
+
+		public ChromaPlaygroundForm(MainForm byteViewForm)
 		{
+			this.byteViewForm = byteViewForm;
 			InitializeComponent();
 			SetControlEnabledStates();
 		}
@@ -44,8 +48,33 @@ namespace Celarix.Imaging.ByteView
 		#region Implementations
 		private void LoadImage(string path)
 		{
-			imageFileName = System.IO.Path.GetFileName(path);
-			rgbImage = Image.Load<Rgba32>(path);
+			try
+			{
+				imageFileName = Path.GetFileName(path);
+				rgbImage = Image.Load<Rgba32>(path);
+				yCbCrImage = null;
+				DisplayedImage = DisplayedChromaPlaygroundImage.RGB;
+
+				shouldRunEventHandlers = false;
+				NUDBitPlaneIndex.Value = 7;
+				shouldRunEventHandlers = true;
+
+				SetPictureBoxImage(rgbImage, DisplayedChromaPlaygroundImage.RGB);
+				SetControlEnabledStates();
+			}
+			catch (ImageFormatException)
+			{
+				MessageBox.Show($"The file at {path} is not a valid image file.", "Invalid Image File",
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private void LoadImageFromByteView(Image<Rgba32> image)
+		{
+			if (image == null) { return; }
+
+			imageFileName = "From ByteView";
+			rgbImage = image;
 			yCbCrImage = null;
 			DisplayedImage = DisplayedChromaPlaygroundImage.RGB;
 
@@ -91,6 +120,15 @@ namespace Celarix.Imaging.ByteView
 			SetPictureBoxImage(modifiedImage, DisplayedChromaPlaygroundImage.RGB);
 		}
 
+		private void DisplayRGBBitPlane(int bitPlaneIndex)
+		{
+			modifiedImage?.Dispose();
+			modifiedImage = rgbImage.CloneAs<Rgba32>();
+			ChromaPlaygroundHelpers.MutateImage(modifiedImage,
+				p => ChromaPlaygroundHelpers.GetRGBBitPlane(p, bitPlaneIndex));
+			SetPictureBoxImage(modifiedImage, DisplayedChromaPlaygroundImage.RGB);
+		}
+
 		private void ChromaSubsample(ChromaSubsamplingMode mode)
 		{
 			modifiedImage?.Dispose();
@@ -117,7 +155,7 @@ namespace Celarix.Imaging.ByteView
 					float red;
 					float green;
 					float blue;
-					
+
 					switch (bitsPerPixel)
 					{
 						case 16:
@@ -158,10 +196,10 @@ namespace Celarix.Imaging.ByteView
 		{
 			modifiedImage?.Dispose();
 			modifiedImage = rgbImage.CloneAs<Rgba32>();
-			
+
 			// Easy hack to get the image in full grayscale
 			ChromaPlaygroundHelpers.MutateImage(modifiedImage, p => ChromaPlaygroundHelpers.GetColorChannel(p, ColorChannel.Y));
-			
+
 			if (bitsPerPixel is not (8 or 4 or 2 or 1))
 			{
 				throw new ArgumentOutOfRangeException(nameof(bitsPerPixel), bitsPerPixel, "Grayscale bit depths must be 8, 4, 2, or 1.");
@@ -194,12 +232,12 @@ namespace Celarix.Imaging.ByteView
 						default:
 							throw new ArgumentOutOfRangeException(nameof(bitsPerPixel), bitsPerPixel, null);
 					}
-					
+
 					var newPixel = (byte)(luma * 255f);
 					modifiedImage[x, y] = new Rgba32(newPixel, newPixel, newPixel, 255);
 				}
 			}
-			
+
 			SetPictureBoxImage(modifiedImage, DisplayedChromaPlaygroundImage.RGB);
 		}
 
@@ -207,9 +245,9 @@ namespace Celarix.Imaging.ByteView
 		{
 			modifiedImage?.Dispose();
 			modifiedImage = rgbImage.CloneAs<Rgba32>();
-			
+
 			ChromaPlaygroundHelpers.MutateReduceBitDepthTopColors(modifiedImage, bitsPerPixel);
-			
+
 			SetPictureBoxImage(modifiedImage, DisplayedChromaPlaygroundImage.RGB);
 		}
 		#endregion
@@ -233,14 +271,13 @@ namespace Celarix.Imaging.ByteView
 			RadioHueChannel.Enabled = hasRGBImage;
 			RadioSaturationChannel.Enabled = hasRGBImage;
 			RadioValueChannel.Enabled = hasRGBImage;
-			ButtonColorChannelReset.Enabled = hasRGBImage;
-			ButtonSetColorChannel.Enabled = hasRGBImage;
 
 			// The Bit Planes controls are enabled if we have an RGB image and that image is currently being displayed.
 			RadioBitPlaneRed.Enabled = rgbDisplayed;
 			RadioBitPlaneGreen.Enabled = rgbDisplayed;
 			RadioBitPlaneBlue.Enabled = rgbDisplayed;
 			RadioBitPlaneAlpha.Enabled = rgbDisplayed;
+			RadioBitPlaneRGB.Enabled = rgbDisplayed;
 			NUDBitPlaneIndex.Enabled = rgbDisplayed;
 
 			// The Chroma Subsampling controls are enabled if we have a YCbCr image and that image is currently being displayed.
@@ -248,6 +285,9 @@ namespace Celarix.Imaging.ByteView
 			Radio422.Enabled = yCbCrDisplayed;
 			Radio420.Enabled = yCbCrDisplayed;
 			Radio411.Enabled = yCbCrDisplayed;
+			Radio811.Enabled = yCbCrDisplayed;
+			Radio1611.Enabled = yCbCrDisplayed;
+			Radio25611.Enabled = yCbCrDisplayed;
 			ButtonChromaSubsamplingSet.Enabled = yCbCrDisplayed;
 
 			// The Reduce Bit Depth controls are enabled if we have an RGB image and that image is currently being displayed.
@@ -299,6 +339,7 @@ namespace Celarix.Imaging.ByteView
 			var bitmap = imageSharpImage.ToSystemDrawingImage();
 			PictureMain.Image = bitmap;
 			DisplayedImage = displayedImage;
+			LabelAnalogSignalStats.Text = $"{MockNTSCSignalGenerator.GetImageStatsString(imageSharpImage)}\r\n{SimpleSignalGenerator.GetImageStatsString(imageSharpImage)}";
 		}
 
 		private void TSBOpenImage_Click(object sender, EventArgs e)
@@ -307,61 +348,6 @@ namespace Celarix.Imaging.ByteView
 			{
 				LoadImage(OFDOpenImage.FileName);
 			}
-		}
-
-		private void ButtonSetColorChannel_Click(object sender, EventArgs e)
-		{
-			if (RadioRedChannel.Checked)
-			{
-				DisplaySingleColorChannel(ColorChannel.Red);
-			}
-			else if (RadioGreenChannel.Checked)
-			{
-				DisplaySingleColorChannel(ColorChannel.Green);
-			}
-			else if (RadioBlueChannel.Checked)
-			{
-				DisplaySingleColorChannel(ColorChannel.Blue);
-			}
-			else if (RadioAlphaChannel.Checked)
-			{
-				DisplaySingleColorChannel(ColorChannel.Alpha);
-			}
-			else if (RadioLuminance.Checked)
-			{
-				DisplaySingleColorChannel(ColorChannel.Y);
-			}
-			else if (RadioCb.Checked)
-			{
-				DisplaySingleColorChannel(ColorChannel.Cb);
-			}
-			else if (RadioCr.Checked)
-			{
-				DisplaySingleColorChannel(ColorChannel.Cr);
-			}
-			else if (RadioChrominance.Checked)
-			{
-				DisplaySingleColorChannel(ColorChannel.CbPlusCr);
-			}
-			else if (RadioHueChannel.Checked)
-			{
-				DisplaySingleColorChannel(ColorChannel.Hue);
-			}
-			else if (RadioSaturationChannel.Checked)
-			{
-				DisplaySingleColorChannel(ColorChannel.Saturation);
-			}
-			else if (RadioValueChannel.Checked)
-			{
-				DisplaySingleColorChannel(ColorChannel.Value);
-			}
-		}
-
-		private void ButtonColorChannelReset_Click(object sender, EventArgs e)
-		{
-			modifiedImage?.Dispose();
-			modifiedImage = null;
-			SetPictureBoxImage(rgbImage, DisplayedChromaPlaygroundImage.RGB);
 		}
 
 		private void NUDBitPlaneIndex_ValueChanged(object sender, EventArgs e)
@@ -383,6 +369,10 @@ namespace Celarix.Imaging.ByteView
 			else if (RadioBitPlaneAlpha.Checked)
 			{
 				DisplayBitPlane(ColorChannel.Alpha, (int)NUDBitPlaneIndex.Value);
+			}
+			else if (RadioBitPlaneRGB.Checked)
+			{
+				DisplayRGBBitPlane((int)NUDBitPlaneIndex.Value);
 			}
 		}
 
@@ -415,6 +405,14 @@ namespace Celarix.Imaging.ByteView
 			if (RadioBitPlaneAlpha.Checked)
 			{
 				DisplayBitPlane(ColorChannel.Alpha, (int)NUDBitPlaneIndex.Value);
+			}
+		}
+
+		private void RadioBitPlaneRGB_CheckedChanged(object sender, EventArgs e)
+		{
+			if (RadioBitPlaneRGB.Checked)
+			{
+				DisplayRGBBitPlane((int)NUDBitPlaneIndex.Value);
 			}
 		}
 
@@ -460,6 +458,18 @@ namespace Celarix.Imaging.ByteView
 			{
 				ChromaSubsample(ChromaSubsamplingMode.YCbCr411);
 			}
+			else if (Radio811.Checked)
+			{
+				ChromaSubsample(ChromaSubsamplingMode.YCbCr811);
+			}
+			else if (Radio1611.Checked)
+			{
+				ChromaSubsample(ChromaSubsamplingMode.YCbCr1611);
+			}
+			else if (Radio25611.Checked)
+			{
+				ChromaSubsample(ChromaSubsamplingMode.YCbCr25611);
+			}
 		}
 
 		private void ButtonReduceBitDepth_Click(object sender, EventArgs e)
@@ -476,6 +486,82 @@ namespace Celarix.Imaging.ByteView
 			else if (Radio4BPPTop16.Checked) { ReduceBitDepthByTopColors(4); }
 			else if (Radio2BPPTop4.Checked) { ReduceBitDepthByTopColors(2); }
 			else if (Radio1BPPTop2.Checked) { ReduceBitDepthByTopColors(1); }
+		}
+
+		private void TSBLoadFromByteView_Click(object sender, EventArgs e)
+		{
+			LoadImageFromByteView(byteViewForm.GetImage());
+		}
+
+		private void RadioRedChannel_CheckedChanged(object sender, EventArgs e)
+		{
+			DisplaySingleColorChannel(ColorChannel.Red);
+		}
+
+		private void RadioGreenChannel_CheckedChanged(object sender, EventArgs e)
+		{
+			DisplaySingleColorChannel(ColorChannel.Green);
+		}
+
+		private void RadioBlueChannel_CheckedChanged(object sender, EventArgs e)
+		{
+			DisplaySingleColorChannel(ColorChannel.Blue);
+		}
+
+		private void RadioAlphaChannel_CheckedChanged(object sender, EventArgs e)
+		{
+			DisplaySingleColorChannel(ColorChannel.Alpha);
+		}
+
+		private void RadioLuminance_CheckedChanged(object sender, EventArgs e)
+		{
+			DisplaySingleColorChannel(ColorChannel.Y);
+		}
+
+		private void RadioCb_CheckedChanged(object sender, EventArgs e)
+		{
+			DisplaySingleColorChannel(ColorChannel.Cb);
+		}
+
+		private void RadioCr_CheckedChanged(object sender, EventArgs e)
+		{
+			DisplaySingleColorChannel(ColorChannel.Cr);
+		}
+
+		private void RadioChrominance_CheckedChanged(object sender, EventArgs e)
+		{
+			DisplaySingleColorChannel(ColorChannel.CbPlusCr);
+		}
+
+		private void RadioHueChannel_CheckedChanged(object sender, EventArgs e)
+		{
+			DisplaySingleColorChannel(ColorChannel.Hue);
+		}
+
+		private void RadioSaturationChannel_CheckedChanged(object sender, EventArgs e)
+		{
+			DisplaySingleColorChannel(ColorChannel.Saturation);
+		}
+
+		private void RadioValueChannel_CheckedChanged(object sender, EventArgs e)
+		{
+			DisplaySingleColorChannel(ColorChannel.Value);
+		}
+
+		private void ButtonSaveNTSCAudio_Click(object sender, EventArgs e)
+		{
+			if (SFDSaveAnalogSignal.ShowDialog() == DialogResult.OK)
+			{
+				MockNTSCSignalGenerator.GenerateMockNTSCSignal(yCbCrImage, SFDSaveAnalogSignal.FileName);
+			}
+		}
+
+		private void ButtonSaveSimplerAudio_Click(object sender, EventArgs e)
+		{
+			if (SFDSaveAnalogSignal.ShowDialog() == DialogResult.OK)
+			{
+				SimpleSignalGenerator.GenerateSimpleSignal(rgbImage, SFDSaveAnalogSignal.FileName);
+			}
 		}
 	}
 }

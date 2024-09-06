@@ -31,8 +31,9 @@
 			System.Windows.Forms.TabControl TabsOptions;
 			var resources = new System.ComponentModel.ComponentResourceManager(typeof(ChromaPlaygroundForm));
 			TabPageColorChannels = new System.Windows.Forms.TabPage();
-			ButtonColorChannelReset = new System.Windows.Forms.Button();
-			ButtonSetColorChannel = new System.Windows.Forms.Button();
+			RadioValueChannel = new System.Windows.Forms.RadioButton();
+			RadioSaturationChannel = new System.Windows.Forms.RadioButton();
+			RadioHueChannel = new System.Windows.Forms.RadioButton();
 			RadioChrominance = new System.Windows.Forms.RadioButton();
 			RadioCr = new System.Windows.Forms.RadioButton();
 			RadioCb = new System.Windows.Forms.RadioButton();
@@ -42,6 +43,7 @@
 			RadioGreenChannel = new System.Windows.Forms.RadioButton();
 			RadioRedChannel = new System.Windows.Forms.RadioButton();
 			TabPageBitPlanes = new System.Windows.Forms.TabPage();
+			RadioBitPlaneRGB = new System.Windows.Forms.RadioButton();
 			StaticLabelBitPlaneExplanation = new System.Windows.Forms.Label();
 			NUDBitPlaneIndex = new System.Windows.Forms.NumericUpDown();
 			StaticLabelBitPlaneIndex = new System.Windows.Forms.Label();
@@ -50,6 +52,9 @@
 			RadioBitPlaneGreen = new System.Windows.Forms.RadioButton();
 			RadioBitPlaneRed = new System.Windows.Forms.RadioButton();
 			TabPageChromaSubsampling = new System.Windows.Forms.TabPage();
+			Radio25611 = new System.Windows.Forms.RadioButton();
+			Radio1611 = new System.Windows.Forms.RadioButton();
+			Radio811 = new System.Windows.Forms.RadioButton();
 			StaticLabelChromaSubsamplingExplanation = new System.Windows.Forms.Label();
 			ButtonChromaSubsamplingSet = new System.Windows.Forms.Button();
 			Radio411 = new System.Windows.Forms.RadioButton();
@@ -82,6 +87,8 @@
 			TSBConvertToRGB = new System.Windows.Forms.ToolStripButton();
 			TSBConvertToYCbCr = new System.Windows.Forms.ToolStripButton();
 			TSBUseCurrent = new System.Windows.Forms.ToolStripButton();
+			TSSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+			TSBLoadFromByteView = new System.Windows.Forms.ToolStripButton();
 			StatusMain = new System.Windows.Forms.StatusStrip();
 			TSSMain = new System.Windows.Forms.ToolStripStatusLabel();
 			panel1 = new System.Windows.Forms.Panel();
@@ -89,9 +96,6 @@
 			OFDOpenImage = new System.Windows.Forms.OpenFileDialog();
 			SFDSaveImage = new System.Windows.Forms.SaveFileDialog();
 			SFDSaveAnalogSignal = new System.Windows.Forms.SaveFileDialog();
-			RadioValueChannel = new System.Windows.Forms.RadioButton();
-			RadioSaturationChannel = new System.Windows.Forms.RadioButton();
-			RadioHueChannel = new System.Windows.Forms.RadioButton();
 			TabsOptions = new System.Windows.Forms.TabControl();
 			TabsOptions.SuspendLayout();
 			TabPageColorChannels.SuspendLayout();
@@ -125,8 +129,6 @@
 			TabPageColorChannels.Controls.Add(RadioValueChannel);
 			TabPageColorChannels.Controls.Add(RadioSaturationChannel);
 			TabPageColorChannels.Controls.Add(RadioHueChannel);
-			TabPageColorChannels.Controls.Add(ButtonColorChannelReset);
-			TabPageColorChannels.Controls.Add(ButtonSetColorChannel);
 			TabPageColorChannels.Controls.Add(RadioChrominance);
 			TabPageColorChannels.Controls.Add(RadioCr);
 			TabPageColorChannels.Controls.Add(RadioCb);
@@ -143,27 +145,41 @@
 			TabPageColorChannels.Text = "Color Channels";
 			TabPageColorChannels.UseVisualStyleBackColor = true;
 			// 
-			// ButtonColorChannelReset
+			// RadioValueChannel
 			// 
-			ButtonColorChannelReset.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-			ButtonColorChannelReset.Location = new System.Drawing.Point(696, 48);
-			ButtonColorChannelReset.Name = "ButtonColorChannelReset";
-			ButtonColorChannelReset.Size = new System.Drawing.Size(75, 23);
-			ButtonColorChannelReset.TabIndex = 9;
-			ButtonColorChannelReset.Text = "Reset";
-			ButtonColorChannelReset.UseVisualStyleBackColor = true;
-			ButtonColorChannelReset.Click += ButtonColorChannelReset_Click;
+			RadioValueChannel.AutoSize = true;
+			RadioValueChannel.Location = new System.Drawing.Point(220, 56);
+			RadioValueChannel.Name = "RadioValueChannel";
+			RadioValueChannel.Size = new System.Drawing.Size(53, 19);
+			RadioValueChannel.TabIndex = 12;
+			RadioValueChannel.TabStop = true;
+			RadioValueChannel.Text = "Value";
+			RadioValueChannel.UseVisualStyleBackColor = true;
+			RadioValueChannel.CheckedChanged += RadioValueChannel_CheckedChanged;
 			// 
-			// ButtonSetColorChannel
+			// RadioSaturationChannel
 			// 
-			ButtonSetColorChannel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-			ButtonSetColorChannel.Location = new System.Drawing.Point(696, 77);
-			ButtonSetColorChannel.Name = "ButtonSetColorChannel";
-			ButtonSetColorChannel.Size = new System.Drawing.Size(75, 23);
-			ButtonSetColorChannel.TabIndex = 2;
-			ButtonSetColorChannel.Text = "Set";
-			ButtonSetColorChannel.UseVisualStyleBackColor = true;
-			ButtonSetColorChannel.Click += ButtonSetColorChannel_Click;
+			RadioSaturationChannel.AutoSize = true;
+			RadioSaturationChannel.Location = new System.Drawing.Point(220, 31);
+			RadioSaturationChannel.Name = "RadioSaturationChannel";
+			RadioSaturationChannel.Size = new System.Drawing.Size(79, 19);
+			RadioSaturationChannel.TabIndex = 11;
+			RadioSaturationChannel.TabStop = true;
+			RadioSaturationChannel.Text = "Saturation";
+			RadioSaturationChannel.UseVisualStyleBackColor = true;
+			RadioSaturationChannel.CheckedChanged += RadioSaturationChannel_CheckedChanged;
+			// 
+			// RadioHueChannel
+			// 
+			RadioHueChannel.AutoSize = true;
+			RadioHueChannel.Location = new System.Drawing.Point(220, 6);
+			RadioHueChannel.Name = "RadioHueChannel";
+			RadioHueChannel.Size = new System.Drawing.Size(47, 19);
+			RadioHueChannel.TabIndex = 10;
+			RadioHueChannel.TabStop = true;
+			RadioHueChannel.Text = "Hue";
+			RadioHueChannel.UseVisualStyleBackColor = true;
+			RadioHueChannel.CheckedChanged += RadioHueChannel_CheckedChanged;
 			// 
 			// RadioChrominance
 			// 
@@ -175,6 +191,7 @@
 			RadioChrominance.TabStop = true;
 			RadioChrominance.Text = "Cb and Cr (chrominance)";
 			RadioChrominance.UseVisualStyleBackColor = true;
+			RadioChrominance.CheckedChanged += RadioChrominance_CheckedChanged;
 			// 
 			// RadioCr
 			// 
@@ -186,6 +203,7 @@
 			RadioCr.TabStop = true;
 			RadioCr.Text = "Cr (red - luminance)";
 			RadioCr.UseVisualStyleBackColor = true;
+			RadioCr.CheckedChanged += RadioCr_CheckedChanged;
 			// 
 			// RadioCb
 			// 
@@ -197,6 +215,7 @@
 			RadioCb.TabStop = true;
 			RadioCb.Text = "Cb (blue - luminance)";
 			RadioCb.UseVisualStyleBackColor = true;
+			RadioCb.CheckedChanged += RadioCb_CheckedChanged;
 			// 
 			// RadioLuminance
 			// 
@@ -208,6 +227,7 @@
 			RadioLuminance.TabStop = true;
 			RadioLuminance.Text = "Y (luminance)";
 			RadioLuminance.UseVisualStyleBackColor = true;
+			RadioLuminance.CheckedChanged += RadioLuminance_CheckedChanged;
 			// 
 			// RadioAlphaChannel
 			// 
@@ -219,6 +239,7 @@
 			RadioAlphaChannel.TabStop = true;
 			RadioAlphaChannel.Text = "Alpha";
 			RadioAlphaChannel.UseVisualStyleBackColor = true;
+			RadioAlphaChannel.CheckedChanged += RadioAlphaChannel_CheckedChanged;
 			// 
 			// RadioBlueChannel
 			// 
@@ -230,6 +251,7 @@
 			RadioBlueChannel.TabStop = true;
 			RadioBlueChannel.Text = "Blue";
 			RadioBlueChannel.UseVisualStyleBackColor = true;
+			RadioBlueChannel.CheckedChanged += RadioBlueChannel_CheckedChanged;
 			// 
 			// RadioGreenChannel
 			// 
@@ -241,6 +263,7 @@
 			RadioGreenChannel.TabStop = true;
 			RadioGreenChannel.Text = "Green";
 			RadioGreenChannel.UseVisualStyleBackColor = true;
+			RadioGreenChannel.CheckedChanged += RadioGreenChannel_CheckedChanged;
 			// 
 			// RadioRedChannel
 			// 
@@ -252,9 +275,11 @@
 			RadioRedChannel.TabStop = true;
 			RadioRedChannel.Text = "Red";
 			RadioRedChannel.UseVisualStyleBackColor = true;
+			RadioRedChannel.CheckedChanged += RadioRedChannel_CheckedChanged;
 			// 
 			// TabPageBitPlanes
 			// 
+			TabPageBitPlanes.Controls.Add(RadioBitPlaneRGB);
 			TabPageBitPlanes.Controls.Add(StaticLabelBitPlaneExplanation);
 			TabPageBitPlanes.Controls.Add(NUDBitPlaneIndex);
 			TabPageBitPlanes.Controls.Add(StaticLabelBitPlaneIndex);
@@ -270,6 +295,17 @@
 			TabPageBitPlanes.Text = "Bit Planes";
 			TabPageBitPlanes.UseVisualStyleBackColor = true;
 			// 
+			// RadioBitPlaneRGB
+			// 
+			RadioBitPlaneRGB.AutoSize = true;
+			RadioBitPlaneRGB.Location = new System.Drawing.Point(76, 6);
+			RadioBitPlaneRGB.Name = "RadioBitPlaneRGB";
+			RadioBitPlaneRGB.Size = new System.Drawing.Size(47, 19);
+			RadioBitPlaneRGB.TabIndex = 11;
+			RadioBitPlaneRGB.Text = "RGB";
+			RadioBitPlaneRGB.UseVisualStyleBackColor = true;
+			RadioBitPlaneRGB.CheckedChanged += RadioBitPlaneRGB_CheckedChanged;
+			// 
 			// StaticLabelBitPlaneExplanation
 			// 
 			StaticLabelBitPlaneExplanation.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
@@ -282,7 +318,7 @@
 			// 
 			// NUDBitPlaneIndex
 			// 
-			NUDBitPlaneIndex.Location = new System.Drawing.Point(187, 6);
+			NUDBitPlaneIndex.Location = new System.Drawing.Point(223, 6);
 			NUDBitPlaneIndex.Maximum = new decimal(new int[] { 7, 0, 0, 0 });
 			NUDBitPlaneIndex.Name = "NUDBitPlaneIndex";
 			NUDBitPlaneIndex.Size = new System.Drawing.Size(120, 23);
@@ -293,7 +329,7 @@
 			// StaticLabelBitPlaneIndex
 			// 
 			StaticLabelBitPlaneIndex.AutoSize = true;
-			StaticLabelBitPlaneIndex.Location = new System.Drawing.Point(93, 8);
+			StaticLabelBitPlaneIndex.Location = new System.Drawing.Point(129, 8);
 			StaticLabelBitPlaneIndex.Name = "StaticLabelBitPlaneIndex";
 			StaticLabelBitPlaneIndex.Size = new System.Drawing.Size(88, 15);
 			StaticLabelBitPlaneIndex.TabIndex = 8;
@@ -347,6 +383,9 @@
 			// 
 			// TabPageChromaSubsampling
 			// 
+			TabPageChromaSubsampling.Controls.Add(Radio25611);
+			TabPageChromaSubsampling.Controls.Add(Radio1611);
+			TabPageChromaSubsampling.Controls.Add(Radio811);
 			TabPageChromaSubsampling.Controls.Add(StaticLabelChromaSubsamplingExplanation);
 			TabPageChromaSubsampling.Controls.Add(ButtonChromaSubsamplingSet);
 			TabPageChromaSubsampling.Controls.Add(Radio411);
@@ -359,6 +398,36 @@
 			TabPageChromaSubsampling.TabIndex = 2;
 			TabPageChromaSubsampling.Text = "Chroma Subsampling";
 			TabPageChromaSubsampling.UseVisualStyleBackColor = true;
+			// 
+			// Radio25611
+			// 
+			Radio25611.AutoSize = true;
+			Radio25611.Location = new System.Drawing.Point(189, 56);
+			Radio25611.Name = "Radio25611";
+			Radio25611.Size = new System.Drawing.Size(317, 19);
+			Radio25611.TabIndex = 16;
+			Radio25611.Text = "256:1:1 (VERY non-standard, 256x256 blocks of chroma)";
+			Radio25611.UseVisualStyleBackColor = true;
+			// 
+			// Radio1611
+			// 
+			Radio1611.AutoSize = true;
+			Radio1611.Location = new System.Drawing.Point(189, 31);
+			Radio1611.Name = "Radio1611";
+			Radio1611.Size = new System.Drawing.Size(269, 19);
+			Radio1611.TabIndex = 15;
+			Radio1611.Text = "16:1:1 (non-standard, 16x16 blocks of chroma)";
+			Radio1611.UseVisualStyleBackColor = true;
+			// 
+			// Radio811
+			// 
+			Radio811.AutoSize = true;
+			Radio811.Location = new System.Drawing.Point(189, 6);
+			Radio811.Name = "Radio811";
+			Radio811.Size = new System.Drawing.Size(251, 19);
+			Radio811.TabIndex = 14;
+			Radio811.Text = "8:1:1 (non-standard, 8x8 blocks of chroma)";
+			Radio811.UseVisualStyleBackColor = true;
 			// 
 			// StaticLabelChromaSubsamplingExplanation
 			// 
@@ -388,7 +457,6 @@
 			Radio411.Name = "Radio411";
 			Radio411.Size = new System.Drawing.Size(173, 19);
 			Radio411.TabIndex = 11;
-			Radio411.TabStop = true;
 			Radio411.Text = "4:1:1 (4x1 blocks of chroma)";
 			Radio411.UseVisualStyleBackColor = true;
 			// 
@@ -399,7 +467,6 @@
 			Radio420.Name = "Radio420";
 			Radio420.Size = new System.Drawing.Size(173, 19);
 			Radio420.TabIndex = 10;
-			Radio420.TabStop = true;
 			Radio420.Text = "4:2:0 (2x2 blocks of chroma)";
 			Radio420.UseVisualStyleBackColor = true;
 			// 
@@ -410,13 +477,13 @@
 			Radio422.Name = "Radio422";
 			Radio422.Size = new System.Drawing.Size(173, 19);
 			Radio422.TabIndex = 9;
-			Radio422.TabStop = true;
 			Radio422.Text = "4:2:2 (2x1 blocks of chroma)";
 			Radio422.UseVisualStyleBackColor = true;
 			// 
 			// Radio444
 			// 
 			Radio444.AutoSize = true;
+			Radio444.Checked = true;
 			Radio444.Location = new System.Drawing.Point(6, 6);
 			Radio444.Name = "Radio444";
 			Radio444.Size = new System.Drawing.Size(177, 19);
@@ -614,6 +681,7 @@
 			ButtonSaveSimplerAudio.TabIndex = 3;
 			ButtonSaveSimplerAudio.Text = "Save simpler audio as...";
 			ButtonSaveSimplerAudio.UseVisualStyleBackColor = true;
+			ButtonSaveSimplerAudio.Click += ButtonSaveSimplerAudio_Click;
 			// 
 			// ButtonSaveNTSCAudio
 			// 
@@ -624,6 +692,7 @@
 			ButtonSaveNTSCAudio.TabIndex = 2;
 			ButtonSaveNTSCAudio.Text = "Save mock-NTSC audio as...";
 			ButtonSaveNTSCAudio.UseVisualStyleBackColor = true;
+			ButtonSaveNTSCAudio.Click += ButtonSaveNTSCAudio_Click;
 			// 
 			// LabelAnalogSignalStats
 			// 
@@ -636,7 +705,7 @@
 			// 
 			// TSMain
 			// 
-			TSMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { TSBOpenImage, TSBSaveAs, TSSeparator1, TSBConvertToRGB, TSBConvertToYCbCr, TSBUseCurrent });
+			TSMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { TSBOpenImage, TSBSaveAs, TSSeparator1, TSBConvertToRGB, TSBConvertToYCbCr, TSBUseCurrent, TSSeparator2, TSBLoadFromByteView });
 			TSMain.Location = new System.Drawing.Point(0, 0);
 			TSMain.Name = "TSMain";
 			TSMain.Size = new System.Drawing.Size(809, 25);
@@ -695,6 +764,21 @@
 			TSBUseCurrent.Text = "Use Current as RGB Image";
 			TSBUseCurrent.Click += TSBUseCurrent_Click;
 			// 
+			// TSSeparator2
+			// 
+			TSSeparator2.Name = "TSSeparator2";
+			TSSeparator2.Size = new System.Drawing.Size(6, 25);
+			// 
+			// TSBLoadFromByteView
+			// 
+			TSBLoadFromByteView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			TSBLoadFromByteView.Image = (System.Drawing.Image)resources.GetObject("TSBLoadFromByteView.Image");
+			TSBLoadFromByteView.ImageTransparentColor = System.Drawing.Color.Magenta;
+			TSBLoadFromByteView.Name = "TSBLoadFromByteView";
+			TSBLoadFromByteView.Size = new System.Drawing.Size(117, 22);
+			TSBLoadFromByteView.Text = "Load from ByteView";
+			TSBLoadFromByteView.Click += TSBLoadFromByteView_Click;
+			// 
 			// StatusMain
 			// 
 			StatusMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { TSSMain });
@@ -745,39 +829,6 @@
 			SFDSaveAnalogSignal.DefaultExt = "raw";
 			SFDSaveAnalogSignal.Filter = "Raw Audio (mono, 48kHz, single-precision float)|*.raw|All files|*.*";
 			SFDSaveAnalogSignal.Title = "ByteView - Save Analog Signal";
-			// 
-			// RadioValueChannel
-			// 
-			RadioValueChannel.AutoSize = true;
-			RadioValueChannel.Location = new System.Drawing.Point(220, 56);
-			RadioValueChannel.Name = "RadioValueChannel";
-			RadioValueChannel.Size = new System.Drawing.Size(53, 19);
-			RadioValueChannel.TabIndex = 12;
-			RadioValueChannel.TabStop = true;
-			RadioValueChannel.Text = "Value";
-			RadioValueChannel.UseVisualStyleBackColor = true;
-			// 
-			// RadioSaturationChannel
-			// 
-			RadioSaturationChannel.AutoSize = true;
-			RadioSaturationChannel.Location = new System.Drawing.Point(220, 31);
-			RadioSaturationChannel.Name = "RadioSaturationChannel";
-			RadioSaturationChannel.Size = new System.Drawing.Size(79, 19);
-			RadioSaturationChannel.TabIndex = 11;
-			RadioSaturationChannel.TabStop = true;
-			RadioSaturationChannel.Text = "Saturation";
-			RadioSaturationChannel.UseVisualStyleBackColor = true;
-			// 
-			// RadioHueChannel
-			// 
-			RadioHueChannel.AutoSize = true;
-			RadioHueChannel.Location = new System.Drawing.Point(220, 6);
-			RadioHueChannel.Name = "RadioHueChannel";
-			RadioHueChannel.Size = new System.Drawing.Size(47, 19);
-			RadioHueChannel.TabIndex = 10;
-			RadioHueChannel.TabStop = true;
-			RadioHueChannel.Text = "Hue";
-			RadioHueChannel.UseVisualStyleBackColor = true;
 			// 
 			// ChromaPlaygroundForm
 			// 
@@ -834,7 +885,6 @@
 		private System.Windows.Forms.RadioButton RadioCr;
 		private System.Windows.Forms.RadioButton RadioCb;
 		private System.Windows.Forms.RadioButton RadioLuminance;
-		private System.Windows.Forms.Button ButtonSetColorChannel;
 		private System.Windows.Forms.NumericUpDown NUDBitPlaneIndex;
 		private System.Windows.Forms.Label StaticLabelBitPlaneIndex;
 		private System.Windows.Forms.RadioButton RadioBitPlaneAlpha;
@@ -873,10 +923,15 @@
 		private System.Windows.Forms.SaveFileDialog SFDSaveImage;
 		private System.Windows.Forms.SaveFileDialog SFDSaveAnalogSignal;
 		private System.Windows.Forms.Button ButtonSaveSimplerAudio;
-		private System.Windows.Forms.Button ButtonColorChannelReset;
 		private System.Windows.Forms.ToolStripButton TSBUseCurrent;
 		private System.Windows.Forms.RadioButton RadioValueChannel;
 		private System.Windows.Forms.RadioButton RadioSaturationChannel;
 		private System.Windows.Forms.RadioButton RadioHueChannel;
+		private System.Windows.Forms.RadioButton RadioBitPlaneRGB;
+		private System.Windows.Forms.ToolStripSeparator TSSeparator2;
+		private System.Windows.Forms.ToolStripButton TSBLoadFromByteView;
+		private System.Windows.Forms.RadioButton Radio25611;
+		private System.Windows.Forms.RadioButton Radio1611;
+		private System.Windows.Forms.RadioButton Radio811;
 	}
 }

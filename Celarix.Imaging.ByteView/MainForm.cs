@@ -362,7 +362,9 @@ namespace Celarix.Imaging.ByteView
 
 		private void TSBChromaPlayground_Click(object sender, EventArgs e)
 		{
-			new ChromaPlaygroundForm().ShowDialog();
+			new ChromaPlaygroundForm(this).ShowDialog();
 		}
+		
+		internal Image<Rgba32> GetImage() => image?.ToImageSharpImage<Rgba32>();
 	}
 }

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp.ColorSpaces;
+using SixLabors.ImageSharp.ColorSpaces.Conversion;
 
 namespace Celarix.Imaging.Misc
 {
@@ -22,41 +24,11 @@ namespace Celarix.Imaging.Misc
 
 		public HSV(Rgba32 color)
 		{
-			float r = color.R / 255f;
-			float g = color.G / 255f;
-			float b = color.B / 255f;
-
-			float max = Math.Max(r, Math.Max(g, b));
-			float min = Math.Min(r, Math.Min(g, b));
-			float delta = max - min;
-
-			if (delta == 0)
-			{
-				H = 0;
-			}
-			else if (Math.Abs(max - r) < 0.001f)
-			{
-				H = 60 * (((g - b) / delta) % 6);
-			}
-			else if (Math.Abs(max - g) < 0.001f)
-			{
-				H = 60 * (((b - r) / delta) + 2);
-			}
-			else
-			{
-				H = 60 * (((r - g) / delta) + 4);
-			}
-
-			if (max == 0)
-			{
-				S = 0;
-			}
-			else
-			{
-				S = delta / max;
-			}
-
-			V = max;
+			var rgb = new Rgb(color.R / 255f, color.G / 255f, color.B / 255f);
+			var hsv = ColorSpaceConverter.ToHsv(rgb);
+			H = hsv.H;
+			S = hsv.S;
+			V = hsv.V;
 		}
 		
 		public Rgba32 ToRgba32()

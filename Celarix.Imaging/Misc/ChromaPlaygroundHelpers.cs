@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.ColorSpaces;
+using SixLabors.ImageSharp.ColorSpaces.Conversion;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Processors.Transforms;
@@ -13,9 +14,31 @@ namespace Celarix.Imaging.Misc
 {
 	public static class ChromaPlaygroundHelpers
 	{
-		private static byte ToY(byte r, byte g, byte b) => (byte)((0.299 * r) + (0.587 * g) + (0.114 * b));
-		private static byte ToCb(byte r, byte g, byte b) => (byte)((128 - (0.168736 * r) - (0.331264 * g)) + (0.5 * b));
-		private static byte ToCr(byte r, byte g, byte b) => (byte)((128 + (0.5 * r)) - (0.418688 * g) - (0.081312 * b));
+		private static ColorSpaceConverter colorSpaceConverter = new ColorSpaceConverter();
+		
+		private static byte ToY(byte r, byte g, byte b)
+		{
+			var rgb = new Rgb(r / 255f, g / 255f, b / 255f);
+			var yCbCr = ColorSpaceConverter.ToYCbCr(rgb);
+
+			return ClampToByte(yCbCr.Y);
+		}
+
+		private static byte ToCb(byte r, byte g, byte b)
+		{
+			var rgb = new Rgb(r / 255f, g / 255f, b / 255f);
+			var yCbCr = ColorSpaceConverter.ToYCbCr(rgb);
+
+			return ClampToByte(yCbCr.Cb);
+		}
+		
+		private static byte ToCr(byte r, byte g, byte b)
+		{
+			var rgb = new Rgb(r / 255f, g / 255f, b / 255f);
+			var yCbCr = ColorSpaceConverter.ToYCbCr(rgb);
+
+			return ClampToByte(yCbCr.Cr);
+		}
 
 		public static void MutateImage(Image<Rgba32> original, Func<Rgba32, Rgba32> transform)
 		{
@@ -52,11 +75,11 @@ namespace Celarix.Imaging.Misc
 					// Map Cr to a red-cyan gradient
 					return new Rgba32(cr, (byte)(255 - cr), (byte)(255 - cr), 255);
 				case ColorChannel.CbPlusCr:
-					var cb2 = ToCb(pixel.R, pixel.G, pixel.B);
-					var cr2 = ToCr(pixel.R, pixel.G, pixel.B);
-					// Map Cb to a blue - yellow gradient
-					// Map Cr to a red-cyan gradient
-					return new Rgba32(cr2, (byte)(255 - cb2), (byte)(255 - cr2), 255);
+					var rgb = new Rgb(pixel.R / 255f, pixel.G / 255f, pixel.B / 255f);
+					var yCbCr = ColorSpaceConverter.ToYCbCr(rgb);
+					var chrominanceOnly = new YCbCr(127.5f, yCbCr.Cb, yCbCr.Cr);
+
+					return new Rgba32(colorSpaceConverter.ToRgb(chrominanceOnly).ToVector3());
 				case ColorChannel.Hue:
 					var hsv = new HSV(pixel)
 					{
@@ -104,6 +127,18 @@ namespace Celarix.Imaging.Misc
 				_ => throw new ArgumentOutOfRangeException(nameof(channel), channel, null)
 			};
 		}
+		
+		public static Rgba32 GetRGBBitPlane(Rgba32 pixel, int bitPlaneIndex)
+		{
+			var r = (byte)((pixel.R >> bitPlaneIndex) & 1);
+			var g = (byte)((pixel.G >> bitPlaneIndex) & 1);
+			var b = (byte)((pixel.B >> bitPlaneIndex) & 1);
+			var newR = (byte)(r * 255);
+			var newG = (byte)(g * 255);
+			var newB = (byte)(b * 255);
+			
+			return new Rgba32(newR, newG, newB, 255);
+		}
 
 		public static Image<Rgba32> ChromaSubsample(Image<Rgba32> image, ChromaSubsamplingMode mode)
 		{
@@ -131,6 +166,9 @@ namespace Celarix.Imaging.Misc
 				ChromaSubsamplingMode.YCbCr422 => 2,
 				ChromaSubsamplingMode.YCbCr420 => 2,
 				ChromaSubsamplingMode.YCbCr411 => 4,
+				ChromaSubsamplingMode.YCbCr811 => 8,
+				ChromaSubsamplingMode.YCbCr1611 => 16,
+				ChromaSubsamplingMode.YCbCr25611 => 256,
 				_ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
 			};
 			
@@ -139,6 +177,9 @@ namespace Celarix.Imaging.Misc
 				ChromaSubsamplingMode.YCbCr422 => 1,
 				ChromaSubsamplingMode.YCbCr420 => 2,
 				ChromaSubsamplingMode.YCbCr411 => 1,
+				ChromaSubsamplingMode.YCbCr811 => 8,
+				ChromaSubsamplingMode.YCbCr1611 => 16,
+				ChromaSubsamplingMode.YCbCr25611 => 256,
 				_ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
 			};
 			var resampler = new BicubicResampler();

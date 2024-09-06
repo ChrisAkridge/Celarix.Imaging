@@ -1,6 +1,6 @@
 # ByteView Chroma Playground: Convert image in YCbCr format to "analog"
 
-Takes a normal RGB image file and treats it as YCbCr (with desired chroma subsampling, if chosen), then converts it to an "analog signal" similar to NTSC video, although not nearly compatible! This is just for fun, mind you. The analog signal is saved as a raw audio stream at 48,000 Hz with 32-bit floating-point samples.
+Takes a normal RGB image file and treats it as YCbCr, then converts it to an "analog signal" similar to NTSC video, although not nearly compatible! This is just for fun, mind you. The analog signal is saved as a raw audio stream at 48,000 Hz with 32-bit floating-point samples.
 
 The construction process starts by generating the chroma carrier. A sine wave and a cosine wave at 2,000 Hz are generated and the amplitudes are modulated based on the strength of the Cb and Cr channels, with 0.0 amplitude corresponding to Cb/Cr = 0 and 1.0 amplitude corresponding to Cb/Cr = 1. 4 cycles of the sine and cosine carriers correspond to 1 pixel of Cb/Cr data (if chroma subsampling is used, the chroma samples just repeat in the signal). Thus, each second contains 2000 / 4 = 500 pixels of chroma data, and since the chroma sample rate has to match the luma sample rate, that leads to 500 pixels per second for each scanline.
 
