@@ -231,7 +231,7 @@ namespace Celarix.Imaging.ByteView
 		{
 			if (OpenFile.ShowDialog() != DialogResult.OK) { return; }
 
-			int width = 0, height = 0;
+			int? width = null, height = null;
 			using (var sizeForm = new RawImageSizeForm())
 			{
 				if (sizeForm.ShowDialog() == DialogResult.OK)
@@ -243,7 +243,7 @@ namespace Celarix.Imaging.ByteView
 			}
 
 			var imageSharpImage = await Task.Run(() => Drawer.DrawFixedSize(
-				new SixLabors.ImageSharp.Size(width, height),
+				new PartiallyKnownSize(width, height),
 				File.OpenRead(OpenFile.FileName),
 				32,
 				null,

@@ -56,6 +56,8 @@ namespace Celarix.Imaging.ByteView
         /// </summary>
         public LargeFileProcessorForm()
         {
+	        LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength = 1024;
+	        
             InitializeComponent();
         }
         /// <summary>
@@ -325,7 +327,7 @@ namespace Celarix.Imaging.ByteView
                     Image<Rgba32> image;
                     if (!CheckDrawFileNames.Checked)
                     {
-                        image = await Task.Run(() => Drawer.DrawFixedSize(imageSize,
+                        image = await Task.Run(() => Drawer.DrawFixedSize(new PartiallyKnownSize(ImageWidth, ImageHeight),
                             stream,
                             bitDepth,
                             palette,
@@ -369,7 +371,7 @@ namespace Celarix.Imaging.ByteView
             var level0Tiles = (int)Math.Ceiling((decimal)totalBytes / imageBytes);
             var estimatedTotalTiles = (int)Math.Ceiling(level0Tiles * Math.Log(level0Tiles, 4d));
             var canvasSizeInTiles = Utilities.GetSizeFromCount(level0Tiles);
-            var tileSize = new Size(256, 256);
+            var tileEdgeLength = LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength;
             var outputFolder = TextOutputFolder.Text;
 
             IReadOnlyList<Rgba32> palette = null;
@@ -386,7 +388,7 @@ namespace Celarix.Imaging.ByteView
                     LabelStatus.Text = $"Creating level 0 tiles ({savedTiles + 1} of {level0Tiles}).";
                     Progress.Value = (int)(100m * ((savedTiles + 1m) / estimatedTotalTiles));
 
-                    var tile = await Task.Run(() => Drawer.DrawFixedSize(tileSize,
+                    var tile = await Task.Run(() => Drawer.DrawFixedSize(new PartiallyKnownSize(tileEdgeLength, tileEdgeLength),
                         stream,
                         bitDepth,
                         palette,

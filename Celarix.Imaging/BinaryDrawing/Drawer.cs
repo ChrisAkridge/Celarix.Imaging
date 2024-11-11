@@ -130,7 +130,7 @@ namespace Celarix.Imaging.BinaryDrawing
             }
         }
         
-        public static Image<Rgba32> DrawFixedSize(Size size,
+        public static Image<Rgba32> DrawFixedSize(PartiallyKnownSize size,
             Stream stream,
             int bitDepth,
             IReadOnlyList<Rgba32> palette,
@@ -138,9 +138,10 @@ namespace Celarix.Imaging.BinaryDrawing
             IProgress<DrawingProgress> progress)
 		{
 			ValidateBitDepthAndPalette(bitDepth, palette?.Count);
-            var (width, height) = size;
-            var totalPixels = (long)width * height;
-            var totalBytes = (int)Math.Ceiling((totalPixels * bitDepth) / 8m);
+			var totalPixelsInStream = (stream.Length * bitDepth) / 8;
+            var (width, height) = GetOtherSizeComponent(size, totalPixelsInStream);
+            var totalPixelsInImage = (long)width * height;
+            var totalBytes = (int)Math.Ceiling((totalPixelsInImage * bitDepth) / 8m);
 			var pixelEnumerator = GetPixelEnumeratorFromStream(stream, bitDepth, totalBytes);
 
 			var image = new Image<Rgba32>(width, height);
@@ -154,14 +155,14 @@ namespace Celarix.Imaging.BinaryDrawing
 				SetPixelOnImage(image, x, y, pixel, bitDepth, palette);
 
 				drawnPixels += 1;
-				if (drawnPixels == totalPixels) { break; }
+				if (drawnPixels == totalPixelsInImage) { break; }
 				if (drawnPixels % LibraryConfiguration.Instance.BinaryDrawingReportsProgressEveryNPixels != 0) { continue; }
 
 				if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
 
                 progress?.Report(new DrawingProgress
                 {
-                    DrawnPixels = drawnPixels, TotalPixels = totalPixels
+                    DrawnPixels = drawnPixels, TotalPixels = totalPixelsInImage
                 });
 			}
 
@@ -415,6 +416,35 @@ namespace Celarix.Imaging.BinaryDrawing
                 images[i] = new Image<Rgba32>(LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength,
                     LibraryConfiguration.Instance.ZoomableCanvasTileEdgeLength, Color.Black);
             }
+        }
+
+        private static Size GetOtherSizeComponent(PartiallyKnownSize partiallyKnownSize, long totalPixels)
+        {
+	        if (partiallyKnownSize.Width == null && partiallyKnownSize.Height == null)
+	        {
+		        throw new ArgumentException("At least one dimension must be known.");
+	        }
+
+	        var width = 0;
+	        var height = 0;
+
+	        if (partiallyKnownSize.Width == null && partiallyKnownSize.Height != null)
+	        {
+		        width = (int)(totalPixels / partiallyKnownSize.Height.Value);
+		        height = partiallyKnownSize.Height.Value;
+	        }
+	        else if (partiallyKnownSize is { Width: not null, Height: null })
+	        {
+		        width = partiallyKnownSize.Width.Value;
+		        height = (int)(totalPixels / partiallyKnownSize.Width.Value);
+	        }
+	        else if (partiallyKnownSize is { Width: not null, Height: not null })
+	        {
+		        width = partiallyKnownSize.Width.Value;
+		        height = partiallyKnownSize.Height.Value;
+	        }
+	        
+	        return new Size(width, height);
         }
 	}
 }

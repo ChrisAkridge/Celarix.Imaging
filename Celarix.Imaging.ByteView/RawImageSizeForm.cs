@@ -11,10 +11,14 @@ namespace Celarix.Imaging.ByteView
 		/// <summary>
 		/// Gets the desired width of the image as specified by the user.
 		/// </summary>
-        public int ImageWidth
+        public int? ImageWidth
         {
             get
             {
+	            if (string.IsNullOrWhiteSpace(TextBoxWidth.Text))
+	            {
+		            return null;
+	            }
                 if (!int.TryParse(TextBoxWidth.Text, out int result))
                 {
                     MessageBox.Show("Invalid width.", "Invalid Width", MessageBoxButtons.OK,
@@ -27,10 +31,14 @@ namespace Celarix.Imaging.ByteView
 		/// <summary>
 		/// Gets the desired height of the image as specified by the user.
 		/// </summary>
-		public int ImageHeight
+		public int? ImageHeight
         {
             get
             {
+	            if (string.IsNullOrWhiteSpace(TextBoxHeight.Text))
+	            {
+		            return null;
+	            }
                 if (!int.TryParse(TextBoxHeight.Text, out int result))
                 {
                     MessageBox.Show("Invalid height.", "Invalid Height", MessageBoxButtons.OK, 
