@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Celarix.Imaging.BinaryDrawing;
+using Celarix.Imaging.IO;
 using Celarix.Imaging.Progress;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;

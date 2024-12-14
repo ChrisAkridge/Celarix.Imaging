@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Celarix.Imaging.ByteViewCLI": {
+      "commandName": "Project",
+      "commandLineArgs": "BinaryDraw --input \"C:\\Users\\ChrisAckridge\\Documents\\LongList.cs\" --output \"C:\\Users\\ChrisAckridge\\Documents\\Notes\\Personal\\ByteViewTests\\LongList.png\" --bitdepth 24 --colormode rgb"
+    }
+  }
+}
