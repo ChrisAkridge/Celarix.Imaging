@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Celarix.Imaging.Collections;
 using Celarix.Imaging.IO;
+using Celarix.Imaging.Misc;
 using Celarix.Imaging.Progress;
 using Celarix.Imaging.Utilities;
 using Celarix.Imaging.ZoomableCanvas;
@@ -218,6 +219,7 @@ namespace Celarix.Imaging.BinaryDrawing
         }
 
         public static Image<Rgba32> Sort(Image<Rgba32> image,
+	        SortMode sortMode,
             CancellationToken cancellationToken,
             IProgress<DrawingProgress> progress)
         {
@@ -238,7 +240,23 @@ namespace Celarix.Imaging.BinaryDrawing
                 });
             }
 
-            var sortedPixels = pixels.OrderBy(p => (p.R << 24) | (p.G << 16) | (p.B << 8) | p.A).ToList();
+            Func<Rgba32, int> keySelector = sortMode switch
+			{
+				SortMode.RGB => p => (p.R << 24) | (p.G << 16) | (p.B << 8) | p.A,
+				SortMode.HSV => p =>
+				{
+					var hsv = RGBToHSV(p);
+					return (hsv.Hue << 16) | (hsv.Saturation << 8) | hsv.Value;
+				},
+				SortMode.YCbCr => p =>
+				{
+					var yCbCr = p.ToYCbCr();
+					return (yCbCr.Y << 16) | (yCbCr.Cb << 8) | yCbCr.Cr;
+				},
+				_ => throw new ArgumentException(nameof(sortMode))
+			};
+            
+            var sortedPixels = pixels.OrderBy(keySelector).ToList();
             var sortedImage = new Image<Rgba32>(image.Width, image.Height);
 
             int pixelIndex = 0;
@@ -446,5 +464,52 @@ namespace Celarix.Imaging.BinaryDrawing
 	        
 	        return new Size(width, height);
         }
-	}
+
+        private static (int Hue, int Saturation, int Value) RGBToHSV(Rgba32 pixel)
+        {
+	        var r = pixel.R / 255f;
+			var g = pixel.G / 255f;
+			var b = pixel.B / 255f;
+
+			var max = Math.Max(r, Math.Max(g, b));
+			var min = Math.Min(r, Math.Min(g, b));
+			var delta = max - min;
+
+			var hue = 0;
+			var saturation = 0;
+			var value = (int)(max * 255);
+
+			if (delta != 0)
+			{
+				saturation = (int)((delta / max) * 255);
+
+				if (Math.Abs(max - r) < 0.001d)
+				{
+					hue = (int)((g - b) / delta);
+				}
+				else if (Math.Abs(max - g) < 0.001d)
+				{
+					hue = (int)((b - r) / delta) + 2;
+				}
+				else if (Math.Abs(max - b) < 0.001d)
+				{
+					hue = (int)((r - g) / delta) + 4;
+				}
+
+				hue *= 60;
+				if (hue < 0) { hue += 360; }
+			}
+
+			return (hue, saturation, value);
+        }
+
+        private static (int Y, int Cb, int Cr) ToYCbCr(this Rgba32 pixel)
+        {
+            var y = (int)((0.299 * pixel.R) + (0.587 * pixel.G) + (0.114 * pixel.B));
+            var cb = (int)((128 - (0.168736 * pixel.R) - (0.331264 * pixel.G)) + (0.5 * pixel.B));
+            var cr = (int)((128 + (0.5 * pixel.R)) - (0.418688 * pixel.G) - (0.081312 * pixel.B));
+
+            return (y, cb, cr);
+        }
+    }
 }

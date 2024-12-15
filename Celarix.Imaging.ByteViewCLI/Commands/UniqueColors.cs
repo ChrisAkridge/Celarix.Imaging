@@ -12,6 +12,9 @@ namespace Celarix.Imaging.ByteViewCLI.Commands
     {
         [Option('i', "input", Required = true, HelpText = "The path to the image to analyze.")]
         public string InputPath { get; set; }
+        
+        [Option('o', "output", Required = false, HelpText = "The path to save the output file.")]
+        public string OutputPath { get; set; }
 
         public bool ValidateAndPrintErrors()
         {

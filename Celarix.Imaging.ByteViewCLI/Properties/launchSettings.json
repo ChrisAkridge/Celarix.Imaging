@@ -2,7 +2,7 @@
   "profiles": {
     "Celarix.Imaging.ByteViewCLI": {
       "commandName": "Project",
-      "commandLineArgs": "BinaryDraw --input \"C:\\Users\\ChrisAckridge\\Documents\\LongList.cs\" --output \"C:\\Users\\ChrisAckridge\\Documents\\Notes\\Personal\\ByteViewTests\\LongList.png\" --bitdepth 24 --colormode rgb"
+      "commandLineArgs": "UniqueColorsInSpace -i \"F:\\Documents\\Files\\Pictures\\Pictures\\S Series\\4s Series\\4s001421.png\" -o \"F:\\Documents\\Files\\Unclassified Files\\File to Bitmap\\ByteViewCLI\\uniqueInSpace_16.png\" -d 16"
     }
   }
 }

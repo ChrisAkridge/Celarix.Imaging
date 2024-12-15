@@ -39,7 +39,7 @@ namespace Celarix.Imaging.ByteViewCLI.Commands
                 return false;
             }
 
-            if (!File.Exists(FfmpegPath))
+            if (!string.IsNullOrWhiteSpace(FfmpegPath) && !File.Exists(FfmpegPath))
             {
                 Console.WriteLine("The ffmpeg executable does not exist at the provided path.");
                 return false;

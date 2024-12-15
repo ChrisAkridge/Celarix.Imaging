@@ -16,7 +16,7 @@ namespace Celarix.Imaging.ByteViewCLI.Commands
         [Option('o', "output", Required = true, HelpText = "The folder to save the image with reduced bit depth to.")]
         public string OutputPath { get; set; }
 
-        [Option('b', "bitDepth", Required = true, HelpText = "The bit depth to reduce the image to. Valid options are 16, 8, 4, 2, and 1.")]
+        [Option('d', "bitDepth", Required = true, HelpText = "The bit depth to reduce the image to. Valid options are 16, 8, 4, 2, and 1.")]
         public string BitDepthText { get; set; }
 
         [Option('c', "colorMode", Required = true, HelpText = "The color mode paired with the bit depth. Valid options are "
@@ -53,7 +53,19 @@ namespace Celarix.Imaging.ByteViewCLI.Commands
                 return false;
             }
 
-            if (!File.Exists(FfmpegPath))
+            if (validColorModes.Equals("grayscale") && BitDepth == 16)
+            {
+	            Console.WriteLine("Grayscale mode is not available for 16-bit images.");
+				return false;
+            }
+            
+            if (validColorModes.Equals("shift") && BitDepth is 2 or 1)
+            {
+	            Console.WriteLine("Shift mode is not available for 2- or 1-bit images.");
+	            return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(FfmpegPath) && !File.Exists(FfmpegPath))
             {
                 Console.WriteLine("The ffmpeg executable does not exist at the provided path.");
                 return false;

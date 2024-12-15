@@ -10,7 +10,7 @@ namespace Celarix.Imaging.ByteViewCLI.Commands
     [Verb("BinaryDrawMultipleFiles", HelpText = "Draws the contents of multiple files onto a single image.")]
     internal sealed class BinaryDrawMultipleFiles
     {
-        [Option('o', "option", Required = true, HelpText = "Specifies whether the input option for the -i/--input parameter. Valid options are filelist and inlinepaths. " +
+        [Option('p', "option", Required = true, HelpText = "Specifies whether the input option for the -i/--input parameter. Valid options are filelist and inlinepaths. " +
             "filelist means that --input is the path of a text file containing a list of newline-delimited file paths to use as the inputs. " +
             "inlinepaths means that --input is a comma-delimited list of file paths specified directly.")]
         public string InputNameOption { get; set; }

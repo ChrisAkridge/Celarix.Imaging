@@ -18,7 +18,7 @@ namespace Celarix.Imaging.ByteViewCLI.Commands
         [Option('o', "output", Required = true, HelpText = "The path to save the converted image to.")]
         public string OutputPath { get; set; }
 
-        [Option('b', "bitDepth", Required = true, HelpText = "The bit depth of the output image. Valid options are 1, 2, 4, 8, 16, and 24.")]
+        [Option('d', "bitDepth", Required = true, HelpText = "The bit depth of the output image. Valid options are 1, 2, 4, 8, 16, and 24.")]
         public string BitDepthText { get; set; }
 
         public int BitDepth => int.TryParse(BitDepthText, out int bitDepth) ? bitDepth : throw new ArgumentException("Invalid bit depth.");

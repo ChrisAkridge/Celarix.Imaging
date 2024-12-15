@@ -70,4 +70,11 @@ namespace Celarix.Imaging
 	    // VERY non-standard, 256x256 block of chroma
 	    YCbCr25611
 	}
+
+	public enum SortMode
+	{
+		RGB,
+		HSV,
+		YCbCr
+	}
 }
