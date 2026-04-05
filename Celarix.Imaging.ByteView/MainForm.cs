@@ -300,7 +300,7 @@ namespace Celarix.Imaging.ByteView
 			if (image == null) { return; }
 
 			var imageSharpImage = await Task.Run(() => image.ToImageSharpImage<Rgba32>());
-			var sortedImage = await Task.Run(() => Drawer.Sort(imageSharpImage, tokenSource.Token, progress));
+			var sortedImage = await Task.Run(() => Drawer.Sort(imageSharpImage, SortMode.RGB, tokenSource.Token, progress));
 			image = await Task.Run(() => sortedImage.ToSystemDrawingImage());
 			SetPictureBoxImage();
 		}

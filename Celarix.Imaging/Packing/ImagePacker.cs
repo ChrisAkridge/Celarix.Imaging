@@ -1,13 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Celarix.Imaging.JobRecovery;
+﻿using Celarix.Imaging.JobRecovery;
 using Celarix.Imaging.ZoomableCanvas;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Security.AccessControl;
+using System.Threading;
+using System.Threading.Tasks;
 // ReSharper disable AccessToDisposedClosure
 
 namespace Celarix.Imaging.Packing
@@ -122,10 +125,10 @@ namespace Celarix.Imaging.Packing
             var (width, height) = rootSize;
             var canvas = new Image<Rgba32>(width, height, Color.White);
 
-			for (var i = 0; i < blocks.Count; i++)
+            for (var i = 0; i < blocks.Count; i++)
             {
-				var block = blocks[i];
-				using var image = Image.Load(block.ImageFilePath);
+                var block = blocks[i];
+                using var image = Image.Load(block.ImageFilePath);
                 canvas.Mutate(c => c.DrawImage(image, block.Fit.Location, 1f));
 
                 if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
