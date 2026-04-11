@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="3.119.2" />
+    <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.119.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Celarix.Imaging.ImageViewer\Celarix.Imaging.ImageViewer.csproj" />
     <ProjectReference Include="..\Celarix.Imaging\Celarix.Imaging.csproj" />
   </ItemGroup>

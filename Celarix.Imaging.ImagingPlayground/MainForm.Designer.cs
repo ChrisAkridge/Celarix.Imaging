@@ -31,7 +31,6 @@
             SplitOperationsSecond = new SplitContainer();
             ButtonOpenImage = new Button();
             SplitMainImageProperties = new SplitContainer();
-            ImageMain = new Celarix.Imaging.ImagingPlayground.KPImageViewer.KpImageViewer();
             MainProperties = new PropertyGrid();
             panel1 = new Panel();
             ButtonCancel = new Button();
@@ -39,6 +38,7 @@
             TextLog = new TextBox();
             ProgressMain = new ProgressBar();
             OFDMain = new OpenFileDialog();
+            infiniteCanvasControl1 = new Celarix.Imaging.ImagingPlayground.Rendering.InfiniteCanvasControl();
             ((System.ComponentModel.ISupportInitialize)SplitOperationsSecond).BeginInit();
             SplitOperationsSecond.Panel1.SuspendLayout();
             SplitOperationsSecond.Panel2.SuspendLayout();
@@ -88,7 +88,7 @@
             // 
             // SplitMainImageProperties.Panel1
             // 
-            SplitMainImageProperties.Panel1.Controls.Add(ImageMain);
+            SplitMainImageProperties.Panel1.Controls.Add(infiniteCanvasControl1);
             // 
             // SplitMainImageProperties.Panel2
             // 
@@ -96,18 +96,6 @@
             SplitMainImageProperties.Size = new Size(897, 570);
             SplitMainImageProperties.SplitterDistance = 567;
             SplitMainImageProperties.TabIndex = 0;
-            // 
-            // ImageMain
-            // 
-            ImageMain.Dock = DockStyle.Fill;
-            ImageMain.ForeColor = SystemColors.ControlText;
-            ImageMain.Location = new Point(0, 0);
-            ImageMain.Margin = new Padding(4, 3, 4, 3);
-            ImageMain.MinimumSize = new Size(530, 181);
-            ImageMain.Name = "ImageMain";
-            ImageMain.Size = new Size(567, 570);
-            ImageMain.TabIndex = 0;
-            ImageMain.ShowPreview = false;
             // 
             // MainProperties
             // 
@@ -170,6 +158,17 @@
             ProgressMain.Size = new Size(1168, 23);
             ProgressMain.TabIndex = 0;
             // 
+            // infiniteCanvasControl1
+            // 
+            infiniteCanvasControl1.BackColor = Color.Black;
+            infiniteCanvasControl1.Dock = DockStyle.Fill;
+            infiniteCanvasControl1.Location = new Point(0, 0);
+            infiniteCanvasControl1.Margin = new Padding(4, 3, 4, 3);
+            infiniteCanvasControl1.Name = "infiniteCanvasControl1";
+            infiniteCanvasControl1.Size = new Size(567, 570);
+            infiniteCanvasControl1.TabIndex = 0;
+            infiniteCanvasControl1.VSync = true;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -199,12 +198,12 @@
         private SplitContainer SplitMainImageProperties;
         private Panel panel1;
         private PropertyGrid MainProperties;
-        private KPImageViewer.KpImageViewer ImageMain;
         private Button ButtonCancel;
         private Button ButtonRerun;
         private TextBox TextLog;
         private ProgressBar ProgressMain;
         private Button ButtonOpenImage;
         private OpenFileDialog OFDMain;
+        private Rendering.InfiniteCanvasControl infiniteCanvasControl1;
     }
 }

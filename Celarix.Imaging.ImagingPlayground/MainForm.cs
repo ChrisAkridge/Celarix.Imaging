@@ -119,8 +119,6 @@ namespace Celarix.Imaging.ImagingPlayground
                 Invoke(new SetBitmapDelegate(SetBitmap), bitmap);
                 return;
             }
-
-            ImageMain.Image = bitmap;
         }
 
         private void ButtonOpenImage_Click(object sender, EventArgs e)

@@ -77,4 +77,20 @@ namespace Celarix.Imaging
 		HSV,
 		YCbCr
 	}
+
+    public enum NamedStreamReadResult
+    {
+        NotEndOfFile,
+        EndOfFile,
+        EndOfStream
+    }
+
+    public enum ImageLoadAttemptResult
+    {
+        Success,
+        InvalidFilePath,
+        FileNotFound,
+        InvalidFile,
+        UnknownError
+    }
 }
