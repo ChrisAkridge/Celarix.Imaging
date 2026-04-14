@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Celarix.Imaging.Utilities
@@ -14,23 +15,22 @@ namespace Celarix.Imaging.Utilities
     /// </summary>
     public static class ImageLoader
     {
-
-        public static ImageLoadResult LoadImage(string filePath)
+        public static async Task<ImageLoadResult> LoadImage(string filePath, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(filePath)
                 || !Uri.IsWellFormedUriString(filePath, UriKind.Absolute))
             {
-                return new ImageLoadResult(filePath, null, ImageLoadAttemptResult.InvalidFilePath);
+                return await Task.FromResult(new ImageLoadResult(filePath, null, ImageLoadAttemptResult.InvalidFilePath));
             }
             else if (!File.Exists(filePath))
             {
-                return new ImageLoadResult(filePath, null, ImageLoadAttemptResult.FileNotFound);
+                return await Task.FromResult(new ImageLoadResult(filePath, null, ImageLoadAttemptResult.FileNotFound));
             }
             else
             {
                 try
                 {
-                    var image = Image.Load<Rgba32>(filePath);
+                    var image = await Image.LoadAsync<Rgba32>(filePath, cancellationToken);
                     return new ImageLoadResult(filePath, image, ImageLoadAttemptResult.Success);
                 }
                 catch (OutOfMemoryException oomex)

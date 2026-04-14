@@ -58,4 +58,24 @@ namespace Celarix.Imaging.ImagingPlayground
         ZoomableCanvas,
         MultipleToFolder
     }
+
+    internal enum ImageEntryLoadState
+    {
+        Unloaded,
+        Loading,
+        Loaded
+    }
+
+    public enum BandDirection
+    {
+        /// <summary>
+        /// The next image is below the previous one, so the images are arranged in horizontal bands.
+        /// </summary>
+        Horizontal,
+
+        /// <summary>
+        /// The next image is to the right of the previous one, so the images are arranged in vertical bands.
+        /// </summary>
+        Vertical
+    }
 }

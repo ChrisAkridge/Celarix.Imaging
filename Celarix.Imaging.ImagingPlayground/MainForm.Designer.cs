@@ -31,6 +31,7 @@
             SplitOperationsSecond = new SplitContainer();
             ButtonOpenImage = new Button();
             SplitMainImageProperties = new SplitContainer();
+            InfiniteCanvas = new Celarix.Imaging.ImagingPlayground.Rendering.InfiniteCanvasControl();
             MainProperties = new PropertyGrid();
             panel1 = new Panel();
             ButtonCancel = new Button();
@@ -38,7 +39,6 @@
             TextLog = new TextBox();
             ProgressMain = new ProgressBar();
             OFDMain = new OpenFileDialog();
-            infiniteCanvasControl1 = new Celarix.Imaging.ImagingPlayground.Rendering.InfiniteCanvasControl();
             ((System.ComponentModel.ISupportInitialize)SplitOperationsSecond).BeginInit();
             SplitOperationsSecond.Panel1.SuspendLayout();
             SplitOperationsSecond.Panel2.SuspendLayout();
@@ -88,7 +88,7 @@
             // 
             // SplitMainImageProperties.Panel1
             // 
-            SplitMainImageProperties.Panel1.Controls.Add(infiniteCanvasControl1);
+            SplitMainImageProperties.Panel1.Controls.Add(InfiniteCanvas);
             // 
             // SplitMainImageProperties.Panel2
             // 
@@ -96,6 +96,17 @@
             SplitMainImageProperties.Size = new Size(897, 570);
             SplitMainImageProperties.SplitterDistance = 567;
             SplitMainImageProperties.TabIndex = 0;
+            // 
+            // InfiniteCanvas
+            // 
+            InfiniteCanvas.BackColor = Color.Black;
+            InfiniteCanvas.Dock = DockStyle.Fill;
+            InfiniteCanvas.Location = new Point(0, 0);
+            InfiniteCanvas.Margin = new Padding(4, 3, 4, 3);
+            InfiniteCanvas.Name = "InfiniteCanvas";
+            InfiniteCanvas.Size = new Size(567, 570);
+            InfiniteCanvas.TabIndex = 0;
+            InfiniteCanvas.VSync = true;
             // 
             // MainProperties
             // 
@@ -158,17 +169,6 @@
             ProgressMain.Size = new Size(1168, 23);
             ProgressMain.TabIndex = 0;
             // 
-            // infiniteCanvasControl1
-            // 
-            infiniteCanvasControl1.BackColor = Color.Black;
-            infiniteCanvasControl1.Dock = DockStyle.Fill;
-            infiniteCanvasControl1.Location = new Point(0, 0);
-            infiniteCanvasControl1.Margin = new Padding(4, 3, 4, 3);
-            infiniteCanvasControl1.Name = "infiniteCanvasControl1";
-            infiniteCanvasControl1.Size = new Size(567, 570);
-            infiniteCanvasControl1.TabIndex = 0;
-            infiniteCanvasControl1.VSync = true;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -204,6 +204,6 @@
         private ProgressBar ProgressMain;
         private Button ButtonOpenImage;
         private OpenFileDialog OFDMain;
-        private Rendering.InfiniteCanvasControl infiniteCanvasControl1;
+        private Rendering.InfiniteCanvasControl InfiniteCanvas;
     }
 }

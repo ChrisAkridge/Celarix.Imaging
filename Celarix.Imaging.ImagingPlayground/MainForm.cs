@@ -48,6 +48,9 @@ namespace Celarix.Imaging.ImagingPlayground
                 SplitOperationsSecond.Panel1.Controls.Add(button);
                 currentY += button.Height + buttonMargin;
             }
+
+            // Temporary debugging of InfiniteCanvas
+            InfiniteCanvas.LoadSingleImage(@"E:\Documents\Files\Pictures\Pictures\Accielle Group\Adoration Series\a499.jpg");
         }
 
         private void RunOperation(IOperation operation)

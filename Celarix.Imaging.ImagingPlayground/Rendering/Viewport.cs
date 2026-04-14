@@ -15,10 +15,10 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
         {
             get
             {
-                var width = Size.Width;
-                var widthInTiles = width / ZoomableCanvasTileSize;
-                var zoomLevel = widthInTiles <= 0 ? 0 :
-                    (int)Math.Ceiling(Math.Log2(widthInTiles));
+                var longAxis = Math.Max(Size.Width, Size.Height);
+                var longAxisInTiles = longAxis / ZoomableCanvasTileSize;
+                var zoomLevel = longAxisInTiles <= 0 ? 0 :
+                    (int)Math.Ceiling(Math.Log2(longAxisInTiles));
                 return zoomLevel;
             }
         }
