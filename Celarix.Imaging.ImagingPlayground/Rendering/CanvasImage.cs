@@ -1,4 +1,5 @@
-﻿using Celarix.Imaging.Utilities;
+﻿using Celarix.Imaging.Packing;
+using Celarix.Imaging.Utilities;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SkiaSharp;
@@ -42,6 +43,14 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
             canvasImage.Factory = cancellationToken => LoadFromFile(canvasImage, filePath, cancellationToken);
             canvasImage.Position = position;
             canvasImage.OnlyAtZoomLevel = onlyAtZoomLevel;
+
+            if (!ImageSizeLoader.TryGetSize(filePath, out var size))
+            {
+                // TODO: return error image
+                canvasImage.Size = new SKSize(1000, 1000);
+            }
+            canvasImage.Size = new SKSize(size.Width, size.Height);
+            
             return canvasImage;
         }
 

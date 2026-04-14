@@ -140,5 +140,11 @@ namespace Celarix.Imaging.ImagingPlayground
                 }
             }
         }
+
+        private void InfiniteCanvas_Click(object sender, EventArgs e)
+        {
+            // Temporary for debugging
+            InfiniteCanvas.Invalidate();
+        }
     }
 }

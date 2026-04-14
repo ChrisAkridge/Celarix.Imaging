@@ -7,7 +7,7 @@ using SixLabors.ImageSharp;
 
 namespace Celarix.Imaging.Packing
 {
-	internal static class ImageSizeLoader
+	public static class ImageSizeLoader
 	{
         private static readonly Dictionary<byte[], Func<BinaryReader, Size>> imageFormatDecoders =
             new Dictionary<byte[], Func<BinaryReader, Size>>

@@ -107,6 +107,7 @@
             InfiniteCanvas.Size = new Size(567, 570);
             InfiniteCanvas.TabIndex = 0;
             InfiniteCanvas.VSync = true;
+            InfiniteCanvas.Click += InfiniteCanvas_Click;
             // 
             // MainProperties
             // 

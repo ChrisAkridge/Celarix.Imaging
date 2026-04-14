@@ -17,8 +17,7 @@ namespace Celarix.Imaging.Utilities
     {
         public static async Task<ImageLoadResult> LoadImage(string filePath, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(filePath)
-                || !Uri.IsWellFormedUriString(filePath, UriKind.Absolute))
+            if (string.IsNullOrWhiteSpace(filePath))
             {
                 return await Task.FromResult(new ImageLoadResult(filePath, null, ImageLoadAttemptResult.InvalidFilePath));
             }

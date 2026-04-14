@@ -3,6 +3,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Celarix.Imaging.ImagingPlayground.Rendering
@@ -24,12 +25,14 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
 
         public void Add(CanvasImage image)
         {
+            Debug.WriteLine("ImageCache: Adding image at position " + image.Position);
             var entry = new ImageEntry(image);
             _cache.Add(image, entry);
         }
 
         public bool Remove(CanvasImage image)
         {
+            Debug.WriteLine("ImageCache: Removing image at position " + image.Position);
             if (_cache.TryGetValue(image, out var entry))
             {
                 entry.Evict();
@@ -40,6 +43,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
 
         public void Clear()
         {
+            Debug.WriteLine("ImageCache: Clearing all images");
             foreach (var entry in _cache.Values)
             {
                 entry.Evict();
@@ -49,6 +53,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
 
         public void UpdateVisibility(Viewport viewport)
         {
+            Debug.WriteLine($"ImageCache: Updating visibility for viewport at {viewport.Location} with size {viewport.Size} and zoom level {viewport.ZoomLevel}");
             // Start with all images as candidates for visibility
             var wanted = new HashSet<CanvasImage>(_cache.Keys);
 
@@ -115,11 +120,13 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
                     visibleImages.Add(entry);
                 }
             }
+            Debug.WriteLine($"ImageCache: Culled to {visibleImages.Count} visible images");
             return visibleImages;
         }
 
         private void Evict()
         {
+            Debug.WriteLine("ImageCache: Evicting images to stay within memory budget");
             _lastEvictionTick = Environment.TickCount64;
             var evictableEntries = _cache.Where(kvp => kvp.Value.IsEvictable).ToList();
             var totalBytesLoaded = TotalBytesLoaded;
@@ -132,6 +139,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
             // Evict least recently used first
             while (totalBytesLoaded > MemoryBudget && evictableEntries.Count > 0)
             {
+                Debug.WriteLine($"ImageCache: Total bytes loaded {totalBytesLoaded}, evicting least recently used image");
                 var leastRecentlyUsed = evictableEntries.OrderBy(kvp => kvp.Value.LastUsedTick).First();
                 totalBytesLoaded -= leastRecentlyUsed.Value.ByteSize;
                 leastRecentlyUsed.Value.Evict();
