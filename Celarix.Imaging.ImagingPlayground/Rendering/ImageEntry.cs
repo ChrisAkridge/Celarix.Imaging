@@ -42,6 +42,11 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
             LoadState = ImageEntryLoadState.Unloaded;
         }
 
+        public long EstimateMemoryUsageOnLoad()
+        {
+            return _canvasImage.SizeEstimator();
+        }
+
         public void StartLoad(Control control)
         {
             Debug.WriteLine("ImageEntry: Entering StartLoad");

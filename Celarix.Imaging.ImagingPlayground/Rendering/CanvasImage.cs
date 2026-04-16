@@ -12,6 +12,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
     internal sealed class CanvasImage
     {
         public Func<CancellationToken, Task<SKImage>> Factory { get; private set; }
+        public Func<long> SizeEstimator { get; private set; }
 
         public SKPoint Position { get; private set; }
         public SKSize Size { get; private set; }
@@ -30,9 +31,13 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
             // For factory methods
         }
 
-        public CanvasImage(Func<CancellationToken, Task<SKImage>> factory, SKPoint position, int? onlyAtZoomLevel = null)
+        public CanvasImage(Func<CancellationToken, Task<SKImage>> factory,
+            Func<long> sizeEstimator,
+            SKPoint position,
+            int? onlyAtZoomLevel = null)
         {
             Factory = factory;
+            SizeEstimator = sizeEstimator;
             Position = position;
             OnlyAtZoomLevel = onlyAtZoomLevel;
         }
@@ -41,6 +46,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
         {
             var canvasImage = new CanvasImage();
             canvasImage.Factory = cancellationToken => LoadFromFile(canvasImage, filePath, cancellationToken);
+            canvasImage.SizeEstimator = () => EstimateSizeFromFile(filePath);
             canvasImage.Position = position;
             canvasImage.OnlyAtZoomLevel = onlyAtZoomLevel;
 
@@ -69,6 +75,15 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
             }
             image.Size = new SKSize(imageSharpImage.LoadedImage.Width, imageSharpImage.LoadedImage.Height);
             return await CreateSkImageFromImageSharp(imageSharpImage.LoadedImage, cancellationToken);
+        }
+
+        private static long EstimateSizeFromFile(string filePath)
+        {
+            if (ImageSizeLoader.TryGetSize(filePath, out var size))
+            {
+                return size.Width * size.Height * 4; // Assuming 4 bytes per pixel (RGBA)
+            }
+            return 1000 * 1000 * 4; // Default to 1000x1000 if size can't be determined
         }
 
         private static async Task<SKImage> CreateSkImageFromImageSharp(Image<Rgba32> imageSharpImage, CancellationToken cancellationToken)

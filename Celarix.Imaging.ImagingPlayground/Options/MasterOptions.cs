@@ -8,10 +8,26 @@ namespace Celarix.Imaging.ImagingPlayground.Options
 {
     internal sealed class MasterOptions
     {
+        private int canvasMaxMemoryMB = 4096;
+        public event EventHandler<int>? CanvasMaxMemoryMBChanged;
+
         [TypeConverter(typeof(FileListConverter))]
         [Editor(typeof(MultiFileEditor), typeof(UITypeEditor))]
         [Category("General")]
         public Models.FileList? Files { get; set; }
+
+        [Category("General")]
+        [DefaultValue(4096)]
+        [Description("The limit in mebibytes for how much memory the canvas can use for displaying visible images. If this limit is exceeded, new images will not load.")]
+        public int CanvasMaxMemoryMB
+        {
+            get => canvasMaxMemoryMB;
+            set
+            {
+                canvasMaxMemoryMB = value;
+                CanvasMaxMemoryMBChanged?.Invoke(this, value);
+            }
+        }
 
         [Category("Binary Drawing")]
         public PixelFormat PixelFormat { get; set; } = PixelFormat.Binary8Bpp;

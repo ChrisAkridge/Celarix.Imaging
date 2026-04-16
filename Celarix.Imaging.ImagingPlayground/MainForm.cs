@@ -13,6 +13,11 @@ namespace Celarix.Imaging.ImagingPlayground
         public MainForm()
         {
             InitializeComponent();
+            options.CanvasMaxMemoryMBChanged += (s, newValue) =>
+            {
+                InfiniteCanvas?.SetMaxMemoryBytes(newValue * 1024L * 1024L);
+                Log($"Canvas max memory set to {newValue} MB");
+            };
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -48,9 +53,6 @@ namespace Celarix.Imaging.ImagingPlayground
                 SplitOperationsSecond.Panel1.Controls.Add(button);
                 currentY += button.Height + buttonMargin;
             }
-
-            // Temporary debugging of InfiniteCanvas
-            InfiniteCanvas.LoadSingleImage(@"E:\Documents\Files\Pictures\Pictures\Accielle Group\Adoration Series\a499.jpg");
         }
 
         private void RunOperation(IOperation operation)
@@ -130,8 +132,7 @@ namespace Celarix.Imaging.ImagingPlayground
             {
                 try
                 {
-                    var bitmap = (Bitmap)Image.FromFile(OFDMain.FileName);
-                    SetBitmap(bitmap);
+                    InfiniteCanvas.LoadSingleImage(OFDMain.FileName);
                     Log($"Loaded image: {OFDMain.FileName}");
                 }
                 catch (Exception ex)

@@ -19,6 +19,25 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
         // Image management
         private ImageCache _imageCache;
 
+        // Animation
+        private readonly System.Windows.Forms.Timer _animationTimer = new System.Windows.Forms.Timer();
+
+        // Dragging
+        private SKPoint? _dragStartPoint = null;
+        private SKPoint? _dragEndPoint = null;
+        private SKPoint? _dragVelocity = null;
+        private SKPoint? _dragInerita = null;
+        private bool _isDragging = false;
+
+        // Zooming
+        private const float MaxZoomScale = 64f; // Pixels can be no larger than 64x64
+        private const float MaxZoomVelocity = 1f;
+        private const float ZoomDampening = 0.9f;
+        private float _zoomVelocity = 0f;
+
+        // Context menu
+        private ContextMenuStrip _contextMenu = new ContextMenuStrip();
+
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         private Viewport Viewport
         {
@@ -50,9 +69,43 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
             SetStyle(ControlStyles.Opaque, true);
             MouseMove += InfiniteCanvasControl_MouseMove;
 
+            // Animation setup
+            _animationTimer = new System.Windows.Forms.Timer
+            {
+                Interval = 33, // ~30 FPS
+                Enabled = true // temporary for debugging
+            };
+            _animationTimer.Tick += OnAnimationFrame;
+
+            // Dragging setup
+            MouseDown += InfiniteCanvasControl_MouseDown;
+            MouseUp += InfiniteCanvasControl_MouseUp;
+
+            // Zooming setup
+            MouseWheel += InfiniteCanvasControl_MouseWheel;
+
+            // Context menu
+            var resetTranslationMenuItem = new ToolStripMenuItem("Reset Translation");
+            resetTranslationMenuItem.Click += (s, e) => _translation = SKPoint.Empty;
+            _contextMenu.Items.Add(resetTranslationMenuItem);
+            var resetZoomMenuItem = new ToolStripMenuItem("Reset Zoom");
+            resetZoomMenuItem.Click += (s, e) => _zoomScale = 1.0f;
+            _contextMenu.Items.Add(resetZoomMenuItem);
+            var separator = new ToolStripSeparator();
+            _contextMenu.Items.Add(separator);
+            var resetMenuItem = new ToolStripMenuItem("Reset All");
+            resetMenuItem.Click += (s, e) =>
+            {
+                _translation = SKPoint.Empty;
+                _zoomScale = 1.0f;
+            };
+            _contextMenu.Items.Add(resetMenuItem);
+            ContextMenuStrip = _contextMenu;
+
             _imageCache = new ImageCache(this);
         }
 
+        // Load images
         public void LoadSingleImage(string filePath)
         {
             _imageCache.Clear();
@@ -168,11 +221,12 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
             _imageCache.UpdateVisibility(Viewport);
         }
 
+        // Event handlers
         protected override void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
         {
             base.OnPaintSurface(e);
             var canvas = e.Surface.Canvas;
-            
+
             if (DesignMode)
             {
                 canvas.Clear(SKColors.WhiteSmoke);
@@ -195,6 +249,16 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
             canvas.ResetMatrix();
 
             // Draw info panel if enabled
+
+            // Debugging
+            var text = $"Zoom: {_zoomScale:F2}";
+            using var paint = new SKPaint
+            {
+                Color = SKColors.Green,
+                IsAntialias = true
+            };
+            var font = new SKFont(SKTypeface.Default, 16);
+            canvas.DrawText(text, new SKPoint(32, 32), SKTextAlign.Left, font, paint);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -207,13 +271,87 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
             base.OnPaint(e);
         }
 
+        private void OnAnimationFrame(object? sender, EventArgs e)
+        {
+            const float Dampening = 0.75f;
+
+            Invalidate();
+
+            if (_dragInerita.HasValue)
+            {
+                _translation += _dragInerita.Value;
+                _dragInerita = new SKPoint(_dragInerita.Value.X * Dampening, _dragInerita.Value.Y * Dampening); // Dampen inertia
+                if (_dragInerita.Value.Length < 0.1f)
+                {
+                    _dragInerita = null; // Stop inertia when velocity is low
+                }
+            }
+        }
+
         private void InfiniteCanvasControl_MouseMove(object? sender, MouseEventArgs e)
         {
+            var lastHoverPosition = _hoverPosition;
             _hoverPosition = new SKPoint(e.X, e.Y);
-            if (_showInfoPanel)
+            if (_isDragging && _dragStartPoint.HasValue)
             {
-                Invalidate(); // Redraw to update info panel with new hover position
+                var currentPoint = new SKPoint(e.X, e.Y);
+                _dragVelocity = currentPoint - _dragStartPoint.Value;
+                _translation += _dragVelocity.Value;
+                _dragStartPoint = currentPoint; // Update for smooth dragging
+                Invalidate();
             }
+        }
+
+        private void InfiniteCanvasControl_MouseUp(object? sender, MouseEventArgs e)
+        {
+            _isDragging = false;
+            _dragEndPoint = new SKPoint(e.X, e.Y);
+            _dragInerita = _dragVelocity; // Start inertia with the last velocity
+        }
+
+        private void InfiniteCanvasControl_MouseDown(object? sender, MouseEventArgs e)
+        {
+            _isDragging = true;
+            _dragInerita = null; // Stop any ongoing inertia
+            _dragStartPoint = new SKPoint(e.X, e.Y);
+            _dragEndPoint = null;
+        }
+
+        private void InfiniteCanvasControl_MouseWheel(object? sender, MouseEventArgs e)
+        {
+            var zoomAmount = e.Delta > 0 ? 1.1f : 0.9f;
+
+            // Compute new zoom scale
+            var newZoomScale = _zoomScale * zoomAmount;
+
+            // Clamp zoom scale
+            const float MinZoomScale = 0.01f;
+            newZoomScale = Math.Clamp(newZoomScale, MinZoomScale, MaxZoomScale);
+
+            // Calculate zoom focal point in world coordinates
+            var mousePosition = new SKPoint(e.X, e.Y);
+            var focalPointBeforeZoom = Divide(mousePosition - _translation, _zoomScale);
+            // Apply zoom
+            _zoomScale = newZoomScale;
+            // Calculate new translation to keep focal point under the mouse
+            var focalPointAfterZoom = Multiply(focalPointBeforeZoom, _zoomScale) + _translation;
+            _translation += mousePosition - focalPointAfterZoom;
+        }
+
+        // Miscellaneous
+        public void SetMaxMemoryBytes(long maxBytes)
+        {
+            _imageCache.MaxMemoryBytes = maxBytes;
+        }
+
+        private static SKPoint Multiply(SKPoint p1, float scale)
+        {
+            return new SKPoint(p1.X * scale, p1.Y * scale);
+        }
+
+        private static SKPoint Divide(SKPoint point, float divisor)
+        {
+            return new SKPoint(point.X / divisor, point.Y / divisor);
         }
     }
 }
