@@ -97,7 +97,6 @@ namespace Celarix.Imaging.BinaryDrawing
                     {
                         var rowImage = rowImages[tileIndexX];
                         CanvasGenerator.SaveLevel0CellImage(new Point(tileIndexX, tileIndexY), rowImage, outputFolderPath);
-                        rowImage.Dispose();
                     }
                     
                     InitializeCanvasRowImages(rowImages);

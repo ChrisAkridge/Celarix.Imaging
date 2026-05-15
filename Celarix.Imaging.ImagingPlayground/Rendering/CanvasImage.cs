@@ -60,6 +60,19 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
             return canvasImage;
         }
 
+        public static CanvasImage FromImageSharpImage(Image<Rgba32> imageSharpImage, SKPoint position, int? onlyAtZoomLevel = null)
+        {
+            var canvasImage = new CanvasImage
+            {
+                Factory = cancellationToken => CreateSkImageFromImageSharp(imageSharpImage, cancellationToken),
+                SizeEstimator = () => imageSharpImage.Width * imageSharpImage.Height * 4, // Assuming 4 bytes per pixel (RGBA)
+                Position = position,
+                OnlyAtZoomLevel = onlyAtZoomLevel,
+                Size = new SKSize(imageSharpImage.Width, imageSharpImage.Height)
+            };
+            return canvasImage;
+        }
+
         public override int GetHashCode()
         {
             return HashCode.Combine(Position.X, Position.Y, Size.Width, Size.Height, OnlyAtZoomLevel ?? 0);

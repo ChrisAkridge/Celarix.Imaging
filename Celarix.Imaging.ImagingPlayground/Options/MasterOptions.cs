@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Celarix.Imaging.BinaryDrawing.v2;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Design;
@@ -33,7 +34,7 @@ namespace Celarix.Imaging.ImagingPlayground.Options
         public PixelFormat PixelFormat { get; set; } = PixelFormat.Binary8Bpp;
 
         [Category("Binary Drawing")]
-        public ColorMode ColorMode { get; set; } = ColorMode.Grayscale;
+        public BinaryDrawing.v2.ColorMode ColorMode { get; set; } = BinaryDrawing.v2.ColorMode.Grayscale;
 
         [Category("Binary Drawing")]
         public PixelLayout PixelLayout { get; set; } = PixelLayout.Raster;

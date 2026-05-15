@@ -113,6 +113,7 @@ namespace Celarix.Imaging.Packing
                 if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }
             }
 
+            filesAndSizes.SaveSizes();
             return new Dictionary<string, Size>(filesAndSizes);
         }
         

@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using Celarix.Imaging.BinaryDrawing.v2;
 using Celarix.Imaging.Packing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Celarix.Imaging.Utilities
 {
@@ -12,6 +13,11 @@ namespace Celarix.Imaging.Utilities
 	{
         public static Size GetSizeFromCount(long count)
         {
+            if (count == 0)
+            {
+                return new Size(0, 0);
+            }
+
             var squareRoot = (long)Math.Sqrt(count);
             Size result;
             if (IsPerfectSquare(count)) { result = new Size((int)squareRoot, (int)squareRoot); }
@@ -95,5 +101,32 @@ namespace Celarix.Imaging.Utilities
 
         public static string FormatException(Exception ex) =>
             $"{ex.GetType().Name}: {ex.Message}{Environment.NewLine}{ex.StackTrace}";
+
+        public static long RoundUpToMultiple(long value, long multiple)
+        {
+            if (multiple == 0) { return value; }
+            long remainder = value % multiple;
+            if (remainder == 0) { return value; }
+            return value + multiple - remainder;
+        }
+
+        public static int GetStripeWidth(PixelFormat format)
+        {
+            return format switch
+            {
+                PixelFormat.Binary1Bpp => 8,
+                PixelFormat.Binary2Bpp => 4,
+                PixelFormat.Binary3Bpp => 8,
+                PixelFormat.Binary4Bpp => 2,
+                PixelFormat.Binary8Bpp => 1,
+                PixelFormat.Binary16Bpp => 1,
+                PixelFormat.Binary24Bpp => 1,
+                PixelFormat.Binary32Bpp => 1,
+                PixelFormat.Float16 => 6,
+                PixelFormat.Float32 => 6,
+                PixelFormat.Float64 => 8,
+                _ => throw new ArgumentException($"Unsupported pixel format: {format}"),
+            };
+        }
     }
 }
