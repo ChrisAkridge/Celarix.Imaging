@@ -17,6 +17,8 @@ It also reflects important design decisions:
 - cancellation is treated primarily as a transition cause, not a long-lived steady state
 - cache and working-set mutation should occur on the UI thread, with background work limited to decoding/loading
 - `ImageCache` supports multiple artifact modes, with zoom-transition logic active only for zoomable canvases
+- each `WorkingSet` owns the full set of `ImageEntry` objects for its artifact slice
+- working-set liveness is primarily determined by membership in `ImageCache.WorkingSets`
 
 ## Core idea
 
@@ -24,7 +26,7 @@ The renderer should be modeled around:
 
 - tile metadata
 - per-tile load state
-- per-zoom-level working sets
+- per-working-set entry ownership
 - one viewport-driven target set
 - one or more fallback sets that may continue contributing visible tiles temporarily
 
@@ -121,6 +123,8 @@ For a non-tiled single image, this can still work by treating the image as:
 - one content id
 - one tile at `(0, 0)`
 - no special-case random identity required
+
+For striped/static multi-image mode, immutable canvas coordinates are also valid structural identity, as long as they are represented by an explicit equality-bearing key type rather than relying on object hash codes alone.
 
 ## `ImageEntry`
 
@@ -305,8 +309,8 @@ A working set is a viewport-specific tile set for one zoom level and one epoch.
 
 It represents:
 
-- which tiles are desired
-- which entries exist
+- which entries exist for that artifact slice
+- which entries are currently visible
 - whether the set is still active
 - whether the set contributes visible coverage
 
@@ -317,7 +321,6 @@ It represents:
 - `Active`
 - `Superseded`
 - `Canceled`
-- `Disposed`
 
 ### Meaning of each state
 
@@ -335,21 +338,26 @@ It represents:
 - `Canceled`
   - no new loads should start
   - active loads should be canceled
-- `Disposed`
-  - terminal
 
 ### Working set properties
 
 - `Epoch`
 - `ZoomLevel`
-- `DesiredTileKeys`
-- `Entries`
+- `ImageEntries`
+- `VisibleSet`
 - `IsTarget`
 - `IsPrimaryPresented`
 - `IsFallbackPresented`
 - `LoadedTileCount`
 - `VisibleLoadedTileCount`
 - `ActiveLoadCount`
+
+`DesiredTileKeys` is no longer the preferred central abstraction.
+
+The clarified design is:
+
+- `ImageEntries`: the full immutable membership of the set
+- `VisibleSet`: the current viewport-derived drawable subset
 
 ## Working set transitions
 
@@ -359,6 +367,8 @@ When:
 
 - desired visible tile keys are computed
 - entries are initialized
+
+In the clarified design, initialization means creating the full `ImageEntries` collection for the set. Visibility remains a derived subset.
 
 ### `Loading -> Active`
 
@@ -380,13 +390,15 @@ Actions:
 
 - cancel all active loads
 
-### `Canceled -> Disposed`
+### `Canceled -> Removed`
 
 When:
 
 - no tiles were ever loaded
 
 This is the immediate-drop rule for abandoned, never-visible working sets.
+
+The preferred mechanism is removal from `ImageCache.WorkingSets`, rather than a long-lived explicit terminal state on the working set object itself.
 
 ### `Active -> Superseded`
 
@@ -396,7 +408,7 @@ When:
 
 This set may remain visible as fallback.
 
-### `Superseded -> Disposed`
+### `Superseded -> Removed`
 
 When:
 
@@ -405,13 +417,7 @@ When:
 
 This is how older levels get dropped quickly once the newer level covers the viewport.
 
-### `Active -> Disposed`
-
-When:
-
-- cache clear
-- control disposal
-- explicit full replacement with no fallback need
+Removal from the cache list replaces most uses of an explicit terminal working-set state.
 
 ## Multiple visible zoom levels
 
@@ -457,7 +463,7 @@ This allows partial replacement naturally.
 - create new target working sets
 - supersede older sets
 - cancel irrelevant loads
-- dispose dead sets
+- remove dead sets from the cache
 - produce a stable draw list
 
 Visibility and fallback contribution are best treated as cache-derived facts, not as persistent booleans on `ImageEntry`.
@@ -469,7 +475,7 @@ Visibility and fallback contribution are best treated as cache-derived facts, no
 1. increment epoch
 2. create new working set for the new zoom level
 3. mark current target, if any, as canceled
-4. if the canceled target never loaded a tile, dispose it immediately
+4. if the canceled target never loaded a tile, remove it immediately
 5. mark currently visible older sets as fallback-capable
 6. start loads for the new target set
 
@@ -477,7 +483,7 @@ Visibility and fallback contribution are best treated as cache-derived facts, no
 
 This prevents an explosion of long-lived sets:
 
-- an abandoned target that never visibly contributed is dropped immediately
+- an abandoned target that never visibly contributed is removed immediately
 - a partially visible or previously presented set may remain temporarily
 - only sets that still help cover the viewport are retained
 
@@ -485,7 +491,7 @@ This prevents an explosion of long-lived sets:
 
 When the viewport moves without changing zoom level:
 
-- update the desired tile keys of the current target/presented set
+- update the visible subset of the current target/presented set
 - start loads for newly visible tiles
 - cancel loads for tiles no longer needed
 - keep loaded tiles if they still contribute visible fallback or nearby reuse value
@@ -497,7 +503,7 @@ This should feel incremental, unlike zoom transitions.
 
 ### Immediate disposal
 
-Dispose a working set immediately if:
+Remove a working set from `ImageCache.WorkingSets` immediately if:
 
 - it was canceled
 - it never loaded any tiles
@@ -510,7 +516,7 @@ Keep a set temporarily if:
 - some of its loaded tiles are still visible on screen
 - newer sets do not yet cover the same visible area
 
-Dispose it as soon as:
+Remove it from the cache as soon as:
 
 - it no longer contributes visible coverage
 - and it has no useful active loads
@@ -588,20 +594,36 @@ The important invariants for implementation are:
 - each `ImageEntry` has at most one active load
 - each load completion must prove it is still current
 - an entry is not `Loaded` until the `SKImage` is installed
-- canceled never-visible working sets are disposed immediately
+- canceled never-visible working sets are removed from the cache immediately
 - partially visible older working sets may remain as fallback
-- older sets are disposed as soon as they stop contributing visible coverage
+- older sets are removed as soon as they stop contributing visible coverage
 - newest visible tiles draw on top of older fallback tiles
 - the cache, not the control, is the authority on working sets
+
+## Event flow
+
+The clarified event flow is:
+
+1. background work decodes or creates an `SKImage`
+2. completion is marshaled to the UI thread
+3. `ImageEntry.OnLoadCompleted(...)` validates:
+   - current `LoadGeneration`
+   - parent `WorkingSet.Epoch`
+   - parent working set still active in the cache
+4. if accepted, the entry installs the image and notifies its parent working set
+5. the `WorkingSet` recomputes its `VisibleSet` and raises `VisibleSetChanged`
+6. `ImageCache` recomposes the full visible set and raises `VisibleSetChanged`
+7. `InfiniteCanvasControl` updates its cached draw list and invalidates
 
 ## Recommended first implementation order
 
 1. define working-set and entry state enums
-2. add structural tile keys
+2. add structural equality-bearing entry keys
 3. add generation ids and stale-completion checks to `ImageEntry`
-4. make `ImageCache` maintain explicit active working sets with `Epoch`
-5. make viewport changes always flow through cache update logic
-6. ensure cache/entry state mutation is UI-thread-owned
-7. switch drawing to layered draw lists from active working sets
-8. add immediate disposal for canceled, never-visible sets
-9. add fallback-disposal logic based on visible contribution
+4. make `WorkingSet` own the full `ImageEntries` membership for its artifact slice
+5. make `ImageCache` maintain explicit active working sets with `Epoch`
+6. make viewport changes always flow through cache update logic and then into working sets
+7. ensure cache/entry state mutation is UI-thread-owned
+8. switch drawing to layered draw lists from active working sets
+9. remove canceled, never-visible working sets from the cache immediately
+10. add fallback-removal logic based on visible contribution

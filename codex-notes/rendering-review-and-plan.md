@@ -155,7 +155,7 @@ It should not be the place where load-state decisions become ad hoc.
 
 Should be responsible for:
 
-- deciding the current working set
+- deciding which working sets are active
 - deciding which entries are needed now
 - starting loads
 - canceling old loads
@@ -195,6 +195,21 @@ Should become immutable metadata describing a drawable asset:
 
 It should not mutate in ways that invalidate cache identity.
 
+### `WorkingSet`
+
+Should own the full set of `ImageEntry` objects for one artifact slice:
+
+- the single image
+- the full striped/static image list
+- or one zoom level of a zoomable canvas
+
+The intended split is:
+
+- `WorkingSet.ImageEntries`: all entries owned by the set
+- `WorkingSet.VisibleSet`: the currently visible and drawable subset
+
+That keeps membership stable while allowing `SKImage` residency to change freely.
+
 ## Zoom levels as first-class events
 
 This is the major new idea needed for correctness.
@@ -214,7 +229,8 @@ This logic is only active in `ZoomableCanvas` mode.
 
 At any moment, the cache should think in terms of a working set:
 
-- which tiles or images are needed for the current artifact
+- which entries belong to the current artifact or zoom level
+- which of those entries are currently visible
 - which tiles are needed for the target level in zoomable-canvas mode
 - which already-loaded older tiles can serve as fallback while the target level is loading
 
@@ -230,6 +246,16 @@ When the user pans within the same presentation zoom level:
 This is incremental behavior.
 
 In `SingleImage` and `MultiImageStatic` modes, this is the only kind of working-set update that exists.
+
+The intended call flow is:
+
+1. `InfiniteCanvasControl` detects a viewport change
+2. `ImageCache.ViewportChanged(...)` updates cache-level state
+3. `ImageCache` calls `ViewportChanged(...)` on relevant working sets
+4. each `WorkingSet` recomputes its `VisibleSet` and starts/cancels loads on its own entries
+5. working sets raise `VisibleSetChanged`
+6. `ImageCache` recomposes the overall visible set and raises its own `VisibleSetChanged`
+7. the control updates its cached draw list and invalidates
 
 ### Zoom-level change
 
@@ -258,6 +284,8 @@ Later, this could be relaxed to:
 - full viewport coverage
 - partial threshold
 - timeout-based fallback
+
+The important nuance from later discussion is that a newer working set may become partially visible before it is complete, while older fallback sets remain visible only where they still contribute coverage.
 
 ## Integer world math and local screen math
 
