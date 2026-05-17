@@ -10,4 +10,11 @@ namespace Celarix.Imaging.ImagingPlayground
         Loading,
         Loaded
     }
+
+    public enum LoadedImageKind
+    {
+        SingleImage,
+        Striped,
+        ZoomableCanvas
+    }
 }

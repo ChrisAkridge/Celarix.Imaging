@@ -18,7 +18,7 @@ namespace Celarix.Imaging.ImagingPlayground
             InitializeComponent();
             options.CanvasMaxMemoryMBChanged += (s, newValue) =>
             {
-                InfiniteCanvas?.SetMaxMemoryBytes(newValue * 1024L * 1024L);
+                InfiniteCanvas?.SetSoftMemoryLimit(newValue * 1024L * 1024L);
                 Log($"Canvas max memory set to {newValue} MB");
             };
         }
@@ -133,18 +133,22 @@ namespace Celarix.Imaging.ImagingPlayground
 
         private void ButtonOpenImage_Click(object sender, EventArgs e)
         {
-            if (OFDMain.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    InfiniteCanvas.LoadSingleImage(OFDMain.FileName);
-                    Log($"Loaded image: {OFDMain.FileName}");
-                }
-                catch (Exception ex)
-                {
-                    Log($"Error loading image: {ex.Message}");
-                }
-            }
+            //if (OFDMain.ShowDialog() == DialogResult.OK)
+            //{
+            //    try
+            //    {
+            //        InfiniteCanvas.LoadSingleImage(OFDMain.FileName);
+            //        Log($"Loaded image: {OFDMain.FileName}");
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Log($"Error loading image: {ex.Message}");
+            //    }
+            //}
+
+            // TEMPORARY
+            var testSource = new Rendering.v2.Computed.TestZoomableCanvasSource();
+            InfiniteCanvas.LoadZoomableCanvas(testSource);
         }
 
         private void InfiniteCanvas_Click(object sender, EventArgs e)

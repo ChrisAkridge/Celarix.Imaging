@@ -1,27 +1,42 @@
+interface IImageCache : IDisposable
+{
+    Rectangle ViewportCanvasCoordinates { get; }
+    Rectangle ViewportControlCoordinates { get; }
+    IReadOnlyList<ImageEntry> VisibleSet { get; }
+
+    event EventHandler? VisibleSetChanged;
+
+    void ViewportChanged(Rectangle newViewportCanvasCoordinates);
+    Rectangle ControlRectangleForCanvasRectangle(Rectangle canvasRect);
+
+    void SetSoftMemoryLimit(long bytes);
+    void SetHardMemoryLimit(long bytes);
+}
+
 class FactoryOptions
 {
     CancellationToken CancellationToken { get; }
     LoadedImageKind Kind { get; }
 
+    // Used only if striped, otherwise null
+    int? StripeIndex { get; }
+
     // Used only if zoomable canvas; otherwise null
     int? ZoomLevel { get; }
     int? TileX { get; }
     int? TileY { get; }
+    int? TileEdgeLength { get; }
+    SKPoint? TopLeftCanvasPoint { get; } // computed property
 }
 
 class CanvasImage
 {
     Func<FactoryOptions, Task<SKImage>> _imageFactory;
-    public int CanvasX { get; } // pixel coordinates; when loading a zoomable canvas, we can convert tile coordinates easily to pixel coordinates by multiplying by the tile size (e.g. 256)
-    public int CanvasY { get; }
-    public int? Width { get; }
-    public int? Height { get; }
-    public int? OnlyAtZoomLevel { get; } // if null, show at all zoom levels
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(CanvasX, CanvasY, OnlyAtZoomLevel);
-    }
+    int CanvasX { get; }
+    int CanvasY { get; }
+    int Width { get; }
+    int Height { get; }
+    int? OnlyAtZoomLevel { get; } // if null, show at all zoom levels
 }
 
 class ImageEntryKey : IEquatable<ImageEntryKey>
@@ -33,18 +48,16 @@ class ImageEntryKey : IEquatable<ImageEntryKey>
 
     override bool Equals(object? obj);
     bool Equals(ImageEntryKey? other);
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Kind, ZoomLevel, CanvasX, CanvasY);
-    }
+    override int GetHashCode();
 }
 
 class ImageEntry : IDisposable
 {
     ImageEntryState State { get; }
     ImageEntryKey EntryKey { get; }
-    WorkingSet Parent { get; }
+
+    // Parent is only used by zoomable canvas mode
+    ZoomableCanvasWorkingSet? Parent { get; }
 
     CanvasImage CanvasImage { get; }
     SKImage? Image { get; }
@@ -52,12 +65,12 @@ class ImageEntry : IDisposable
     long? ByteSize { get; }
     long? LastUsedTick { get; }
     int? LoadGeneration { get; }
-    
-    void BeginLoad();   // can be called from State = Unloaded or Faulted both
-    // If image is loaded, this is a no-op and throws no error
-    // Lets callers always ask to load and not have to care if it is loaded
-    void CancelLoad();  // I think this is alright? maybe don't need ANOTHER CTS here?
-    void OnLoadCompleted(SKImage image, int loadGeneration, long byteSize); // called by the task we spawn in BeginLoad - task calls the factory, then calls this; this just sets properties
+
+    event EventHandler? ImageLoadedOrUnloaded;
+
+    void BeginLoad();
+    void CancelLoad();
+    void OnLoadCompleted(SKImage image, int loadGeneration, int? parentEpoch, long byteSize);
     void Unload();
     void Dispose();
 }
@@ -71,99 +84,133 @@ enum ImageEntryState
     Disposed
 }
 
-class WorkingSet
+class SingleImageCache : IImageCache
 {
-    WorkingSetState State { get; }     // yes these all only list get
-    int Epoch { get; }                 // not because I think these should all be readonly
-    int? ZoomLevel { get; }  // for SingleImage/Striped, this is null, meaning it applies to all zoom levels
-    bool IsFallback { get; } // false means "current zoom level", true means "show until enough of new working set is loaded such that all images in this working set are covered over"
+    Rectangle ViewportCanvasCoordinates { get; }
+    Rectangle ViewportControlCoordinates { get; }
+    IReadOnlyList<ImageEntry> VisibleSet { get; } // always the one entry
+
+    ImageEntry Entry { get; }
+
+    event EventHandler? VisibleSetChanged;
+
+    SingleImageCache(...);
+
+    void ViewportChanged(Rectangle newViewportCanvasCoordinates);
+    Rectangle ControlRectangleForCanvasRectangle(Rectangle canvasRect);
+    void SetSoftMemoryLimit(long bytes);
+    void SetHardMemoryLimit(long bytes);
+    void Dispose();
+}
+
+class StripedImageCache : IImageCache
+{
+    Rectangle ViewportCanvasCoordinates { get; }
+    Rectangle ViewportControlCoordinates { get; }
+    IReadOnlyList<ImageEntry> VisibleSet { get; } // loaded entries currently intersecting viewport
+
+    IReadOnlyList<Rectangle> StripeRects { get; } // full-width, non-overlapping vertical stripes in stable index order
+    IReadOnlyList<ImageEntry> Entries { get; } // one entry per stripe
+    long SoftMemoryLimitBytes { get; }
+    long HardMemoryLimitBytes { get; }
+
+    event EventHandler? VisibleSetChanged;
+
+    StripedImageCache(...); // takes StripeRects plus a stripe-index-based factory/provider
+
+    void ViewportChanged(Rectangle newViewportCanvasCoordinates);
+    Rectangle ControlRectangleForCanvasRectangle(Rectangle canvasRect);
+    void RecomputeVisibleSet();
+    void CleanupForSoftMemoryLimit();
+    void SetSoftMemoryLimit(long bytes);
+    void SetHardMemoryLimit(long bytes);
+    void Dispose();
+}
+
+class ZoomableCanvasWorkingSet
+{
+    WorkingSetState State { get; }
+    int Epoch { get; }
+    int ZoomLevel { get; }
+    bool IsFallback { get; } // irreversible: once fallback, this set is a dead set walking
+    IReadOnlyList<ImageEntry> ImageEntries { get; } // all entries for this zoom level
+    IReadOnlyList<ImageEntry> VisibleSet { get; }   // visible loaded subset
+
     long TotalLoadedBytes { get; }
-    int ActiveLoadCount { get; } // computed property, sum of ImageEntries where State == Loading
-    IReadOnlyList<ImageEntry> ImageEntries { get; } // all the ImageEntries that belong to this zoom level
+    int ActiveLoadCount { get; }
 
-    IReadOnlyList<ImageEntry> VisibleSet { get; private set; } // recomputed on BOTH viewport change and image load/unload, only in-viewport images
-    event EventHandler? VisibleSetChanged; // raised on load/unload
+    event EventHandler? VisibleSetChanged;
 
-    WorkingSet(...);
+    ZoomableCanvasWorkingSet(...);
 
-    void SetFallback(); // sets IsFallback == true, cancels all active loads
-    // no logic for Disposed/Superseded. why?
-    // if IsFallback
-    //    && ActiveLoadCount == 0
-    //    && (TotalLoadedBytes == 0
-    //       || none of the loaded tiles are in the viewport)
-    // then ImageCache can just remove this instance from the list
-    // of working sets
-
+    void SetFallback(Rectangle viewport); // cancels active loads and unloads everything outside viewport immediately
     void ImageLoadedOrUnloaded();
+    void ViewportChanged(Rectangle viewport);
 
-    void ViewportChanged(Rectangle viewport); // computs visible ImageEntries, starts loads on all
-    // viewport can zoom a little before loading another zoom level, so this handles both panning and zooming
+    bool ContainsEntry(ImageEntry imageEntry);
+    bool HasVisibleCoverage();
+    bool FullyCoversViewport(Rectangle viewport); // true when this working set alone covers the visible viewport
     void OnVisibleSetChanged();
 }
 
-class ImageCache
+enum WorkingSetState
 {
-    // maybe these rects and sizes should be Skia types
+    Building,
+    Loading,
+    Active,
+    Superseded,
+    Canceled
+}
+
+class ZoomableCanvasImageCache : IImageCache
+{
     Rectangle ViewportCanvasCoordinates { get; }
-    Rectangle ViewportControlCoordinates { get; } // always (0, 0, control width, control height)
-    List<WorkingSet> WorkingSets { get; }   // or a private readonly field or whatever
-    IReadOnlyList<ImageEntry> VisibleSet { get; } // computed property based on the VisibleSet of each WorkingSet; recomputed inside WorkingSets on any VisibleSetChanged event from any WorkingSet, or when the ViewportCanvasCoordinates changes
-    // just a big concat, really
-    LoadedImageKind Kind { get; }
-    int? CurrentZoomLevel { get; } // computed property based on ViewportCanvasCoordinates and tile size
-    Size? ZoomableCanvasTileSize { get; }
+    Rectangle ViewportControlCoordinates { get; }
+    IReadOnlyList<ImageEntry> VisibleSet { get; } // concat/layering of working set visible sets
+
+    IReadOnlyList<ZoomableCanvasWorkingSet> WorkingSets { get; }
+    int? CurrentZoomLevel { get; }
+    Size ZoomableCanvasTileSize { get; }
     Size? TotalZoomableCanvasPixelSize { get; }
-    // it's worth noting more about zoomable canvases
-    // it's like we have one really big image we chopped up into square tiles
-    // say we have a 104856x1048576 image and we chop it up into 1024x1024 tiles
-    // so it's still 1 mebipixel across, but it's also 1024 tiles across at zoom level 0
-    // zoom level 1 tiles are still 1024x1024 PNGs on disk
-    // but they represent 4 zoom level 0 tiles shrunk down to 25% each
-    // so a 2048x2048 pixel block, and there are 512 such tiles across now
-    // at zoom level 2, each til is a 4096x4096 block and there's 256 tiles across
-    // the highest zoom level is when the whole canvas fits in one tile
-    // log_2(bigImageMaxDimension) - 10
     int Epoch { get; }
-    long SoftMemoryLimitBytes { get; } // above this, invisible loaded ImageEntries are unloaded
-    long HardMemoryLimitBytes { get; } // above this, even visible ImageEntries are unloaded until we drop back below this yes it will make visible stuff vanish no I don't care
-    // but we should favor completely unloading IsFallback == true WorkingSets even if they're still visible because we want to clear them anyway at some point
+    long SoftMemoryLimitBytes { get; }
+    long HardMemoryLimitBytes { get; }
 
-    event EventHandler? VisibleSetChanged; // i luv 2 bubble up events 4 multiple layers
+    event EventHandler? VisibleSetChanged;
 
-    // it feels more pure to let the ViewportCanvasCoordinates have a setter
-    // but man that would be such a big setter given that it would update all
-    // the working sets which would then cause image loads, feels not very
-    // setter-like
+    ZoomableCanvasImageCache(...);
+
     void ViewportChanged(Rectangle newViewportCanvasCoordinates);
     Rectangle ControlRectangleForCanvasRectangle(Rectangle canvasRect);
+    void SetSoftMemoryLimit(long bytes);
+    void SetHardMemoryLimit(long bytes);
+
+    int GetZoomLevelForViewport(Rectangle viewport);
+    void HandleZoomLevelChange(int newZoomLevel);
+    bool CurrentWorkingSetFullyCoversViewport();
+    void CleanupInactiveFallbackWorkingSets();
     void OnVisibleSetChanged();
+    void Dispose();
 }
 
 enum LoadedImageKind
 {
-    SingleImage,   // one big image for the entire canvas; no zoom levels; not tiled; just one big image that we pan around on
-    Striped,       // vertical stack of images; no zoom levels
-    ZoomableCanvas // grids of tiles at multiple zoom levels; only mode that uses multiple WorkingSets
+    SingleImage,
+    Striped,
+    ZoomableCanvas
 }
 
 class InfiniteCanvasControl : UserControl, IDisposable
 {
-    const float MinZoomScale = 1f / 64f; // don't zoom in more than 64x64 control pixels = 1 canvas pixel
+    const float MinZoomScale = 1f / 64f;
     const float MaxZoomVelocity = 1f;
     const float ZoomDampening = 0.9f;
 
-    ImageCache _imageCache;
+    IImageCache _imageCache;
     List<ImageEntry> _visibleImageEntries;
-    SKPoint canvasOffset; // (0, 0) means the top-left of the canvas is aligned with the top-left of the control
-    // i.e. (100, 0) means the canvas's origin is now at control coordinates (-100, 0), off the left edge
-    // +X means "panned right", -X means "panned left", +Y means "panned down", -Y means "panned up"
-    float canvasZoomScale; // 1.0 means 1 control pixel == 1 canvas pixel
-    // 2.0 means 1 control pixel == 4 canvas pixels (zoomed out)
-    // 0.5 means 4 control pixels == 1 canvas pixel (zoomed in)
-    // up means zoom out, down means zoom in
+    SKPoint canvasOffset;
+    float canvasZoomScale;
 
-    // Existing stuff from the control
     SKPoint _mouseHoverControlPosition;
     System.Windows.Forms.Timer _hoverTimer;
     SKPoint? _dragStartControlPoint;
@@ -175,11 +222,11 @@ class InfiniteCanvasControl : UserControl, IDisposable
     ContextMenuStrip _contextMenu;
 
     InfiniteCanvasControl();
-    void LoadSingleImage(string);
-    void LoadSingleInMemoryImage(Image<Rgba32>);
-    void LoadStripedImages(string folderPath);
+    void LoadSingleImage(string filePath);
+    void LoadSingleInMemoryImage(Image<Rgba32> image);
+    void LoadStripedImages(...); // striped image provider or stripe rects + stripe factory
     void LoadZoomableCanvas(string tilesFolderPath, Size tileSize);
-    void LoadFactoryImage(Func<FactoryOptions, Task<SKImage>>); // supports all three kinds
+    void LoadFactoryImage(Func<FactoryOptions, Task<SKImage>> imageFactory);
 
     override void OnPaintSurface(SKPaintGLSurfaceEventArgs e);
     override void OnPaint(PaintEventArgs e);
@@ -191,7 +238,7 @@ class InfiniteCanvasControl : UserControl, IDisposable
     void InfiniteCanvasControl_MouseWheel(object sender, MouseEventArgs e);
 
     void SetSoftMemoryLimit(long bytes);
-    void SetHardMemoryLimit(long bytes);    // prevents hard limit < soft limit
+    void SetHardMemoryLimit(long bytes);
 
     static SKPoint Multiply(SKPoint point, float scalar);
     static SKPoint Divide(SKPoint point, float divisor);
