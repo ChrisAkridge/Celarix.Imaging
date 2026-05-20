@@ -62,7 +62,7 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             int bytesRead,
             out int pixelsWritten)
         {
-            Rgba32[] palette = GetPaletteOrThrow(options, 1, 2, ColorMode.Grayscale);
+            var palette = GetPaletteOrThrow(options, 1, 2, ColorMode.Grayscale);
 
             pixelsWritten = 0;
             for (var i = 0; i < bytesRead; i++)
@@ -88,7 +88,7 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             int bytesRead,
             out int pixelsWritten)
         {
-            Rgba32[] palette = GetPaletteOrThrow(options, 2, 4, ColorMode.Grayscale);
+            var palette = GetPaletteOrThrow(options, 2, 4, ColorMode.Grayscale);
             pixelsWritten = 0;
             for (var i = 0; i < bytesRead; i++)
             {
@@ -113,15 +113,15 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             int bytesRead,
             out int pixelsWritten)
         {
-            Rgba32[] palette = GetPaletteOrThrow(options, 3, 8, options.ColorMode);
+            var palette = GetPaletteOrThrow(options, 3, 8, options.ColorMode);
             pixelsWritten = 0;
             var pixelIndex = 0;
 
-            for (var i = 0; i < bytesRead - 2; i += 3)
+            for (var i = 0; i < bytesRead; i += 3)
             {
                 var hi = byteBuffer[i];
-                var mid = byteBuffer[i + 1];
-                var lo = byteBuffer[i + 2];
+                var mid = (i + 1) < bytesRead ? byteBuffer[i + 1] : (byte)0;
+                var lo = (i + 2) < bytesRead ? byteBuffer[i + 2] : (byte)0;
 
                 // 00011122 23334445 55666777
                 // 76543210 76543210 76543210
@@ -164,7 +164,7 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             int bytesRead,
             out int pixelsWritten)
         {
-            Rgba32[] palette = GetPaletteOrThrow(options, 4, 16, options.ColorMode);
+            var palette = GetPaletteOrThrow(options, 4, 16, options.ColorMode);
             pixelsWritten = 0;
             for (var i = 0; i < bytesRead; i++)
             {
@@ -194,7 +194,7 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             int bytesRead,
             out int pixelsWritten)
         {
-            Rgba32[] palette = GetPaletteOrThrow(options, 8, 256, options.ColorMode);
+            var palette = GetPaletteOrThrow(options, 8, 256, options.ColorMode);
             pixelsWritten = 0;
             for (var i = 0; i < bytesRead; i++)
             {
@@ -215,7 +215,7 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             int bytesRead,
             out int pixelsWritten)
         {
-            Rgba32[] palette = GetPaletteOrThrow(options, 16, 65536, options.ColorMode);
+            var palette = GetPaletteOrThrow(options, 16, 65536, options.ColorMode);
             pixelsWritten = 0;
             for (var i = 0; i < bytesRead; i += 2)
             {
@@ -290,7 +290,7 @@ namespace Celarix.Imaging.BinaryDrawing.v2
                 var lo = (i + 1) < bytesRead ? byteBuffer[i + 1] : (byte)0;
                 var halfBits = unchecked((ushort)((hi << 8) | lo));
                 var sign = halfBits >> 15;
-                var exponent = (halfBits >> 6) & 0b11111;
+                var exponent = (halfBits >> 10) & 0b11111;
                 var mantissa = halfBits & 0b11_11111111;
 
                 Rgba32 guardColor;
@@ -316,7 +316,7 @@ namespace Celarix.Imaging.BinaryDrawing.v2
                 {
                     // Normal
                     guardColor = new Rgba32(0xA0, 0xA0, 0xA0, 0xFF);
-                    mantissa |= (1 << 11);  // set implicit leading 1 bit
+                    mantissa |= (1 << 10);  // set implicit leading 1 bit
                 }
 
                 var firstPixelIndex = (i / 2) * 6;
@@ -432,7 +432,14 @@ namespace Celarix.Imaging.BinaryDrawing.v2
                 var _2 = (i + 5) < bytesRead ? byteBuffer[i + 5] : (byte)0;
                 var _1 = (i + 6) < bytesRead ? byteBuffer[i + 6] : (byte)0;
                 var _0 = (i + 7) < bytesRead ? byteBuffer[i + 7] : (byte)0;
-                var doubleBits = unchecked((ulong)((_7 << 56) | (_6 << 48) | (_5 << 40) | (_4 << 32) | (_3 << 24) | (_2 << 16) | (_1 << 8) | _0));
+                var doubleBits = unchecked((ulong)(((ulong)_7 << 56)
+                    | ((ulong)_6 << 48)
+                    | ((ulong)_5 << 40)
+                    | ((ulong)_4 << 32)
+                    | ((ulong)_3 << 24)
+                    | ((ulong)_2 << 16)
+                    | ((ulong)_1 << 8)
+                    | _0));
                 var sign = doubleBits >> 63;
                 var exponent = (doubleBits >> 52) & 0x7FF;
                 var mantissa = doubleBits & 0xFFFFFFFFFFFFF;
@@ -476,7 +483,7 @@ namespace Celarix.Imaging.BinaryDrawing.v2
                     {
                         0 => sign == 0 ? new Rgba32(0xFF, 0xFF, 0xFF, 0xFF) : new Rgba32(0, 0, 0, 0xFF),
                         1 => guardColor,
-                        2 => DoubleHighMantissaPixel((int)(mantissa >> 47)),
+                        2 => DoubleHighMantissaPixel((int)(mantissa >> 48)),
                         3 => new Rgba32((uint)(((mantissa >> 24) & 0xFFFFFF) << 8) | 0xFF),
                         4 => new Rgba32((uint)((mantissa & 0xFFFFFF) << 8) | 0xFF),
                         5 => guardColor,
@@ -490,7 +497,7 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             }
         }
 
-        private static Rgba32[] GetPaletteOrThrow(DrawOptions options, int bitDepth, int requiredColors, ColorMode colorMode)
+        private static IReadOnlyList<Rgba32> GetPaletteOrThrow(DrawOptions options, int bitDepth, int requiredColors, ColorMode colorMode)
         {
             if (options.ColorMode == ColorMode.UserPalette)
             {
@@ -502,7 +509,7 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             }
             else
             {
-                return [.. DefaultPalettes.GetPalette(bitDepth, colorMode.ToV1ColorMode())];
+                return DefaultPalettes.GetPalette(bitDepth, colorMode.ToV1ColorMode());
             }
         }
 
@@ -517,8 +524,8 @@ namespace Celarix.Imaging.BinaryDrawing.v2
                 // RRRRRRGG GGGGBBBB BBAAAAAA
                 // 76543210 76543210 76543210
                 var red = hi >> 2;
-                var green = (hi << 6) | (mid >> 4);
-                var blue = (mid << 4) | (lo >> 6);
+                var green = ((hi & 0b11) << 6) | (mid >> 4);
+                var blue = ((mid & 0b1111) << 4) | (lo >> 6);
                 var alpha = lo & 0b111111;
 
                 var redScaled = (byte)(255f * (red / (float)63));

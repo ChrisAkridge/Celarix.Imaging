@@ -93,4 +93,19 @@ namespace Celarix.Imaging
         InvalidFile,
         UnknownError
     }
+
+    internal enum FloatPixelFormat
+    {
+        Half,
+        Single,
+        Double
+    }
+
+    internal enum FloatKind
+    {
+        Normal,
+        Subnormal,
+        Infinity,
+        NaN
+    }
 }
