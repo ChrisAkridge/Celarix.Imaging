@@ -38,5 +38,10 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
         {
             return HashCode.Combine(Kind, ZoomLevel, CanvasX, CanvasY);
         }
+
+        public override string ToString()
+        {
+            return $"ImageEntryKey[Kind={Kind},ZoomLevel={ZoomLevel?.ToString() ?? "(none)"},CanvasX={CanvasX},CanvasY={CanvasY}]";
+        }
     }
 }

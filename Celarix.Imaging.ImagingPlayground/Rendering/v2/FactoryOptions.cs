@@ -1,37 +1,17 @@
-﻿using SkiaSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
 {
-    public class FactoryOptions
+    public abstract class FactoryOptions
     {
-        public required CancellationToken CancellationToken { get; init; }
-        public required LoadedImageKind Kind { get; init; }
+        public CancellationToken CancellationToken { get; protected set; }
+        public abstract LoadedImageKind Kind { get; }
 
-        public int? StripeIndex { get; init; }
-
-        public int? ZoomLevel { get; init; }
-        public int? TileX { get; init; }
-        public int? TileY { get; init; }
-        public int? TileEdgeLength { get; init; }
-
-        public SKPoint? TopLeftCanvasPoint
+        protected FactoryOptions(CancellationToken cancellationToken)
         {
-            get
-            {
-                if (!ZoomLevel.HasValue || !TileX.HasValue || !TileY.HasValue || !TileEdgeLength.HasValue)
-                {
-                    return null;
-                }
-
-                var topLeftX = TileX.Value * TileEdgeLength.Value;
-                var topLeftY = TileY.Value * TileEdgeLength.Value;
-                topLeftX <<= ZoomLevel.Value;
-                topLeftY <<= ZoomLevel.Value;
-                return new SKPoint(topLeftX, topLeftY);
-            }
+            CancellationToken = cancellationToken;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using Serilog;
+using SkiaSharp;
 using System.Drawing;
 using System.Linq;
 
@@ -51,12 +52,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
                     Height = stripeRect.Height
                 };
 
-                var entry = new ImageEntry(uiControl, cancellationToken => new FactoryOptions
-                {
-                    CancellationToken = cancellationToken,
-                    Kind = LoadedImageKind.Striped,
-                    StripeIndex = stripeIndex
-                })
+                var entry = new ImageEntry(uiControl, cancellationToken => new StripedFactoryOptions(cancellationToken, stripeIndex))
                 {
                     EntryKey = new ImageEntryKey
                     {
@@ -83,6 +79,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
         {
             ViewportControlCoordinates = newViewportControlCoordinates;
             OnVisibleSetChanged();
+            Log.Debug("Viewport moved to {Coordinates}", ViewportCanvasCoordinates);
         }
 
         public Rectangle ControlRectangleForCanvasRectangle(Rectangle canvasRect)
@@ -142,12 +139,15 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
             {
                 return;
             }
-
             var totalLoadedBytes = entries.Sum(e => e.ByteSize ?? 0);
             if (totalLoadedBytes <= SoftMemoryLimitBytes)
             {
                 return;
             }
+
+            Log.Debug("Loaded bytes {TotalLoadedBytes} exceed soft memory limit {SoftMemoryLimitBytes}; starting cleanup",
+                totalLoadedBytes.FormatBytes(),
+                SoftMemoryLimitBytes.FormatBytes());
 
             var viewportCenterY = ViewportCanvasCoordinates.Top + (ViewportCanvasCoordinates.Height / 2f);
             var offscreenLoadedEntries = entries
@@ -170,6 +170,9 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
                 totalLoadedBytes -= entry.ByteSize ?? 0;
                 entry.Unload();
             }
+
+            Log.Debug("Finished soft memory limit cleanup; total loaded bytes now {TotalLoadedBytes}",
+                totalLoadedBytes.FormatBytes());
         }
 
         public void SetSoftMemoryLimit(long bytes)

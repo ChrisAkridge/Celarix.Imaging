@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using Serilog;
+using System.Drawing;
 
 namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
 {
@@ -30,11 +31,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
             SoftMemoryLimitBytes = softMemoryLimitBytes;
             HardMemoryLimitBytes = Math.Max(hardMemoryLimitBytes, softMemoryLimitBytes);
 
-            Entry = new ImageEntry(uiControl, cancellationToken => new FactoryOptions
-            {
-                CancellationToken = cancellationToken,
-                Kind = LoadedImageKind.SingleImage
-            })
+            Entry = new ImageEntry(uiControl, cancellationToken => new SingleImageFactoryOptions(cancellationToken))
             {
                 EntryKey = new ImageEntryKey
                 {
@@ -61,6 +58,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
         {
             ViewportControlCoordinates = newViewportControlCoordinates;
             OnVisibleSetChanged();
+            Log.Debug("Viewport moved to {Coordinates}", ViewportControlCoordinates);
         }
 
         public Rectangle ControlRectangleForCanvasRectangle(Rectangle canvasRect)
@@ -90,6 +88,8 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
             {
                 HardMemoryLimitBytes = SoftMemoryLimitBytes;
             }
+
+            Log.Debug("Soft memory limit set to {Limit}", SoftMemoryLimitBytes.FormatBytes());
         }
 
         public void SetHardMemoryLimit(long bytes)
@@ -97,6 +97,8 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
             ArgumentOutOfRangeException.ThrowIfNegative(bytes);
 
             HardMemoryLimitBytes = Math.Max(bytes, SoftMemoryLimitBytes);
+
+            Log.Debug("Hard memory limit set to {Limit}", HardMemoryLimitBytes.FormatBytes());
         }
 
         public void Dispose()

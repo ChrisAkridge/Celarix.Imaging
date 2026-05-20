@@ -1,3 +1,5 @@
+using Serilog;
+
 namespace Celarix.Imaging.ImagingPlayground
 {
     internal static class Program

@@ -1,5 +1,6 @@
 ﻿using Celarix.Imaging.Packing;
 using Celarix.Imaging.Utilities;
+using Serilog;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SkiaSharp;
@@ -17,16 +18,19 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
         public required int Height { get; init; }
         public int? OnlyAtZoomLevel { get; init; }
 
-        public SKPoint TopLeftCanvasPoint => new(CanvasX, CanvasY);
-        public SKPoint TopRightCanvasPoint => new(CanvasX + Width, CanvasY);
-        public SKPoint BottomLeftCanvasPoint => new(CanvasX, CanvasY + Height);
-        public SKPoint BottomRightCanvasPoint => new(CanvasX + Width, CanvasY + Height);
+        public System.Drawing.Point TopLeftCanvasPoint => new(CanvasX, CanvasY);
+        public System.Drawing.Point TopRightCanvasPoint => new(CanvasX + Width, CanvasY);
+        public System.Drawing.Point BottomLeftCanvasPoint => new(CanvasX, CanvasY + Height);
+        public System.Drawing.Point BottomRightCanvasPoint => new(CanvasX + Width, CanvasY + Height);
+        public System.Drawing.Rectangle CanvasRect => new(CanvasX, CanvasY, Width, Height);
 
         public static CanvasImage FromFile(string filePath,
             int canvasX,
             int canvasY,
             int? onlyAtZoomLevel = null)
         {
+            Log.Debug("Creating CanvasImage from file: {FilePath} at canvas position ({CanvasX}, {CanvasY}) at zoom level {OnlyAtZoomLevel}",
+                filePath, canvasX, canvasY, onlyAtZoomLevel);
             var size = TryGetKnownImageSize(filePath);
 
             return new CanvasImage
@@ -48,9 +52,11 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
         {
             ArgumentNullException.ThrowIfNull(imageSharpImage);
 
+            Log.Debug("Creating CanvasImage from ImageSharp image at canvas position ({CanvasX}, {CanvasY}) at zoom level {OnlyAtZoomLevel}",
+                canvasX, canvasY, onlyAtZoomLevel);
             return new CanvasImage
             {
-                Factory = options => CreateSkImageFromImageSharp(imageSharpImage, options.CancellationToken),
+                Factory = options => Helpers.CreateSkImageFromImageSharp(imageSharpImage, options.CancellationToken),
                 SizeEstimator = () => (long)imageSharpImage.Width * imageSharpImage.Height * 4,
                 CanvasX = canvasX,
                 CanvasY = canvasY,
@@ -65,6 +71,12 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
             if (ImageSizeLoader.TryGetSize(filePath, out var size) && size.Width > 0 && size.Height > 0)
             {
                 return size;
+            }
+
+            var info = SixLabors.ImageSharp.Image.Identify(filePath);
+            if (info != null)
+            {
+                return new SixLabors.ImageSharp.Size(info.Width, info.Height);
             }
 
             return new SixLabors.ImageSharp.Size(1000, 1000);
@@ -90,38 +102,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
             }
 
             using var image = imageLoadResult.LoadedImage;
-            return await CreateSkImageFromImageSharp(image, options.CancellationToken);
-        }
-
-        private static Task<SKImage> CreateSkImageFromImageSharp(Image<Rgba32> imageSharpImage,
-            CancellationToken cancellationToken)
-        {
-            var buffer = new byte[imageSharpImage.Width * imageSharpImage.Height * 4];
-            var pixel = 0;
-
-            imageSharpImage.ProcessPixelRows(accessor =>
-            {
-                for (var y = 0; y < accessor.Height; y++)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    var row = accessor.GetRowSpan(y);
-                    for (var x = 0; x < row.Length; x++)
-                    {
-                        var pixelData = row[x];
-                        buffer[pixel++] = pixelData.R;
-                        buffer[pixel++] = pixelData.G;
-                        buffer[pixel++] = pixelData.B;
-                        buffer[pixel++] = pixelData.A;
-                    }
-                }
-            });
-
-            var image = SKImage.FromPixelCopy(
-                new SKImageInfo(imageSharpImage.Width, imageSharpImage.Height, SKColorType.Rgba8888),
-                buffer,
-                imageSharpImage.Width * 4);
-            return Task.FromResult(image);
+            return await Helpers.CreateSkImageFromImageSharp(image, options.CancellationToken);
         }
     }
 }

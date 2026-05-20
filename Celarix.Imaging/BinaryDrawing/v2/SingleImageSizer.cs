@@ -96,6 +96,12 @@ namespace Celarix.Imaging.BinaryDrawing.v2
                 if (options.SizeMode == SizeMode.FixedWidth || fixedWidthOverride.HasValue)
                 {
                     var width = fixedWidthOverride ?? options.FixedWidth!.Value;
+
+                    if (width <= 0)
+                    {
+                        throw new ArgumentException($"Invalid fixed width: {width}");
+                    }
+
                     blockSize = GetBlockSizeFixedWidth(pixelBlockPixelCount,
                         width,
                         options.PixelFormat,
@@ -159,7 +165,7 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             }
             else if (format == PixelFormat.Float64)
             {
-                return (Helpers.RoundUpToMultiple(bytes, 8L) / 8L) * 6L;
+                return (Helpers.RoundUpToMultiple(bytes, 8L) / 8L) * 8L;
             }
             else
             {
@@ -202,6 +208,12 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             {
                 var stripeWidth = Helpers.GetStripeWidth(format);
                 var stripesPerRow = fixedWidth / stripeWidth;
+
+                if (stripesPerRow <= 0)
+                {
+                    throw new ArgumentException($"Computed stripes per row is {stripesPerRow}, must be positive");
+                }
+
                 var stripeCount = GetStripeCount(pixelCount, format);
                 var height = (int)Math.Ceiling((double)stripeCount / stripesPerRow);
                 return new Size(fixedWidth, height);

@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Linq;
+using System.Text;
 
 namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
 {
@@ -22,6 +23,22 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
         public int ActiveLoadCount => ImageEntries.Count(e => e.State == ImageEntryState.Loading);
 
         public event EventHandler? VisibleSetChanged;
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            builder.Append("ZoomableCanvasWorkingSet[");
+            builder.Append($"State={State},");
+            builder.Append($"Epoch={Epoch},");
+            builder.Append($"ZoomLevel={ZoomLevel},");
+            builder.Append($"IsFallback={IsFallback},");
+            builder.Append($"ImageEntries Count={ImageEntries.Count},");
+            builder.Append($"VisibleSet Count={VisibleSet.Count},");
+            builder.Append($"TotalLoadedBytes={TotalLoadedBytes.FormatBytes()},");
+            builder.Append($"ActiveLoadCount={ActiveLoadCount}");
+            builder.Append("]");
+            return builder.ToString();
+        }
 
         public ZoomableCanvasWorkingSet(int epoch,
             int zoomLevel,

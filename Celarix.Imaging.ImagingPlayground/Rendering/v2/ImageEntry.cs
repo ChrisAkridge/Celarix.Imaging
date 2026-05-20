@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using Serilog;
+using SkiaSharp;
 
 namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
 {
@@ -48,6 +49,9 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
             var options = factoryOptionsFactory(cancellationToken);
             activeLoadTask = CanvasImage.Factory(options);
 
+            Log.Debug("Begin load {LoadGeneration} for epoch {ParentEpoch} for {EntryKey}",
+                nextGeneration, parentEpoch?.ToString() ?? "(none)", EntryKey);
+
             _ = activeLoadTask.ContinueWith(task =>
             {
                 if (task.Status == TaskStatus.RanToCompletion)
@@ -73,6 +77,8 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
             {
                 return;
             }
+
+            Log.Debug("Cancelling load for {ImageEntryKey}", EntryKey);
 
             LoadCancellationTokenSource?.Cancel();
             LoadCancellationTokenSource?.Dispose();
@@ -104,11 +110,15 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
             LastUsedTick = Environment.TickCount64;
             State = ImageEntryState.Loaded;
             ImageLoadedOrUnloaded?.Invoke(this, EventArgs.Empty);
+
+            Log.Debug("Load complete for {EntryKey}", EntryKey);
         }
 
         public void Unload()
         {
             ObjectDisposedException.ThrowIf(disposed, this);
+
+            Log.Debug("Unloading {EntryKey}", EntryKey);
 
             if (State == ImageEntryState.Loading)
             {

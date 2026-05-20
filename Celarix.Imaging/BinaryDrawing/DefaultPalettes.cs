@@ -11,8 +11,11 @@ namespace Celarix.Imaging.BinaryDrawing
     {
         private static readonly Rgba32[] oneBppGrayscale;
         private static readonly Rgba32[] twoBppGrayscale;
+        private static readonly Rgba32[] threeBppGrayscale;
+        private static readonly Rgba32[] threeBppRgb111;
         private static readonly Rgba32[] fourBppGrayscale;
         private static readonly Rgba32[] fourBppRgb121;
+        private static readonly Rgba32[] fourBppArgb1111;
         private static readonly Rgba32[] eightBppGrayscale;
         private static readonly Rgba32[] eightBppRgb332;
         private static readonly Rgba32[] eightBppArgb2222;
@@ -30,6 +33,16 @@ namespace Celarix.Imaging.BinaryDrawing
         public static IReadOnlyList<Rgba32> TwoBppGrayscale => Array.AsReadOnly(twoBppGrayscale);
 
         /// <summary>
+        /// Contains the default 3 bits per pixel grayscale palette.
+        /// </summary>
+        public static IReadOnlyList<Rgba32> ThreeBppGrayscale => Array.AsReadOnly(threeBppGrayscale);
+
+        /// <summary>
+        /// Contains the default 3 bits per pixel color palette, mapped in RGB 1:1:1.
+        /// </summary>
+        public static IReadOnlyList<Rgba32> ThreeBppRgb111 => Array.AsReadOnly(threeBppRgb111);
+
+        /// <summary>
         /// Contains the default 4 bits per pixel grayscale palette.
         /// </summary>
         public static IReadOnlyList<Rgba32> FourBppGrayscale => Array.AsReadOnly(fourBppGrayscale);
@@ -38,6 +51,11 @@ namespace Celarix.Imaging.BinaryDrawing
         /// Contains the default 4 bits per pixel color palette, mapped in RGB 1:2:1.
         /// </summary>
         public static IReadOnlyList<Rgba32> FourBppRgb121 => Array.AsReadOnly(fourBppRgb121);
+
+        /// <summary>
+        /// Contains the default 4 bits per pixel color palette, mapped in RGBA 1:1:1:1.
+        /// </summary>
+        public static IReadOnlyList<Rgba32> FourBppArgb1111 => Array.AsReadOnly(fourBppArgb1111);
 
         /// <summary>
         /// Contains the default 8 bits per pixel grayscale palette.
@@ -71,8 +89,11 @@ namespace Celarix.Imaging.BinaryDrawing
         {
             oneBppGrayscale = new Rgba32[2];
             twoBppGrayscale = new Rgba32[4];
+            threeBppGrayscale = new Rgba32[8];
+            threeBppRgb111 = new Rgba32[8];
             fourBppGrayscale = new Rgba32[16];
             fourBppRgb121 = new Rgba32[16];
+            fourBppArgb1111 = new Rgba32[16];
             eightBppGrayscale = new Rgba32[256];
             eightBppRgb332 = new Rgba32[256];
             eightBppArgb2222 = new Rgba32[256];
@@ -98,6 +119,7 @@ namespace Celarix.Imaging.BinaryDrawing
                     {
                         case 1: return OneBppGrayscale;
                         case 2: return TwoBppGrayscale;
+                        case 3: return ThreeBppGrayscale;
                         case 4: return FourBppGrayscale;
                         case 8: return EightBppGrayscale;
                     }
@@ -105,6 +127,7 @@ namespace Celarix.Imaging.BinaryDrawing
                 case ColorMode.Rgb:
                     switch (bitDepth)
                     {
+                        case 3: return ThreeBppRgb111;
                         case 4: return FourBppRgb121;
                         case 8: return EightBppRgb332;
                         case 16: return SixteenBppRgb565;
@@ -113,6 +136,7 @@ namespace Celarix.Imaging.BinaryDrawing
                 case ColorMode.Argb:
                     switch (bitDepth)
                     {
+                        case 4: return FourBppArgb1111;
                         case 8: return EightBppArgb2222;
                         case 16: return SixteenBppArgb4444;
                     }
@@ -144,6 +168,21 @@ namespace Celarix.Imaging.BinaryDrawing
                 twoBppGrayscale[i] = new Rgba32(twoBitRange[i], twoBitRange[i], twoBitRange[i], 255);
             }
 
+            // 3bpp grayscale
+            for (var i = 0; i < 8; i++)
+            {
+                threeBppGrayscale[i] = new Rgba32(threeBitRange[i], threeBitRange[i], threeBitRange[i], 255);
+            }
+
+            // 3bpp RGB
+            for (var i = 0; i < 8; i++)
+            {
+                var red = (i & 0b100) == 0 ? 0x00 : 0xFF;
+                var green = (i & 0b010) == 0 ? 0x00 : 0xFF;
+                var blue = (i & 0b001) == 0 ? 0x00 : 0xFF;
+                threeBppRgb111[i] = new Rgba32(red, green, blue, 255);
+            }
+
             // 4bpp grayscale
             for (var i = 0; i < 16; i++)
             {
@@ -157,6 +196,16 @@ namespace Celarix.Imaging.BinaryDrawing
                 byte green = twoBitRange[(i & 0b0110) >> 1];
                 byte blue = (byte)(0xFF * (i & 0b0001));
                 fourBppRgb121[i] = new Rgba32(red, green, blue, 255);
+            }
+
+            // 4bpp ARGB
+            for (var i = 0; i < 16; i++)
+            {
+                byte red = (i & 0b1000) == 0 ? (byte)0x00 : (byte)0xFF;
+                byte green = (i & 0b0100) == 0 ? (byte)0x00 : (byte)0xFF;
+                byte blue = (i & 0b0010) == 0 ? (byte)0x00 : (byte)0xFF;
+                byte alpha = (i & 0b0001) == 0 ? (byte)0x00 : (byte)0xFF;
+                fourBppArgb1111[i] = new Rgba32(red, green, blue, alpha);
             }
 
             // 8bpp grayscale

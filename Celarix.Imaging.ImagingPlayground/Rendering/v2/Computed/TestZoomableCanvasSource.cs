@@ -7,13 +7,20 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2.Computed
 {
     public sealed class TestZoomableCanvasSource : IZoomableCanvasSource
     {
+        public string Name => "Test Zoomable Canvas";
+
         public Size TilePixelSize => new(1024, 1024);
 
         public Size Level0TileCount => new(4, 4);
 
         public Task<SKImage> LoadTileAsync(FactoryOptions options)
         {
-            var innerColor = options.ZoomLevel!.Value switch
+            if (options is not ZoomableCanvasFactoryOptions canvasOptions)
+            {
+                throw new ArgumentException(nameof(options));
+            }
+
+            var innerColor = canvasOptions.ZoomLevel switch
             {
                 0 => SKColors.Red,
                 1 => SKColors.Green,
@@ -21,7 +28,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2.Computed
                 _ => SKColors.Yellow
             };
 
-            var outerColor = options.ZoomLevel.Value switch
+            var outerColor = canvasOptions.ZoomLevel switch
             {
                 0 => SKColors.DarkRed,
                 1 => SKColors.DarkGreen,
@@ -43,7 +50,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2.Computed
 
             var font = new SKFont(SKTypeface.FromFamilyName("Calibri"), size: 20f);
             var textPaint = new SKPaint() { Color = SKColors.White, IsAntialias = true };
-            canvas.DrawText($"{options.TileX!.Value}, {options.TileY!.Value}", new SKPoint(20, 50), SKTextAlign.Left, font, textPaint);
+            canvas.DrawText($"{canvasOptions.TileX}, {canvasOptions.TileY}", new SKPoint(20, 50), SKTextAlign.Left, font, textPaint);
 
             return Task.FromResult(surface.Snapshot());
         }

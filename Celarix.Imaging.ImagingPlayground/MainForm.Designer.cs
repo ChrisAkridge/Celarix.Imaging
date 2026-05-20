@@ -28,7 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             SplitOperationsSecond = new SplitContainer();
+            ButtonOpenComputedZoomableCanvas = new Button();
+            ButtonOpenZoomableCanvas = new Button();
             ButtonOpenImage = new Button();
             SplitMainImageProperties = new SplitContainer();
             InfiniteCanvas = new Celarix.Imaging.ImagingPlayground.Rendering.InfiniteCanvasControl();
@@ -39,6 +42,9 @@
             TextLog = new TextBox();
             ProgressMain = new ProgressBar();
             OFDMain = new OpenFileDialog();
+            FBDZoomableCanvas = new FolderBrowserDialog();
+            LogFlushTimer = new System.Windows.Forms.Timer(components);
+            ButtonSetSingleFile = new Button();
             ((System.ComponentModel.ISupportInitialize)SplitOperationsSecond).BeginInit();
             SplitOperationsSecond.Panel1.SuspendLayout();
             SplitOperationsSecond.Panel2.SuspendLayout();
@@ -61,6 +67,9 @@
             // SplitOperationsSecond.Panel1
             // 
             SplitOperationsSecond.Panel1.AutoScroll = true;
+            SplitOperationsSecond.Panel1.Controls.Add(ButtonSetSingleFile);
+            SplitOperationsSecond.Panel1.Controls.Add(ButtonOpenComputedZoomableCanvas);
+            SplitOperationsSecond.Panel1.Controls.Add(ButtonOpenZoomableCanvas);
             SplitOperationsSecond.Panel1.Controls.Add(ButtonOpenImage);
             // 
             // SplitOperationsSecond.Panel2
@@ -69,6 +78,26 @@
             SplitOperationsSecond.Size = new Size(1174, 570);
             SplitOperationsSecond.SplitterDistance = 273;
             SplitOperationsSecond.TabIndex = 0;
+            // 
+            // ButtonOpenComputedZoomableCanvas
+            // 
+            ButtonOpenComputedZoomableCanvas.Location = new Point(12, 78);
+            ButtonOpenComputedZoomableCanvas.Name = "ButtonOpenComputedZoomableCanvas";
+            ButtonOpenComputedZoomableCanvas.Size = new Size(250, 23);
+            ButtonOpenComputedZoomableCanvas.TabIndex = 3;
+            ButtonOpenComputedZoomableCanvas.Text = "Open Computed Zoomable Canvas...";
+            ButtonOpenComputedZoomableCanvas.UseVisualStyleBackColor = true;
+            ButtonOpenComputedZoomableCanvas.Click += ButtonOpenComputedZoomableCanvas_Click;
+            // 
+            // ButtonOpenZoomableCanvas
+            // 
+            ButtonOpenZoomableCanvas.Location = new Point(12, 45);
+            ButtonOpenZoomableCanvas.Name = "ButtonOpenZoomableCanvas";
+            ButtonOpenZoomableCanvas.Size = new Size(250, 23);
+            ButtonOpenZoomableCanvas.TabIndex = 2;
+            ButtonOpenZoomableCanvas.Text = "Open Zoomable Canvas from Disk...";
+            ButtonOpenZoomableCanvas.UseVisualStyleBackColor = true;
+            ButtonOpenZoomableCanvas.Click += ButtonOpenZoomableCanvas_Click;
             // 
             // ButtonOpenImage
             // 
@@ -170,6 +199,26 @@
             ProgressMain.Size = new Size(1168, 23);
             ProgressMain.TabIndex = 0;
             // 
+            // FBDZoomableCanvas
+            // 
+            FBDZoomableCanvas.Description = "Select a folder containing a zoomable canvas.";
+            FBDZoomableCanvas.ShowNewFolderButton = false;
+            // 
+            // LogFlushTimer
+            // 
+            LogFlushTimer.Enabled = true;
+            LogFlushTimer.Tick += LogFlushTimer_Tick;
+            // 
+            // ButtonSetSingleFile
+            // 
+            ButtonSetSingleFile.Location = new Point(12, 111);
+            ButtonSetSingleFile.Name = "ButtonSetSingleFile";
+            ButtonSetSingleFile.Size = new Size(250, 23);
+            ButtonSetSingleFile.TabIndex = 4;
+            ButtonSetSingleFile.Text = "Quickly Set Single File...";
+            ButtonSetSingleFile.UseVisualStyleBackColor = true;
+            ButtonSetSingleFile.Click += ButtonSetSingleFile_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -206,5 +255,10 @@
         private Button ButtonOpenImage;
         private OpenFileDialog OFDMain;
         private Rendering.InfiniteCanvasControl InfiniteCanvas;
+        private Button ButtonOpenZoomableCanvas;
+        private Button ButtonOpenComputedZoomableCanvas;
+        private FolderBrowserDialog FBDZoomableCanvas;
+        private System.Windows.Forms.Timer LogFlushTimer;
+        private Button ButtonSetSingleFile;
     }
 }

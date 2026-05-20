@@ -5,6 +5,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
 {
     public interface IZoomableCanvasSource
     {
+        string Name { get; }
         Size TilePixelSize { get; }
         Size Level0TileCount { get; }
 
@@ -85,6 +86,13 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
                 checked((int)canvasY),
                 checked((int)width),
                 checked((int)height));
+        }
+
+        public static int GetZoomLevelMultiplier(this IZoomableCanvasSource source, int zoomLevel)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentOutOfRangeException.ThrowIfNegative(zoomLevel);
+            return 1 << zoomLevel;
         }
     }
 }

@@ -6,6 +6,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 using System.ComponentModel;
 using System.Drawing;
+using Serilog;
 
 namespace Celarix.Imaging.ImagingPlayground.Rendering
 {
@@ -221,16 +222,12 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
                     imageEntry.CanvasImage.CanvasY,
                     imageEntry.CanvasImage.Width,
                     imageEntry.CanvasImage.Height);
-                var controlRectangle = imageCache?.ControlRectangleForCanvasRectangle(canvasRectangle) ?? System.Drawing.Rectangle.Empty;
-                if (controlRectangle.IsEmpty)
+                var destination = CanvasRectangleToControlRectangle(canvasRectangle);
+                if (destination.IsEmpty)
                 {
                     continue;
                 }
 
-                var destination = new SKRect(controlRectangle.Left,
-                    controlRectangle.Top,
-                    controlRectangle.Right,
-                    controlRectangle.Bottom);
                 canvas.DrawImage(imageEntry.Image, destination);
             }
 
@@ -241,7 +238,8 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
             };
             var font = new SKFont(SKTypeface.Default, 16);
             var debugZoomLevel = MathF.Log2(1f / zoomScale);
-            var debugText = $"Scale: {zoomScale:F3}  ZoomLevel: {debugZoomLevel:F2}  Visible: {visibleImageEntries.Count}";
+            var debugText = $"Width: {Width} Height: {Height} EArgs Width: {e.Info.Width} EArgs Height: {e.Info.Height} DPI {DeviceDpi} Zoom {zoomScale} Dest {visibleImageEntries.FirstOrDefault()?.CanvasImage?.CanvasRect.ToString() ?? "none"}";
+            Log.Debug(debugText);
             canvas.DrawText(debugText, new SKPoint(32, 32), SKTextAlign.Left, font, paint);
         }
 
@@ -318,11 +316,19 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
         {
             if (imageCache != null && Width > 0 && Height > 0)
             {
-                imageCache.SetViewportControlCoordinates(ClientRectangle);
+                EnsureViewportControlCoordinatesCurrent(ClientRectangle);
                 imageCache.ViewportChanged(GetViewportCanvasCoordinates());
             }
 
             Invalidate();
+        }
+
+        private void EnsureViewportControlCoordinatesCurrent(System.Drawing.Rectangle controlRectangle)
+        {
+            if (imageCache != null && imageCache.ViewportControlCoordinates != controlRectangle)
+            {
+                imageCache.SetViewportControlCoordinates(controlRectangle);
+            }
         }
 
         private System.Drawing.Rectangle GetViewportCanvasCoordinates()
@@ -332,6 +338,15 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
             var canvasWidth = Math.Max(1, (int)MathF.Ceiling(Width / zoomScale));
             var canvasHeight = Math.Max(1, (int)MathF.Ceiling(Height / zoomScale));
             return new System.Drawing.Rectangle(canvasLeft, canvasTop, canvasWidth, canvasHeight);
+        }
+
+        private SKRect CanvasRectangleToControlRectangle(System.Drawing.Rectangle canvasRectangle)
+        {
+            var left = (canvasRectangle.Left * zoomScale) + translation.X;
+            var top = (canvasRectangle.Top * zoomScale) + translation.Y;
+            var right = (canvasRectangle.Right * zoomScale) + translation.X;
+            var bottom = (canvasRectangle.Bottom * zoomScale) + translation.Y;
+            return new SKRect(left, top, right, bottom);
         }
 
         private void OnAnimationFrame(object? sender, EventArgs e)

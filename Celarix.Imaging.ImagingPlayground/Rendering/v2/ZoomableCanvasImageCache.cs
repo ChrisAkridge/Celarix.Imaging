@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using Serilog;
+using System.Drawing;
 using System.Linq;
 
 namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
@@ -53,6 +54,8 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
             workingSet.VisibleSetChanged += WorkingSet_VisibleSetChanged;
             CleanupForMemoryLimits();
             RecomputeVisibleSet();
+
+            Log.Debug("Added working set {WorkingSet}", workingSet);
         }
 
         public bool RemoveWorkingSet(ZoomableCanvasWorkingSet workingSet)
@@ -67,6 +70,8 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
             workingSet.VisibleSetChanged -= WorkingSet_VisibleSetChanged;
             workingSet.Dispose();
             RecomputeVisibleSet();
+
+            Log.Debug("Removed working set {WorkingSet}", workingSet);
             return true;
         }
 
@@ -80,6 +85,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
 
             workingSets.Clear();
             RecomputeVisibleSet();
+            Log.Debug("Cleared all working sets");
         }
 
         public void ViewportChanged(Rectangle newViewportCanvasCoordinates)
@@ -106,6 +112,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
         {
             ViewportControlCoordinates = newViewportControlCoordinates;
             RecomputeVisibleSet();
+            Log.Debug("Viewport resized to {ViewportControlCoordinates}", ViewportControlCoordinates);
         }
 
         public Rectangle ControlRectangleForCanvasRectangle(Rectangle canvasRect)
@@ -138,6 +145,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
 
             CleanupForMemoryLimits();
             RecomputeVisibleSet();
+            Log.Debug("Soft memory limit set to {SoftMemoryLimitBytes}", SoftMemoryLimitBytes.FormatBytes());
         }
 
         public void SetHardMemoryLimit(long bytes)
@@ -147,6 +155,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
             HardMemoryLimitBytes = Math.Max(bytes, SoftMemoryLimitBytes);
             CleanupForMemoryLimits();
             RecomputeVisibleSet();
+            Log.Debug("Hard memory limit set to {HardMemoryLimitBytes}", HardMemoryLimitBytes.FormatBytes());
         }
 
         public bool CurrentWorkingSetFullyCoversViewport()
@@ -182,6 +191,8 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
                 return;
             }
 
+            Log.Debug("Going to from zoom level {OldLevel} to {NewLevel}", CurrentZoomLevel, newZoomLevel);
+
             hasCurrentZoomLevel = true;
             Epoch += 1;
             CurrentZoomLevel = newZoomLevel;
@@ -191,7 +202,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
                 AddWorkingSet(BuildWorkingSet(CurrentZoomLevel));
             }
 
-            foreach (var workingSet in workingSets)
+            foreach (var workingSet in workingSets.ToArray())
             {
                 if (workingSet.ZoomLevel != CurrentZoomLevel)
                 {
@@ -215,13 +226,15 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
                 return 0;
             }
 
-            return (int)Math.Ceiling(Math.Log2(longAxisInTiles));
+            var preferredZoomLevel = (int)Math.Ceiling(Math.Log2(longAxisInTiles));
+            return Math.Min(preferredZoomLevel, source.GetMaxZoomLevel());
         }
 
         private void CleanupInactiveFallbackWorkingSets()
         {
             if (CurrentWorkingSetFullyCoversViewport())
             {
+                Log.Debug("Total coverage achieved; clearing fallback working sets");
                 for (var i = workingSets.Count - 1; i >= 0; i--)
                 {
                     if (workingSets[i].IsFallback)
@@ -245,6 +258,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
                     && workingSet.TotalLoadedBytes == 0
                     && !workingSet.HasVisibleCoverage())
                 {
+                    Log.Debug("Removing inactive fallback working set #{Index} at zoom level {ZoomLevel}", i, workingSet.ZoomLevel);
                     RemoveWorkingSet(workingSet);
                 }
             }
@@ -277,6 +291,9 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
                 return;
             }
 
+            Log.Debug("Loaded bytes {TotalLoadedBytes} exceed soft memory limit {SoftMemoryLimitBytes}; starting cleanup",
+                totalLoadedBytes.FormatBytes(),
+                SoftMemoryLimitBytes.FormatBytes());
             var candidates = workingSets
                 .Where(ws => !ws.IsFallback)
                 .SelectMany(ws => ws.ImageEntries)
@@ -295,6 +312,9 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
                 totalLoadedBytes -= candidate.ByteSize ?? 0;
                 candidate.Unload();
             }
+
+            Log.Debug("Finished soft memory limit cleanup; total loaded bytes now {TotalLoadedBytes}",
+                totalLoadedBytes.FormatBytes());
         }
 
         private void CleanupForHardMemoryLimit()
@@ -305,6 +325,9 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
                 return;
             }
 
+            Log.Debug("Loaded bytes {TotalLoadedBytes} exceed hard memory limit {HardMemoryLimitBytes}; starting cleanup",
+                totalLoadedBytes.FormatBytes(),
+                HardMemoryLimitBytes.FormatBytes());
             var currentWorkingSet = GetCurrentWorkingSet();
             var candidates = workingSets
                 .SelectMany(ws => ws.ImageEntries.Select(entry => new
@@ -331,6 +354,8 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
                 totalLoadedBytes -= candidate.Entry.ByteSize ?? 0;
                 candidate.Entry.Unload();
             }
+            Log.Debug("Finished hard memory limit cleanup; total loaded bytes now {TotalLoadedBytes}",
+                totalLoadedBytes.FormatBytes());
         }
 
         private void RecomputeVisibleSet()
@@ -375,15 +400,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2
                         OnlyAtZoomLevel = zoomLevel
                     };
 
-                    var imageEntry = new ImageEntry(uiControl, cancellationToken => new FactoryOptions
-                    {
-                        CancellationToken = cancellationToken,
-                        Kind = LoadedImageKind.ZoomableCanvas,
-                        ZoomLevel = zoomLevel,
-                        TileX = currentTileX,
-                        TileY = currentTileY,
-                        TileEdgeLength = source.TilePixelSize.Width
-                    })
+                    var imageEntry = new ImageEntry(uiControl, cancellationToken => new ZoomableCanvasFactoryOptions(cancellationToken, zoomLevel, currentTileX, currentTileY))
                     {
                         EntryKey = new ImageEntryKey
                         {
