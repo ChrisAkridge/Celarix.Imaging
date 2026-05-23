@@ -160,7 +160,7 @@ namespace Celarix.Imaging.ByteView
 		{
 			if (RadioARGB.Checked)
 			{
-				colorMode = ColorMode.Argb;
+				colorMode = ColorMode.Rgba;
 			}
 		}
 

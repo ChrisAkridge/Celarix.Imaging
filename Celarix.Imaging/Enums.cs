@@ -8,8 +8,9 @@ namespace Celarix.Imaging
     {
         Grayscale,
         Rgb,
-        Argb,
-        Paletted
+        Rgba,
+        Paletted,
+        Floating
     }
 
     public enum CCIFCompressionMode : byte

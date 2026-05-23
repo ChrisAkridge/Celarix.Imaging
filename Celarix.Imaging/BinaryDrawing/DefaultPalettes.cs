@@ -133,7 +133,7 @@ namespace Celarix.Imaging.BinaryDrawing
                         case 16: return SixteenBppRgb565;
                     }
                     break;
-                case ColorMode.Argb:
+                case ColorMode.Rgba:
                     switch (bitDepth)
                     {
                         case 4: return FourBppArgb1111;

@@ -246,7 +246,7 @@ namespace Celarix.Imaging.ByteView
 		/// <param name="e">Arguments for this event.</param>
 		private void RadioARGB_CheckedChanged(object sender, EventArgs e)
 		{
-			colorMode = ColorMode.Argb;
+			colorMode = ColorMode.Rgba;
 		}
 
 		/// <summary>
