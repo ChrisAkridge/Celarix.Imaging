@@ -12,7 +12,7 @@ namespace Celarix.Imaging.Packing
     {
         public PackingOptions Options { get; set; }
         public Dictionary<string, Size> ImagesAndSizes { get; set; }
-        public List<Block> Blocks { get; set; }
+        public List<Block<string>> Blocks { get; set; }
 
         public void Save(BinaryWriter writer)
         {
@@ -42,7 +42,7 @@ namespace Celarix.Imaging.Packing
             {
                 writer.Write(block.Size.Width);
                 writer.Write(block.Size.Height);
-                WriteLengthPrefixedString(writer, block.ImageFilePath);
+                WriteLengthPrefixedString(writer, block.Source!);
                 SaveNodeTreeRecursive(writer, block.Fit);
             }
         }
@@ -91,7 +91,7 @@ namespace Celarix.Imaging.Packing
             }
             
             var blockCount = reader.ReadInt32();
-            var blocks = new List<Block>(blockCount);
+            var blocks = new List<Block<string>>(blockCount);
 
             for (int i = 0; i < blockCount; i++)
             {
@@ -99,10 +99,10 @@ namespace Celarix.Imaging.Packing
                var height = reader.ReadInt32();
                var imageFilePath = ReadLengthPrefixedString(reader);
                var fit = LoadNodeTreeRecursive(reader);
-               blocks.Add(new Block
+               blocks.Add(new Block<string>
                {
                    Fit = fit,
-                   ImageFilePath = imageFilePath,
+                   Source = imageFilePath,
                    Size = new Size(width, height)
                });
             }

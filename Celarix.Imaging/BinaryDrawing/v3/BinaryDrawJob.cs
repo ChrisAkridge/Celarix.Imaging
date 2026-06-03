@@ -25,6 +25,7 @@ namespace Celarix.Imaging.BinaryDrawing.v3
         private Size? _canvasSize;
         private Font _titleBarFont;
         private TextOptions _titleBarFontOptions;
+        private ZoomableCanvasSource[]? _canvasSources;
 
         public BinaryDrawOptions Options { get; }
         public TargetMode EffectiveTargetMode => _isLargeJob ? TargetMode.ZoomableCanvas : Options.TargetMode;
@@ -105,7 +106,7 @@ namespace Celarix.Imaging.BinaryDrawing.v3
                 }
                 else if (Options.TitleMode == TitleMode.OnePerFile)
                 {
-                    var sourceSizes = new List<Size>();
+                    List<(string FilePath, Size Size)> sourceSizes = [];
 
                     foreach (var filePixelCount in filePixelCounts)
                     {
@@ -116,22 +117,24 @@ namespace Celarix.Imaging.BinaryDrawing.v3
                             TitleBarHeight);
                         var sourceWidth = titleSize.Width + (ZoomableCanvasMargin * 2);
                         var sourceHeight = pixelBlockSize.Height + titleSize.Height + (ZoomableCanvasMargin * 2);
-                        sourceSizes.Add(new Size(sourceWidth, sourceHeight));
+                        sourceSizes.Add((filePixelCount.FilePath, new Size(sourceWidth, sourceHeight)));
                     }
 
                     // Use our own Packer to arrange the sources within the canvas
-                    var blocks = sourceSizes.Select(s => new Packing.Block() { Size = s }).ToList();
-                    var packer = new Packing.Packer();
+                    var blocks = sourceSizes.Select(s => new Packing.Block<string>() { Size = s.Size, Source = s.FilePath }).ToList();
+                    var packer = new Packing.Packer<string>();
                     packer.Fit(blocks, new NullProgress<string>());
 
                     var locations = blocks
                         .Where(b => b.Fit != null)
-                        .Select(b => new Rectangle(b.Fit.Location, b.Fit.Size));
-                    var left = locations.MinBy(l => l.X);
-                    var top = locations.MinBy(l => l.Y);
-                    var right = locations.MaxBy(l => l.Right);
-                    var bottom = locations.MaxBy(l => l.Bottom);
-                    _canvasSize = new Size(right.Right - left.X, bottom.Bottom - top.Y);
+                        .Select(b => new ZoomableCanvasSource(new Rectangle(b.Fit!.Location, b.Size), b.Source))
+                        .ToArray();
+                    var left = locations.MinBy(l => l.Rectangle.X);
+                    var top = locations.MinBy(l => l.Rectangle.Y);
+                    var right = locations.MaxBy(l => l.Rectangle.Right);
+                    var bottom = locations.MaxBy(l => l.Rectangle.Bottom);
+                    _canvasSize = new Size(right!.Rectangle.Right - left!.Rectangle.X, bottom!.Rectangle.Bottom - top!.Rectangle.Y);
+                    _canvasSources = locations;
                 }
             }
         }
@@ -270,7 +273,7 @@ namespace Celarix.Imaging.BinaryDrawing.v3
                 var naturalSizes = new List<Size>();
                 foreach (var filePixelCount in filePixelCounts)
                 {
-                    naturalSizes.Add(AutomaticSize(filePixelCount.PixelCount, Options.PixelLayout, formatInfo.StripeWidth)));
+                    naturalSizes.Add(AutomaticSize(filePixelCount.PixelCount, Options.PixelLayout, formatInfo.StripeWidth));
                 }
 
                 var trueWidth = naturalSizes.MaxBy(s => s.Width).Width;
@@ -324,7 +327,20 @@ namespace Celarix.Imaging.BinaryDrawing.v3
 
         private string ShrinkTextToFit(string text, int maxWidth)
         {
-            
+            throw new NotImplementedException();
+        }
+    }
+
+    internal record struct ZoomableCanvasSource(Rectangle Rectangle, string FilePath)
+    {
+        public static implicit operator (Rectangle Rectangle, string FilePath)(ZoomableCanvasSource value)
+        {
+            return (value.Rectangle, value.FilePath);
+        }
+
+        public static implicit operator ZoomableCanvasSource((Rectangle Rectangle, string FilePath) value)
+        {
+            return new ZoomableCanvasSource(value.Rectangle, value.FilePath);
         }
     }
 }

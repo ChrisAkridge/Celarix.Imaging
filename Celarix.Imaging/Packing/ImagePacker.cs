@@ -25,7 +25,7 @@ namespace Celarix.Imaging.Packing
             {
                 Options = options,
                 ImagesAndSizes = new Dictionary<string, Size>(),
-                Blocks = new List<Block>()
+                Blocks = new List<Block<string>>()
             };
             JobManager.SaveJobFile(JobSources.Packer, job);
             
@@ -55,14 +55,14 @@ namespace Celarix.Imaging.Packing
             {
                 job.Blocks = job.ImagesAndSizes
                     .OrderByDescending(kvp => kvp.Value.Width)
-                    .Select(kvp => new Block
+                    .Select(kvp => new Block<string>
                     {
-                        ImageFilePath = kvp.Key, Size = kvp.Value
+                        Source = kvp.Key, Size = kvp.Value
                     })
                     .ToList();
             }
 
-            var packer = new Packer();
+            var packer = new Packer<string>();
             packer.Fit(job.Blocks, progress);
 
             if (!job.Options.Multipicture)
@@ -79,7 +79,7 @@ namespace Celarix.Imaging.Packing
                     .Where(b => b.Fit != null)
                     .Select(b => new PositionedImage
                     {
-                        ImageFilePath = b.ImageFilePath, Position = b.Fit.Location, Size = b.Size
+                        ImageFilePath = b.Source, Position = b.Fit.Location, Size = b.Size
                     });
 
                 CanvasGenerator.Generate(images, job.Options.OutputPath, cancellationToken,
@@ -117,7 +117,7 @@ namespace Celarix.Imaging.Packing
             return new Dictionary<string, Size>(filesAndSizes);
         }
         
-        private static void DrawImage(IList<Block> blocks,
+        private static void DrawImage(IList<Block<string>> blocks,
             Size rootSize,
             string outputFilePath,
             CancellationToken cancellationToken,
@@ -129,7 +129,7 @@ namespace Celarix.Imaging.Packing
             for (var i = 0; i < blocks.Count; i++)
             {
                 var block = blocks[i];
-                using var image = Image.Load(block.ImageFilePath);
+                using var image = Image.Load(block.Source);
                 canvas.Mutate(c => c.DrawImage(image, block.Fit.Location, 1f));
 
                 if (cancellationToken.IsCancellationRequested) { throw new TaskCanceledException(); }

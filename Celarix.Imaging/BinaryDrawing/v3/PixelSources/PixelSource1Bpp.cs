@@ -12,8 +12,8 @@ namespace Celarix.Imaging.BinaryDrawing.v3.PixelSources
     {
         private byte[] _buffer = new byte[1];
 
-        public PixelSource1Bpp(Stream source, Rgba32[] palette)
-            : base(source, palette, source.Length * 8, 8, 0)
+        public PixelSource1Bpp(Lazy<Stream> source, long sourceLength, Rgba32[] palette)
+            : base(source, palette, sourceLength * 8, 8, 0)
         {
             if (palette.Length != 2)
             {
@@ -23,7 +23,7 @@ namespace Celarix.Imaging.BinaryDrawing.v3.PixelSources
 
         protected override int ReadNextPixelGroup(Span<Rgba32> group)
         {
-            int read = _byteSource.Read(_buffer, _source);
+            int read = _byteSource.Read(_buffer, _source.Value);
 
             if (read <= 0) { return 0; }
 

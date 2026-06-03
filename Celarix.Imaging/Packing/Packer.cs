@@ -5,11 +5,11 @@ using SixLabors.ImageSharp;
 
 namespace Celarix.Imaging.Packing
 {
-	internal sealed class Packer
+	internal sealed class Packer<TSource>
 	{
-        public Node Root { get; set; }
+        public Node? Root { get; set; }
 
-        public void Fit(IList<Block> blocks, IProgress<string> progress)
+        public void Fit(IList<Block<TSource>> blocks, IProgress<string> progress)
         {
             Root = new Node(Point.Empty, blocks[0].Size);
 
@@ -27,7 +27,7 @@ namespace Celarix.Imaging.Packing
             }
         }
 
-        private static Node FindNode(Node someNode, Size size)
+        private static Node? FindNode(Node someNode, Size size)
         {
             while (true)
             {
@@ -65,9 +65,9 @@ namespace Celarix.Imaging.Packing
             return someNode;
         }
 
-        private Node GrowNode(Size size)
+        private Node? GrowNode(Size size)
         {
-            bool canGoDown = size.Width <= Root.Size.Width;
+            bool canGoDown = size.Width <= Root!.Size.Width;
             bool canGoRight = size.Height <= Root.Size.Height;
 
             bool shouldGoDown = canGoDown && (Root.Size.Width >= (Root.Size.Height + size.Height));
@@ -84,10 +84,10 @@ namespace Celarix.Imaging.Packing
                             : null;
         }
 
-        private Node GrowRight(Size size)
+        private Node? GrowRight(Size size)
         {
             var newRoot =
-                new Node(Point.Empty, new Size(Root.Size.Width + size.Width, Root.Size.Height))
+                new Node(Point.Empty, new Size(Root!.Size.Width + size.Width, Root.Size.Height))
                 {
                     Used = true,
                     Down = Root,
@@ -101,10 +101,10 @@ namespace Celarix.Imaging.Packing
             return someNode != null ? SplitNode(someNode, size) : null;
         }
 
-        private Node GrowDown(Size size)
+        private Node? GrowDown(Size size)
         {
             var newRoot =
-                new Node(Point.Empty, new Size(Root.Size.Width, Root.Size.Height + size.Height))
+                new Node(Point.Empty, new Size(Root!.Size.Width, Root.Size.Height + size.Height))
                 {
                     Used = true,
                     Down = new Node(new Point(0, Root.Size.Height), new Size(Root.Size.Width, size.Height)),

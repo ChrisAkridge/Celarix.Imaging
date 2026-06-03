@@ -88,9 +88,13 @@ namespace Celarix.Imaging.ImagingPlayground
         private void LoadComputedCanvasSources()
         {
             var computedNamespace = typeof(TestZoomableCanvasSource).Namespace;
+            if (computedNamespace == null)
+            {
+                return;
+            }
             var items = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(GetLoadableTypes)
-                .Where(t => t.Namespace == computedNamespace
+                .Where(t => t.Namespace != null && t.Namespace.StartsWith(computedNamespace)
                     && typeof(IZoomableCanvasSource).IsAssignableFrom(t)
                     && !t.IsInterface
                     && !t.IsAbstract

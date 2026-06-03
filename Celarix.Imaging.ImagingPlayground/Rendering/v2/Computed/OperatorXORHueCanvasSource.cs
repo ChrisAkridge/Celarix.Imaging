@@ -9,15 +9,13 @@ using DrawingSize = System.Drawing.Size;
 
 namespace Celarix.Imaging.ImagingPlayground.Rendering.v2.Computed
 {
-    public sealed class OperatorXORHueCanvasSource : IZoomableCanvasSource
+    public sealed class OperatorXORHueCanvasSource : PixelIndependentCanvasSource
     {
         private static readonly Rgba32[] hueWheel = new Rgba32[4096];
 
-        public string Name => "Operators: Bitwise XOR (12-bit hue wheel)";
+        public override string Name => "Operators: Bitwise XOR (12-bit hue wheel)";
 
-        public DrawingSize TilePixelSize => new DrawingSize(1024, 1024);
-
-        public DrawingSize Level0TileCount => new DrawingSize(4, 4);
+        public override DrawingSize Level0TileCount => new DrawingSize(4, 4);
 
         public OperatorXORHueCanvasSource()
         {
@@ -27,34 +25,10 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering.v2.Computed
             }
         }
 
-        public async Task<SKImage> LoadTileAsync(FactoryOptions options)
+        public override Rgba32 GetPixelValue(int x, int y)
         {
-            if (options is not ZoomableCanvasFactoryOptions canvasOptions)
-            {
-                throw new ArgumentException(nameof(options));
-            }
-
-            var tileCanvasRect = this.GetCanvasRectangleForTile(canvasOptions.ZoomLevel, canvasOptions.TileX, canvasOptions.TileY);
-            var stepSize = this.GetZoomLevelMultiplier(canvasOptions.ZoomLevel);
-
-            var tile = new Image<Rgba32>(TilePixelSize.Width, TilePixelSize.Height);
-
-            for (int y = 0; y < TilePixelSize.Height; y++)
-            {
-                for (int x = 0; x < TilePixelSize.Width; x++)
-                {
-                    var scaledX = tileCanvasRect.Left + (x * stepSize);
-                    var scaledY = tileCanvasRect.Top + (y * stepSize);
-                    var number = scaledX ^ scaledY;
-                    tile[x, y] = hueWheel[number];
-                }
-
-                canvasOptions.CancellationToken.ThrowIfCancellationRequested();
-            }
-
-            var skImage = await Helpers.CreateSkImageFromImageSharp(tile, canvasOptions.CancellationToken);
-            tile.Dispose();
-            return skImage;
+            var number = (x ^ y) & 0xFFF; // Keep only the lowest 12 bits
+            return hueWheel[number];
         }
 
         private static Rgba32 NumberToHue(int number)
