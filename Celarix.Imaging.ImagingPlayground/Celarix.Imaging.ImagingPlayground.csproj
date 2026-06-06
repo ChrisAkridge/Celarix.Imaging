@@ -11,13 +11,14 @@
   <ItemGroup>
     <PackageReference Include="Serilog" Version="4.3.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="SkiaSharp" Version="3.119.2" />
-    <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.119.2" />
+    <PackageReference Include="SkiaSharp" Version="3.119.4" />
+    <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.119.4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Celarix.Imaging.ImageViewer\Celarix.Imaging.ImageViewer.csproj" />
     <ProjectReference Include="..\Celarix.Imaging\Celarix.Imaging.csproj" />
+    <ProjectReference Include="..\ST.Library.UI\ST.Library.UI.csproj" />
   </ItemGroup>
 
   <ItemGroup>
