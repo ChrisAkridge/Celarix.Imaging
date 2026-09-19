@@ -1,4 +1,4 @@
-﻿namespace Celarix.Imaging.ByteView
+namespace Celarix.Imaging.ByteView
 {
 	/// <summary>
 	/// The main form for ByteView.
@@ -62,7 +62,11 @@
 			LabelAddress = new System.Windows.Forms.Label();
 			toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			TSBChromaPlayground = new System.Windows.Forms.ToolStripButton();
+			GroupBoxDrawingMode = new System.Windows.Forms.GroupBox();
+			RadioRaster = new System.Windows.Forms.RadioButton();
+			RadioStriped = new System.Windows.Forms.RadioButton();
 			toolStrip1.SuspendLayout();
+			GroupBoxDrawingMode.SuspendLayout();
 			Panel.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)PictureBox).BeginInit();
 			SuspendLayout();
@@ -334,6 +338,43 @@
 			toolStripSeparator2.Name = "toolStripSeparator2";
 			toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
 			// 
+			// GroupBoxDrawingMode
+			// 
+			GroupBoxDrawingMode.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+			GroupBoxDrawingMode.Controls.Add(RadioRaster);
+			GroupBoxDrawingMode.Controls.Add(RadioStriped);
+			GroupBoxDrawingMode.Location = new System.Drawing.Point(290, 463);
+			GroupBoxDrawingMode.Name = "GroupBoxDrawingMode";
+			GroupBoxDrawingMode.Size = new System.Drawing.Size(160, 38);
+			GroupBoxDrawingMode.TabIndex = 13;
+			GroupBoxDrawingMode.TabStop = false;
+			GroupBoxDrawingMode.Text = "Drawing Mode";
+			// 
+			// RadioRaster
+			// 
+			RadioRaster.AutoSize = true;
+			RadioRaster.Checked = true;
+			RadioRaster.Location = new System.Drawing.Point(6, 18);
+			RadioRaster.Name = "RadioRaster";
+			RadioRaster.Size = new System.Drawing.Size(60, 17);
+			RadioRaster.TabIndex = 0;
+			RadioRaster.TabStop = true;
+			RadioRaster.Text = "&Raster";
+			RadioRaster.UseVisualStyleBackColor = true;
+			RadioRaster.CheckedChanged += RadioRaster_CheckedChanged;
+			// 
+			// RadioStriped
+			// 
+			RadioStriped.AutoSize = true;
+			RadioStriped.Location = new System.Drawing.Point(88, 18);
+			RadioStriped.Name = "RadioStriped";
+			RadioStriped.Size = new System.Drawing.Size(62, 17);
+			RadioStriped.TabIndex = 1;
+			RadioStriped.TabStop = true;
+			RadioStriped.Text = "&Striped";
+			RadioStriped.UseVisualStyleBackColor = true;
+			RadioStriped.CheckedChanged += RadioStriped_CheckedChanged;
+			// 
 			// TSBChromaPlayground
 			// 
 			TSBChromaPlayground.Image = (System.Drawing.Image)resources.GetObject("TSBChromaPlayground.Image");
@@ -349,6 +390,7 @@
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			ClientSize = new System.Drawing.Size(1061, 501);
 			Controls.Add(LabelAddress);
+			Controls.Add(GroupBoxDrawingMode);
 			Controls.Add(Panel);
 			Controls.Add(ButtonPalette);
 			Controls.Add(RadioPaletted);
@@ -368,6 +410,8 @@
 			Load += MainForm_Load;
 			toolStrip1.ResumeLayout(false);
 			toolStrip1.PerformLayout();
+			GroupBoxDrawingMode.ResumeLayout(false);
+			GroupBoxDrawingMode.PerformLayout();
 			Panel.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)PictureBox).EndInit();
 			ResumeLayout(false);
@@ -406,5 +450,8 @@
 		private System.Windows.Forms.Label LabelAddress;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
 		private System.Windows.Forms.ToolStripButton TSBChromaPlayground;
+		private System.Windows.Forms.GroupBox GroupBoxDrawingMode;
+		private System.Windows.Forms.RadioButton RadioRaster;
+		private System.Windows.Forms.RadioButton RadioStriped;
 	}
 }

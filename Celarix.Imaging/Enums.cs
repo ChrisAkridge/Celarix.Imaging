@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -77,4 +77,22 @@ namespace Celarix.Imaging
 		HSV,
 		YCbCr
 	}
+
+    /// <summary>
+    /// Defines how pixels decoded from a binary stream are laid out onto an image.
+    /// </summary>
+    public enum DrawingMode
+    {
+        /// <summary>
+        /// Pixels are written left-to-right, top-to-bottom (standard raster scan order).
+        /// </summary>
+        Raster,
+
+        /// <summary>
+        /// Pixels are written in vertical stripes. The stripe width is determined by the bit depth
+        /// (1 bpp → 8px, 2 bpp → 4px, 4 bpp → 2px, ≥8 bpp → 1px). Each stripe is filled
+        /// top-to-bottom before advancing one stripe-width to the right.
+        /// </summary>
+        Striped
+    }
 }

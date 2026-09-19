@@ -1,4 +1,4 @@
-﻿//	MainForm.cs
+//	MainForm.cs
 //
 //	The main form for the application; displays files as bitmapped images.
 
@@ -29,6 +29,9 @@ namespace Celarix.Imaging.ByteView
 
 		// The currently selected color mode.
 		private ColorMode colorMode;
+
+		// The currently selected drawing mode.
+		private DrawingMode drawingMode = DrawingMode.Raster;
 
 		// The current set of file paths to generate an image from.
 		private string[] filePaths;
@@ -190,6 +193,22 @@ namespace Celarix.Imaging.ByteView
 
 		private void TSBCancel_Click(object sender, EventArgs e) => tokenSource.Cancel();
 
+		private void RadioRaster_CheckedChanged(object sender, EventArgs e)
+		{
+			if (RadioRaster.Checked)
+			{
+				drawingMode = DrawingMode.Raster;
+			}
+		}
+
+		private void RadioStriped_CheckedChanged(object sender, EventArgs e)
+		{
+			if (RadioStriped.Checked)
+			{
+				drawingMode = DrawingMode.Striped;
+			}
+		}
+
 		private void TSBLargeFileProcessor_Click(object sender, EventArgs e)
 		{
 			using var lfpForm = new LargeFileProcessorForm();
@@ -300,7 +319,7 @@ namespace Celarix.Imaging.ByteView
 			if (image == null) { return; }
 
 			var imageSharpImage = await Task.Run(() => image.ToImageSharpImage<Rgba32>());
-			var sortedImage = await Task.Run(() => Drawer.Sort(imageSharpImage, tokenSource.Token, progress));
+			var sortedImage = await Task.Run(() => Drawer.Sort(imageSharpImage, SortMode.RGB, tokenSource.Token, progress));
 			image = await Task.Run(() => sortedImage.ToSystemDrawingImage());
 			SetPictureBoxImage();
 		}
@@ -333,7 +352,8 @@ namespace Celarix.Imaging.ByteView
 					bitDepth,
 					palette,
 					tokenSource.Token,
-					progress));
+					progress,
+					drawingMode));
 
 				image = await Task.Run(() => imageSharpImage.ToSystemDrawingImage());
 				SetPictureBoxImage();

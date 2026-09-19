@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,12 +24,16 @@ namespace Celarix.Imaging.BinaryDrawing
             int bitDepth,
             IReadOnlyList<Rgba32> palette,
             CancellationToken cancellationToken,
-            IProgress<DrawingProgress> progress)
+            IProgress<DrawingProgress> progress,
+            DrawingMode drawingMode = DrawingMode.Raster)
         {
             ValidateBitDepthAndPalette(bitDepth, palette?.Count);
 
             var pixelCount = GetPixelCount(stream, bitDepth);
-            var (width, height) = Helpers.GetSizeFromCount(pixelCount);
+            var stripeWidth = GetStripeWidth(bitDepth);
+            var (width, height) = drawingMode == DrawingMode.Striped
+                ? GetStripedSizeFromCount(pixelCount, stripeWidth)
+                : Helpers.GetSizeFromCount(pixelCount);
             var pixelEnumerator = GetPixelEnumeratorFromStream(stream, bitDepth);
 
             var image = new Image<Rgba32>(width, height);
@@ -37,8 +41,11 @@ namespace Celarix.Imaging.BinaryDrawing
 
             foreach (var pixel in pixelEnumerator)
 			{
-				var x = (int)(drawnPixels % width);
-				var y = (int)(drawnPixels / width);
+				var (x, y) = drawingMode switch
+				{
+					DrawingMode.Striped => GetStripedCoordinates(drawnPixels, width, height, stripeWidth),
+					_ => ((int)(drawnPixels % width), (int)(drawnPixels / width))
+				};
 
                 SetPixelOnImage(image, x, y, pixel, bitDepth, palette);
 
@@ -354,6 +361,45 @@ namespace Celarix.Imaging.BinaryDrawing
 
         private static IEnumerable<int> GetPixelEnumeratorFromStream(Stream stream, int bitDepth, int bufferSize = 1048576) =>
             new StreamEnumerable(stream).EnumeratePixels(bitDepth, bufferSize);
+
+        /// <summary>
+        /// Returns the stripe width (in pixels) for a given bit depth.
+        /// Sub-byte depths pack multiple pixels per byte, so the stripe spans the
+        /// pixels that fit in a single byte's width: 1 bpp → 8, 2 bpp → 4, 4 bpp → 2.
+        /// For ≥8 bpp each pixel is already one or more bytes, so the stripe is 1 pixel wide.
+        /// </summary>
+        private static int GetStripeWidth(int bitDepth) =>
+            bitDepth < 8 ? 8 / bitDepth : 1;
+
+        /// <summary>
+        /// Maps a sequential pixel index to an (x, y) coordinate under the Striped drawing mode.
+        /// Stripes of <paramref name="stripeWidth"/> pixels are filled top-to-bottom before
+        /// advancing <paramref name="stripeWidth"/> pixels to the right.
+        /// </summary>
+        private static (int x, int y) GetStripedCoordinates(long pixelIndex, int width, int height, int stripeWidth)
+        {
+            var pixelsPerStripe = stripeWidth * height;
+            var stripeIndex     = (int)(pixelIndex / pixelsPerStripe);
+            var posInStripe     = (int)(pixelIndex % pixelsPerStripe);
+            var x = stripeIndex * stripeWidth + (posInStripe % stripeWidth);
+            var y = posInStripe / stripeWidth;
+            return (x, y);
+        }
+
+        /// <summary>
+        /// Calculates the image dimensions for the Striped drawing mode.
+        /// Height is set to <c>floor(sqrt(pixelCount))</c>, which gives a roughly square
+        /// number of rows. Width is then the smallest multiple of <paramref name="stripeWidth"/>
+        /// that can hold all the resulting stripes.
+        /// </summary>
+        private static Size GetStripedSizeFromCount(long pixelCount, int stripeWidth)
+        {
+            var height          = (int)Math.Floor(Math.Sqrt(pixelCount));
+            var pixelsPerStripe = stripeWidth * height;
+            var numStripes      = (int)Math.Ceiling((double)pixelCount / pixelsPerStripe);
+            var width           = numStripes * stripeWidth;
+            return new Size(width, height);
+        }
 
         private static void SetPixelOnImage(Image<Rgba32> image,
             int x,
