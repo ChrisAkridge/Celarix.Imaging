@@ -1,5 +1,8 @@
 using Celarix.Imaging.ImagingPlayground.Operations;
 using Celarix.Imaging.ImagingPlayground.Options;
+using SixLabors.ImageSharp.ColorSpaces;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Celarix.Imaging.ImagingPlayground
 {
@@ -46,8 +49,8 @@ namespace Celarix.Imaging.ImagingPlayground
                 var button = new Button
                 {
                     Text = operation.Name,
-                    Location = new Point(buttonMargin, currentY),
-                    Size = new Size(250, 23)
+                    Location = new System.Drawing.Point(buttonMargin, currentY),
+                    Size = new System.Drawing.Size(250, 23)
                 };
                 button.Click += (s, args) => RunOperation(operation);
                 SplitOperationsSecond.Panel1.Controls.Add(button);
@@ -66,7 +69,7 @@ namespace Celarix.Imaging.ImagingPlayground
                 this.options,
                 new ProgressBarProgress(ProgressMain),
                 Log,
-                SetBitmap,
+                SetImage,
                 cancellationTokenSource.Token
             );
 
@@ -117,13 +120,15 @@ namespace Celarix.Imaging.ImagingPlayground
             TextLog.AppendText(line + Environment.NewLine);
         }
 
-        private void SetBitmap(Bitmap bitmap)
+        private void SetImage(Image<Rgba32> image)
         {
             if (InvokeRequired)
             {
-                Invoke(new SetBitmapDelegate(SetBitmap), bitmap);
+                Invoke(new SetImageDelegate(SetImage), image);
                 return;
             }
+
+            InfiniteCanvas.LoadInMemoryImage(image);
         }
 
         private void ButtonOpenImage_Click(object sender, EventArgs e)

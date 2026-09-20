@@ -32,8 +32,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="BinaryDrawing\v2\" />
-  </ItemGroup>
-
 </Project>

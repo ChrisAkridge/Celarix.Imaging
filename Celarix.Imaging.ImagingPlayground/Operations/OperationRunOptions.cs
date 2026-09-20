@@ -10,13 +10,13 @@ namespace Celarix.Imaging.ImagingPlayground.Operations
         public MasterOptions MasterOptions { get; }
         public IProgress<int> Progress { get; }
         public LoggingDelegate Logger { get; }
-        public SetBitmapDelegate SetImage { get; }
+        public SetImageDelegate SetImage { get; }
         public CancellationToken CancellationToken { get; }
 
         public OperationRunOptions(MasterOptions masterOptions,
             IProgress<int> progress,
             LoggingDelegate logger,
-            SetBitmapDelegate setImage,
+            SetImageDelegate setImage,
             CancellationToken cancellationToken)
         {
             MasterOptions = masterOptions ?? throw new ArgumentNullException(nameof(masterOptions));

@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
+using Celarix.Imaging.BinaryDrawing.v2;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Celarix.Imaging.ImagingPlayground.Rendering
 {
@@ -110,6 +113,14 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
         {
             _imageCache.Clear();
             var canvasImage = CanvasImage.FromFile(filePath, SKPoint.Empty);
+            _imageCache.Add(canvasImage);
+            _imageCache.UpdateVisibility(Viewport);
+        }
+
+        public void LoadInMemoryImage(Image<Rgba32> image)
+        {
+            _imageCache.Clear();
+            var canvasImage = CanvasImage.FromImageSharpImage(image, SKPoint.Empty);
             _imageCache.Add(canvasImage);
             _imageCache.UpdateVisibility(Viewport);
         }
@@ -265,7 +276,7 @@ namespace Celarix.Imaging.ImagingPlayground.Rendering
         {
             if (DesignMode)
             {
-                e.Graphics.Clear(Color.WhiteSmoke);
+                e.Graphics.Clear(System.Drawing.Color.WhiteSmoke);
                 return;
             }
             base.OnPaint(e);
