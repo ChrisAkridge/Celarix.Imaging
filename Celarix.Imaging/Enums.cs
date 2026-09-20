@@ -109,4 +109,20 @@ namespace Celarix.Imaging
         Infinity,
         NaN
     }
+
+    /// <summary>
+    /// Supported bit depths for the minimalist V4 Binary Drawing support. Values chosen for practicality
+    /// over total coverage, as while implementing, for example, 3 bits per pixel is possible, it's not
+    /// very useful except as a completionist exercise. Capped at 24 bits to ensure that no data loss
+    /// is possible (i.e. in 32-bit RGBA mode, #33669900 and #22446600 both appear fully transparent
+    /// and cannot be told apart.
+    /// </summary>
+    public enum BinaryDrawingBitDepths
+    {
+        OneBit = 1,
+        FourBit = 4,
+        EightBit = 8,
+        SixteenBit = 16,
+        TwentyFourBit = 24
+    }
 }

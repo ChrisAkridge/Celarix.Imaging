@@ -68,7 +68,7 @@ namespace Celarix.Imaging.ImagingPlayground.Nodes.WorkflowNodes
                 throw new InvalidOperationException($"Loaded image is null for file path {FilePath}.");
             }
 
-            Image.SetValue(result.LoadedImage);
+            Image.SetResult(result.LoadedImage);
             Completed = true;
         }
     }

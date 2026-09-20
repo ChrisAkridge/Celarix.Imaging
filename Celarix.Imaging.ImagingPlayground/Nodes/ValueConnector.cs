@@ -7,7 +7,7 @@ namespace Celarix.Imaging.ImagingPlayground.Nodes
 {
     internal abstract class ValueConnector
     {
-        private readonly List<IWorkflowNode> _tos = new();
+        private readonly List<IWorkflowNode> _tos = [];
 
         public string Name { get; }
         public bool ResultAvailable { get; set; }
@@ -28,13 +28,13 @@ namespace Celarix.Imaging.ImagingPlayground.Nodes
 
     internal sealed class ValueConnector<TValue> : ValueConnector
     {
-        public TValue? Result { get; set; }
+        public TValue? Result { get; private set; }
 
         public ValueConnector(string name) : base(name)
         {
         }
 
-        public void SetValue(TValue value)
+        public void SetResult(TValue value)
         {
             Result = value;
             ResultAvailable = true;
