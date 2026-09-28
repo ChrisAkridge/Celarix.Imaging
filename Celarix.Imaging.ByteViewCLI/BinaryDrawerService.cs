@@ -446,15 +446,15 @@ namespace Celarix.Imaging.ByteViewCLI
 				BitDepthAndColorMode.Grayscale_2BPP => ColorMode.Grayscale,
 				BitDepthAndColorMode.Grayscale_4BPP => ColorMode.Grayscale,
 				BitDepthAndColorMode.RGB121_4BPP => ColorMode.Rgb,
-				BitDepthAndColorMode.RGBA1111_4BPP => ColorMode.Argb,
+				BitDepthAndColorMode.RGBA1111_4BPP => ColorMode.Rgba,
 				BitDepthAndColorMode.Grayscale_8BPP => ColorMode.Grayscale,
 				BitDepthAndColorMode.RGB332_8BPP => ColorMode.Rgb,
-				BitDepthAndColorMode.RGBA2222_8BPP => ColorMode.Argb,
+				BitDepthAndColorMode.RGBA2222_8BPP => ColorMode.Rgba,
 				BitDepthAndColorMode.RGB565_16BPP => ColorMode.Rgb,
-				BitDepthAndColorMode.RGBA4444_16BPP => ColorMode.Argb,
+				BitDepthAndColorMode.RGBA4444_16BPP => ColorMode.Rgba,
 				BitDepthAndColorMode.RGB888_24BPP => ColorMode.Rgb,
-				BitDepthAndColorMode.RGBA6666_24BPP => ColorMode.Argb,
-				BitDepthAndColorMode.RGBA8888_32BPP => ColorMode.Argb,
+				BitDepthAndColorMode.RGBA6666_24BPP => ColorMode.Rgba,
+				BitDepthAndColorMode.RGBA8888_32BPP => ColorMode.Rgba,
 				_ => throw new ArgumentException($"Unsupported bit depth and color mode {bitDepthAndColorMode}.")
 			};
 

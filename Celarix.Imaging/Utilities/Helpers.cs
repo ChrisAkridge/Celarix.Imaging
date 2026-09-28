@@ -13,6 +13,11 @@ namespace Celarix.Imaging.Utilities
 	{
         public static Size GetSizeFromCount(long count)
         {
+            if (count == 0)
+            {
+                return new Size(0, 0);
+            }
+
             var squareRoot = (long)Math.Sqrt(count);
             Size result;
             if (IsPerfectSquare(count)) { result = new Size((int)squareRoot, (int)squareRoot); }

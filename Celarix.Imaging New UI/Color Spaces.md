@@ -1,0 +1,1 @@
+LinearRGB: https://github.com/SixLabors/ImageSharp/pull/654/changes#diff-38ad4999ecef3aec74c3b9a8ee208521344e61fca2c83c87666eb4f2f79a3ba4

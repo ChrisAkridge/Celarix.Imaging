@@ -1,3 +1,5 @@
+using Serilog;
+
 namespace Celarix.Imaging.ImagingPlayground
 {
     internal static class Program
@@ -17,7 +19,8 @@ namespace Celarix.Imaging.ImagingPlayground
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new MainForm());
+            // Application.Run(new MainForm());
+            Application.Run(new NodeForm());
         }
     }
 }

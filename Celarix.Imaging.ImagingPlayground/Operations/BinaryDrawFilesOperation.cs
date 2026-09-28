@@ -12,6 +12,15 @@ namespace Celarix.Imaging.ImagingPlayground.Operations
 
         public async Task RunAsync(OperationRunOptions options)
         {
+<<<<<<< HEAD
+=======
+            if (options.MasterOptions.Files is null || options.MasterOptions.Files.FilePaths.Count == 0)
+            {
+                MessageBox.Show($"No files selected. Please select at least one file to draw.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+>>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
             var masterOptions = options.MasterOptions;
             var byteStream = new NamedByteStream(masterOptions.Files.FilePaths);
             var drawOptions = new DrawOptions

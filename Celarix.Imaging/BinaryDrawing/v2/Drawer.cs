@@ -41,6 +41,13 @@ namespace Celarix.Imaging.BinaryDrawing.v2
                     throw new ArgumentException($"Unsupported target mode: {options.TargetMode}");
                 }
             }
+<<<<<<< HEAD
+=======
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+>>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
             catch (Exception ex)
             {
                 return DrawResult.Failure(ex);
@@ -122,6 +129,12 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             {
                 // Draw the first title bar
                 DrawTitleBar(options, image, ref y);
+<<<<<<< HEAD
+=======
+
+                // Grab the pixel block when we get started for real.
+                currentBlockIndex += 1;
+>>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
             }
 
             NamedStreamReadResult readResult;
@@ -178,7 +191,11 @@ namespace Celarix.Imaging.BinaryDrawing.v2
                 PixelFormat.Binary32Bpp => byteBufferSize / 4,
                 PixelFormat.Float16 => (byteBufferSize / 2) * 6,
                 PixelFormat.Float32 => (byteBufferSize / 4) * 6,
+<<<<<<< HEAD
                 PixelFormat.Float64 => (byteBufferSize / 8) * 6,
+=======
+                PixelFormat.Float64 => (byteBufferSize / 8) * 8,
+>>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
                 _ => throw new ArgumentException($"Unsupported pixel format: {format}")
             };
         }
@@ -244,7 +261,11 @@ namespace Celarix.Imaging.BinaryDrawing.v2
 
             for (var i = 0; i < pixelsWritten; i++)
             {
+<<<<<<< HEAD
                 if (y > block.Rectangle.Bottom)
+=======
+                if (y >= block.Rectangle.Bottom)
+>>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
                 {
                     if ((x + stripeWidth) > block.Rectangle.Right)
                     {

@@ -41,7 +41,7 @@ namespace Celarix.Imaging.Packing
             return new ImageSizeDictionary(canvasOutputPath);
         }
 
-        private void SaveSizes()
+        internal void SaveSizes()
         {
             using var writer = new StreamWriter(Path.Combine(canvasOutputPath, DictionaryFileName));
 

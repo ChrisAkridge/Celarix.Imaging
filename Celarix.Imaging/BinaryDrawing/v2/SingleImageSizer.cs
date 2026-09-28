@@ -40,7 +40,11 @@ namespace Celarix.Imaging.BinaryDrawing.v2
 
             var pixelBlockCount = options.TitleMode is TitleMode.None or TitleMode.OnePerImage
                 ? 1
+<<<<<<< HEAD
                 : options.ByteStream.FileNumber;
+=======
+                : options.ByteStream.TotalFiles;
+>>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
             var pixelBlockPixels = new List<long>();
             if (pixelBlockCount == 1)
             {
@@ -96,6 +100,15 @@ namespace Celarix.Imaging.BinaryDrawing.v2
                 if (options.SizeMode == SizeMode.FixedWidth || fixedWidthOverride.HasValue)
                 {
                     var width = fixedWidthOverride ?? options.FixedWidth!.Value;
+<<<<<<< HEAD
+=======
+
+                    if (width <= 0)
+                    {
+                        throw new ArgumentException($"Invalid fixed width: {width}");
+                    }
+
+>>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
                     blockSize = GetBlockSizeFixedWidth(pixelBlockPixelCount,
                         width,
                         options.PixelFormat,
@@ -159,7 +172,11 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             }
             else if (format == PixelFormat.Float64)
             {
+<<<<<<< HEAD
                 return (Helpers.RoundUpToMultiple(bytes, 8L) / 8L) * 6L;
+=======
+                return (Helpers.RoundUpToMultiple(bytes, 8L) / 8L) * 8L;
+>>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
             }
             else
             {
@@ -202,6 +219,15 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             {
                 var stripeWidth = Helpers.GetStripeWidth(format);
                 var stripesPerRow = fixedWidth / stripeWidth;
+<<<<<<< HEAD
+=======
+
+                if (stripesPerRow <= 0)
+                {
+                    throw new ArgumentException($"Computed stripes per row is {stripesPerRow}, must be positive");
+                }
+
+>>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
                 var stripeCount = GetStripeCount(pixelCount, format);
                 var height = (int)Math.Ceiling((double)stripeCount / stripesPerRow);
                 return new Size(fixedWidth, height);
