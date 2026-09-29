@@ -58,8 +58,9 @@ namespace Celarix.Imaging.ByteView
 			LabelBitIndex = new System.Windows.Forms.Label();
 			TrackBitIndex = new System.Windows.Forms.TrackBar();
 			LabelSignalStats = new System.Windows.Forms.Label();
+			CheckDither = new System.Windows.Forms.CheckBox();
 			PanelImage = new System.Windows.Forms.Panel();
-			PictureMain = new System.Windows.Forms.PictureBox();
+			PictureMain = new PixelatedPictureBox();
 			OFDOpenImage = new System.Windows.Forms.OpenFileDialog();
 			SFDSaveImage = new System.Windows.Forms.SaveFileDialog();
 			SFDSaveAnalogSignal = new System.Windows.Forms.SaveFileDialog();
@@ -223,11 +224,12 @@ namespace Celarix.Imaging.ByteView
 			TableOptions.Controls.Add(ComboParameter2, 0, 6);
 			TableOptions.Controls.Add(LabelBitIndex, 0, 7);
 			TableOptions.Controls.Add(TrackBitIndex, 0, 8);
-			TableOptions.Controls.Add(LabelSignalStats, 0, 9);
+			TableOptions.Controls.Add(CheckDither, 0, 9);
+			TableOptions.Controls.Add(LabelSignalStats, 0, 10);
 			TableOptions.Dock = System.Windows.Forms.DockStyle.Fill;
 			TableOptions.Name = "TableOptions";
-			TableOptions.RowCount = 11;
-			for (int i = 0; i < 10; i++)
+			TableOptions.RowCount = 12;
+			for (int i = 0; i < 11; i++)
 			{
 				TableOptions.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			}
@@ -301,6 +303,16 @@ namespace Celarix.Imaging.ByteView
 			TrackBitIndex.Value = 7;
 			TrackBitIndex.ValueChanged += TrackBitIndex_ValueChanged;
 			//
+			// CheckDither
+			// 
+			CheckDither.AutoSize = true;
+			CheckDither.Margin = new System.Windows.Forms.Padding(3, 12, 3, 0);
+			CheckDither.Name = "CheckDither";
+			CheckDither.TabIndex = 4;
+			CheckDither.Text = "Dither (Floyd-Steinberg)";
+			CheckDither.UseVisualStyleBackColor = true;
+			CheckDither.CheckedChanged += CheckDither_CheckedChanged;
+			// 
 			// LabelSignalStats
 			//
 			LabelSignalStats.AutoSize = true;
@@ -401,8 +413,9 @@ namespace Celarix.Imaging.ByteView
 		private System.Windows.Forms.Label LabelBitIndex;
 		private System.Windows.Forms.TrackBar TrackBitIndex;
 		private System.Windows.Forms.Label LabelSignalStats;
+		private System.Windows.Forms.CheckBox CheckDither;
 		private System.Windows.Forms.Panel PanelImage;
-		private System.Windows.Forms.PictureBox PictureMain;
+		private PixelatedPictureBox PictureMain;
 		private System.Windows.Forms.OpenFileDialog OFDOpenImage;
 		private System.Windows.Forms.SaveFileDialog SFDSaveImage;
 		private System.Windows.Forms.SaveFileDialog SFDSaveAnalogSignal;

@@ -24,13 +24,16 @@ namespace Celarix.Imaging.ByteView
 			ColorChannel,
 			BitPlane,
 			ChromaSubsampling,
-			ReduceBitDepth
+			LumaSubsampling,
+			ReduceBitDepth,
+			UniqueColorMap
 		}
 
 		private enum BitDepthMethod
 		{
 			Shift,
 			Grayscale,
+			OptimizedPalette,
 			TopColors
 		}
 
@@ -45,7 +48,16 @@ namespace Celarix.Imaging.ByteView
 			new("Color channel", Effect.ColorChannel),
 			new("Bit plane", Effect.BitPlane),
 			new("Chroma subsampling", Effect.ChromaSubsampling),
-			new("Reduce bit depth", Effect.ReduceBitDepth)
+			new("Luma subsampling (silly)", Effect.LumaSubsampling),
+			new("Reduce bit depth", Effect.ReduceBitDepth),
+			new("Unique colors map", Effect.UniqueColorMap)
+		};
+
+		// The value is whether the layout is the compact one (true) or the fixed 4096x4096 one (false).
+		private static readonly Choice<bool>[] ColorMapLayoutChoices =
+		{
+			new("Compact (only the colors present)", true),
+			new("Fixed 4096x4096 (comparable between images)", false)
 		};
 
 		private static readonly Choice<ColorChannel>[] ColorChannelChoices =
@@ -60,7 +72,21 @@ namespace Celarix.Imaging.ByteView
 			new("YCbCr - Cb and Cr (chrominance)", ColorChannel.CbPlusCr),
 			new("HSV - Hue", ColorChannel.Hue),
 			new("HSV - Saturation", ColorChannel.Saturation),
-			new("HSV - Value", ColorChannel.Value)
+			new("HSV - Value", ColorChannel.Value),
+			new("Oklab - L (lightness)", ColorChannel.OklabL),
+			new("Oklab - a (green - red)", ColorChannel.OklabA),
+			new("Oklab - b (blue - yellow)", ColorChannel.OklabB),
+			new("Oklab - Chroma (colorfulness)", ColorChannel.OklabChroma),
+			new("Oklab - Hue", ColorChannel.OklabHue),
+			new("YIQ - I (orange - cyan)", ColorChannel.YiqI),
+			new("YIQ - Q (purple - green)", ColorChannel.YiqQ),
+			new("Linear light - Red", ColorChannel.LinearRed),
+			new("Linear light - Green", ColorChannel.LinearGreen),
+			new("Linear light - Blue", ColorChannel.LinearBlue),
+			new("CMYK - Cyan", ColorChannel.Cyan),
+			new("CMYK - Magenta", ColorChannel.Magenta),
+			new("CMYK - Yellow", ColorChannel.Yellow),
+			new("CMYK - Black (key)", ColorChannel.Black)
 		};
 
 		// A null channel means "all of R, G, and B at once".
@@ -75,10 +101,10 @@ namespace Celarix.Imaging.ByteView
 
 		private static readonly Choice<ChromaSubsamplingMode>[] SubsamplingChoices =
 		{
-			new("4:4:4 (full resolution chroma)", ChromaSubsamplingMode.YCbCr444),
-			new("4:2:2 (2x1 blocks of chroma)", ChromaSubsamplingMode.YCbCr422),
-			new("4:2:0 (2x2 blocks of chroma)", ChromaSubsamplingMode.YCbCr420),
-			new("4:1:1 (4x1 blocks of chroma)", ChromaSubsamplingMode.YCbCr411),
+			new("4:4:4 (full resolution)", ChromaSubsamplingMode.YCbCr444),
+			new("4:2:2 (2x1 blocks)", ChromaSubsamplingMode.YCbCr422),
+			new("4:2:0 (2x2 blocks)", ChromaSubsamplingMode.YCbCr420),
+			new("4:1:1 (4x1 blocks)", ChromaSubsamplingMode.YCbCr411),
 			new("8:1:1 (non-standard, 8x8 blocks)", ChromaSubsamplingMode.YCbCr811),
 			new("16:1:1 (non-standard, 16x16 blocks)", ChromaSubsamplingMode.YCbCr1611),
 			new("256:1:1 (VERY non-standard, 256x256 blocks)", ChromaSubsamplingMode.YCbCr25611)
@@ -88,6 +114,7 @@ namespace Celarix.Imaging.ByteView
 		{
 			new("Discard low bits (fixed RGB layout)", BitDepthMethod.Shift),
 			new("Grayscale", BitDepthMethod.Grayscale),
+			new("Optimized palette (k-means in Oklab)", BitDepthMethod.OptimizedPalette),
 			new("Most common colors (top N)", BitDepthMethod.TopColors)
 		};
 
@@ -95,6 +122,7 @@ namespace Celarix.Imaging.ByteView
 		{
 			[BitDepthMethod.Shift] = new[] { 16, 8, 4 },
 			[BitDepthMethod.Grayscale] = new[] { 8, 4, 2, 1 },
+			[BitDepthMethod.OptimizedPalette] = new[] { 8, 4, 2, 1 },
 			[BitDepthMethod.TopColors] = new[] { 16, 8, 4, 2, 1 }
 		};
 
@@ -104,7 +132,9 @@ namespace Celarix.Imaging.ByteView
 			[Effect.ColorChannel] = "Shows a single channel of the image, from RGB, YCbCr, or HSV.",
 			[Effect.BitPlane] = "Shows one bit of each pixel's value as black or full-intensity. Bit 7 is the most significant.",
 			[Effect.ChromaSubsampling] = "Keeps luminance at full resolution but stores color in larger blocks, as video codecs do.",
-			[Effect.ReduceBitDepth] = "Reduces the number of bits used to store each pixel."
+			[Effect.LumaSubsampling] = "The reverse of chroma subsampling: color stays at full resolution while brightness is stored in blocks. Nothing does this on purpose.",
+			[Effect.ReduceBitDepth] = "Reduces the number of bits used to store each pixel. Dithering trades banding for noise-like patterns.",
+			[Effect.UniqueColorMap] = "Draws each distinct color in the image as one pixel, with similar colors placed near each other (along a Hilbert curve through Oklab). Compact packs only the colors present; Fixed gives every possible color the same spot in a 4096x4096 map, most of it empty, so different images can be compared."
 		};
 
 		private readonly MainForm byteViewForm;
@@ -183,16 +213,28 @@ namespace Celarix.Imaging.ByteView
 					var mode = ((Choice<ChromaSubsamplingMode>)ComboParameter1.SelectedItem).Value;
 					return source => ChromaPlaygroundHelpers.ChromaSubsample(source, mode);
 				}
+				case Effect.LumaSubsampling:
+				{
+					var mode = ((Choice<ChromaSubsamplingMode>)ComboParameter1.SelectedItem).Value;
+					return source => ChromaPlaygroundHelpers.LumaSubsample(source, mode);
+				}
 				case Effect.ReduceBitDepth:
 				{
 					var method = ((Choice<BitDepthMethod>)ComboParameter1.SelectedItem).Value;
 					var bits = (int)ComboParameter2.SelectedItem;
+					var dither = CheckDither.Checked;
 					return method switch
 					{
-						BitDepthMethod.Shift => source => Cloned(source, i => ChromaPlaygroundHelpers.MutateReduceBitDepthByShifting(i, bits)),
-						BitDepthMethod.Grayscale => source => Cloned(source, i => ChromaPlaygroundHelpers.MutateReduceBitDepthGrayscale(i, bits)),
-						_ => source => Cloned(source, i => ChromaPlaygroundHelpers.MutateReduceBitDepthTopColors(i, bits))
+						BitDepthMethod.Shift => source => Cloned(source, i => ChromaPlaygroundHelpers.MutateReduceBitDepthByShifting(i, bits, dither)),
+						BitDepthMethod.Grayscale => source => Cloned(source, i => ChromaPlaygroundHelpers.MutateReduceBitDepthGrayscale(i, bits, dither)),
+						BitDepthMethod.OptimizedPalette => source => Cloned(source, i => ChromaPlaygroundHelpers.MutateReduceBitDepthKMeans(i, bits, dither)),
+						_ => source => Cloned(source, i => ChromaPlaygroundHelpers.MutateReduceBitDepthTopColors(i, bits, dither))
 					};
+				}
+				case Effect.UniqueColorMap:
+				{
+					var compact = ((Choice<bool>)ComboParameter1.SelectedItem).Value;
+					return compact ? UniqueColorMap.RenderCompact : UniqueColorMap.RenderFixed;
 				}
 				default:
 					return null;
@@ -312,6 +354,7 @@ namespace Celarix.Imaging.ByteView
 				LabelParameter1.Visible = ComboParameter1.Visible = hasParameter1;
 				LabelParameter2.Visible = ComboParameter2.Visible = hasParameter2;
 				LabelBitIndex.Visible = TrackBitIndex.Visible = hasBitIndex;
+				CheckDither.Visible = hasParameter2;
 
 				ComboParameter1.Items.Clear();
 				switch (effect)
@@ -325,8 +368,13 @@ namespace Celarix.Imaging.ByteView
 						ComboParameter1.Items.AddRange(BitPlaneChannelChoices);
 						break;
 					case Effect.ChromaSubsampling:
+					case Effect.LumaSubsampling:
 						LabelParameter1.Text = "Subsampling:";
 						ComboParameter1.Items.AddRange(SubsamplingChoices);
+						break;
+					case Effect.UniqueColorMap:
+						LabelParameter1.Text = "Layout:";
+						ComboParameter1.Items.AddRange(ColorMapLayoutChoices);
 						break;
 					case Effect.ReduceBitDepth:
 						LabelParameter1.Text = "Method:";
@@ -390,6 +438,11 @@ namespace Celarix.Imaging.ByteView
 		}
 
 		private void ComboParameter2_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (!isUpdatingControls) { RefreshPreview(); }
+		}
+
+		private void CheckDither_CheckedChanged(object sender, EventArgs e)
 		{
 			if (!isUpdatingControls) { RefreshPreview(); }
 		}

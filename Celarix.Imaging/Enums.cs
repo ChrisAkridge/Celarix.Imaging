@@ -51,7 +51,21 @@ namespace Celarix.Imaging
 	    CbPlusCr,
 	    Hue,
 	    Saturation,
-	    Value
+	    Value,
+	    OklabL,
+	    OklabA,
+	    OklabB,
+	    OklabChroma,
+	    OklabHue,
+	    YiqI,
+	    YiqQ,
+	    LinearRed,
+	    LinearGreen,
+	    LinearBlue,
+	    Cyan,
+	    Magenta,
+	    Yellow,
+	    Black
     }
     
     public enum ChromaSubsamplingMode
