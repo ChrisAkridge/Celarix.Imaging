@@ -229,6 +229,67 @@ namespace Celarix.Imaging.Misc
 			return luminanceFullImage;
 		}
 
+		/// <summary>
+		/// Reduces the image to a fixed RGB layout by discarding low bits: 16bpp is 5:6:5, 8bpp is 3:3:2, 4bpp is 1:2:1.
+		/// </summary>
+		public static void MutateReduceBitDepthByShifting(Image<Rgba32> image, int bitsPerPixel)
+		{
+			if (bitsPerPixel is not (16 or 8 or 4))
+			{
+				throw new ArgumentOutOfRangeException(nameof(bitsPerPixel), bitsPerPixel, "Bits per pixel must be 4, 8, or 16.");
+			}
+
+			MutateImage(image, pixel =>
+			{
+				float red;
+				float green;
+				float blue;
+
+				switch (bitsPerPixel)
+				{
+					case 16:
+						red = (pixel.R >> 3) / 31f;
+						green = (pixel.G >> 2) / 63f;
+						blue = (pixel.B >> 3) / 31f;
+						break;
+					case 8:
+						red = (pixel.R >> 5) / 7f;
+						green = (pixel.G >> 5) / 7f;
+						blue = (pixel.B >> 6) / 3f;
+						break;
+					default:
+						red = (pixel.R >> 7) != 0 ? 1f : 0f;
+						green = (pixel.G >> 6) / 3f;
+						blue = (pixel.B >> 7) != 0 ? 1f : 0f;
+						break;
+				}
+
+				return new Rgba32((byte)(red * 255f), (byte)(green * 255f), (byte)(blue * 255f));
+			});
+		}
+
+		/// <summary>
+		/// Converts the image to grayscale (via Y) and quantizes it to 2^bitsPerPixel evenly spaced levels.
+		/// </summary>
+		public static void MutateReduceBitDepthGrayscale(Image<Rgba32> image, int bitsPerPixel)
+		{
+			if (bitsPerPixel is not (8 or 4 or 2 or 1))
+			{
+				throw new ArgumentOutOfRangeException(nameof(bitsPerPixel), bitsPerPixel, "Grayscale bit depths must be 8, 4, 2, or 1.");
+			}
+
+			var maxLevel = (1 << bitsPerPixel) - 1;
+
+			MutateImage(image, pixel =>
+			{
+				var luma = ToY(pixel.R, pixel.G, pixel.B);
+				var level = luma >> (8 - bitsPerPixel);
+				var value = (byte)(level * 255 / maxLevel);
+
+				return new Rgba32(value, value, value, 255);
+			});
+		}
+
 		public static void MutateReduceBitDepthTopColors(Image<Rgba32> image, int bitsPerPixel)
 		{
 			if (bitsPerPixel is not (16 or 8 or 4 or 2 or 1))

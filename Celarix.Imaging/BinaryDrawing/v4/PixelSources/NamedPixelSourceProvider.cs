@@ -47,7 +47,7 @@ namespace Celarix.Imaging.BinaryDrawing.v4.PixelSources
                 //BinaryDrawingBitDepths.FourBit => new FourBitPixelSource(_byteProvider),
                 //BinaryDrawingBitDepths.EightBit => new EightBitPixelSource(_byteProvider),
                 //BinaryDrawingBitDepths.SixteenBit => new SixteenBitPixelSource(_byteProvider),
-                BinaryDrawingBitDepths.TwentyFourBit => new TwentyFourBitPixelSource(_byteBuffer),
+                //BinaryDrawingBitDepths.TwentyFourBit => new TwentyFourBitPixelSource(_byteBuffer),
                 _ => throw new ArgumentException($"Unsupported bit depth: {bitDepth}")
             };
         }

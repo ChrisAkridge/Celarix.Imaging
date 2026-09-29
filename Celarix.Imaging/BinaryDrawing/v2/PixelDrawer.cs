@@ -21,8 +21,6 @@ namespace Celarix.Imaging.BinaryDrawing.v2
                 case PixelFormat.Binary1Bpp:
                     Fill1BppBuffer(options, byteBuffer, pixelBuffer, bytesRead, out pixelsWritten);
                     break;
-<<<<<<< HEAD
-=======
                 case PixelFormat.Binary2Bpp:
                     Fill2BppBuffer(options, byteBuffer, pixelBuffer, bytesRead, out pixelsWritten);
                     break;
@@ -53,7 +51,6 @@ namespace Celarix.Imaging.BinaryDrawing.v2
                 case PixelFormat.Float64:
                     FillFloat64Buffer(options, byteBuffer, pixelBuffer, bytesRead, out pixelsWritten);
                     break;
->>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
                 default:
                     throw new NotImplementedException();
             }
@@ -65,23 +62,7 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             int bytesRead,
             out int pixelsWritten)
         {
-<<<<<<< HEAD
-            Rgba32[] palette;
-            if (options.ColorMode == ColorMode.UserPalette)
-            {
-                if (options.UserPalette == null || options.UserPalette.Length < 2)
-                {
-                    throw new ArgumentException("User palette must contain at least 2 colors for 1bpp images.");
-                }
-                palette = options.UserPalette;
-            }
-            else
-            {
-                palette = [.. DefaultPalettes.GetPalette(1, Imaging.ColorMode.Grayscale)];
-            }
-=======
             var palette = GetPaletteOrThrow(options, 1, 2, ColorMode.Grayscale);
->>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
 
             pixelsWritten = 0;
             for (var i = 0; i < bytesRead; i++)
@@ -100,8 +81,6 @@ namespace Celarix.Imaging.BinaryDrawing.v2
                 }
             }
         }
-<<<<<<< HEAD
-=======
 
         private static void Fill2BppBuffer(DrawOptions options,
             byte[] byteBuffer,
@@ -605,6 +584,5 @@ namespace Celarix.Imaging.BinaryDrawing.v2
             var blueScaled = (byte)(255f * (blue / (float)7));
             return new Rgba32(redScaled, greenScaled, blueScaled, 0xFF);
         }
->>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
     }
 }

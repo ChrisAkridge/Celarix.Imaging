@@ -1,345 +1,403 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Celarix.Imaging.Misc;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Threading.Tasks;
 using Image = SixLabors.ImageSharp.Image;
 using Path = System.IO.Path;
 
 namespace Celarix.Imaging.ByteView
 {
+	/// <summary>
+	/// Every effect is a function from the source image to a new image; there is no RGB/YCbCr "mode".
+	/// (Effects that work in YCbCr convert internally.) The result is previewed live, and "Keep Result"
+	/// promotes it to be the new source so that effects can be stacked.
+	/// </summary>
 	public partial class ChromaPlaygroundForm : Form
 	{
-		private Image<Rgba32> rgbImage;
-		private Image<Rgba32> yCbCrImage;
-		private Image<Rgba32> modifiedImage;
-		private DisplayedChromaPlaygroundImage displayedImage;
-		private string imageFileName;
-		private bool shouldRunEventHandlers = true;
+		private enum Effect
+		{
+			None,
+			ColorChannel,
+			BitPlane,
+			ChromaSubsampling,
+			ReduceBitDepth
+		}
+
+		private enum BitDepthMethod
+		{
+			Shift,
+			Grayscale,
+			TopColors
+		}
+
+		private sealed record Choice<T>(string Label, T Value)
+		{
+			public override string ToString() => Label;
+		}
+
+		private static readonly Choice<Effect>[] EffectChoices =
+		{
+			new("None (source image)", Effect.None),
+			new("Color channel", Effect.ColorChannel),
+			new("Bit plane", Effect.BitPlane),
+			new("Chroma subsampling", Effect.ChromaSubsampling),
+			new("Reduce bit depth", Effect.ReduceBitDepth)
+		};
+
+		private static readonly Choice<ColorChannel>[] ColorChannelChoices =
+		{
+			new("RGB - Red", ColorChannel.Red),
+			new("RGB - Green", ColorChannel.Green),
+			new("RGB - Blue", ColorChannel.Blue),
+			new("Alpha", ColorChannel.Alpha),
+			new("YCbCr - Y (luminance)", ColorChannel.Y),
+			new("YCbCr - Cb (blue - luminance)", ColorChannel.Cb),
+			new("YCbCr - Cr (red - luminance)", ColorChannel.Cr),
+			new("YCbCr - Cb and Cr (chrominance)", ColorChannel.CbPlusCr),
+			new("HSV - Hue", ColorChannel.Hue),
+			new("HSV - Saturation", ColorChannel.Saturation),
+			new("HSV - Value", ColorChannel.Value)
+		};
+
+		// A null channel means "all of R, G, and B at once".
+		private static readonly Choice<ColorChannel?>[] BitPlaneChannelChoices =
+		{
+			new("All of red, green, and blue", null),
+			new("Red", ColorChannel.Red),
+			new("Green", ColorChannel.Green),
+			new("Blue", ColorChannel.Blue),
+			new("Alpha", ColorChannel.Alpha)
+		};
+
+		private static readonly Choice<ChromaSubsamplingMode>[] SubsamplingChoices =
+		{
+			new("4:4:4 (full resolution chroma)", ChromaSubsamplingMode.YCbCr444),
+			new("4:2:2 (2x1 blocks of chroma)", ChromaSubsamplingMode.YCbCr422),
+			new("4:2:0 (2x2 blocks of chroma)", ChromaSubsamplingMode.YCbCr420),
+			new("4:1:1 (4x1 blocks of chroma)", ChromaSubsamplingMode.YCbCr411),
+			new("8:1:1 (non-standard, 8x8 blocks)", ChromaSubsamplingMode.YCbCr811),
+			new("16:1:1 (non-standard, 16x16 blocks)", ChromaSubsamplingMode.YCbCr1611),
+			new("256:1:1 (VERY non-standard, 256x256 blocks)", ChromaSubsamplingMode.YCbCr25611)
+		};
+
+		private static readonly Choice<BitDepthMethod>[] BitDepthMethodChoices =
+		{
+			new("Discard low bits (fixed RGB layout)", BitDepthMethod.Shift),
+			new("Grayscale", BitDepthMethod.Grayscale),
+			new("Most common colors (top N)", BitDepthMethod.TopColors)
+		};
+
+		private static readonly Dictionary<BitDepthMethod, int[]> BitDepthsByMethod = new()
+		{
+			[BitDepthMethod.Shift] = new[] { 16, 8, 4 },
+			[BitDepthMethod.Grayscale] = new[] { 8, 4, 2, 1 },
+			[BitDepthMethod.TopColors] = new[] { 16, 8, 4, 2, 1 }
+		};
+
+		private static readonly Dictionary<Effect, string> EffectDescriptions = new()
+		{
+			[Effect.None] = "Shows the source image unchanged. Pick an effect above to preview it.",
+			[Effect.ColorChannel] = "Shows a single channel of the image, from RGB, YCbCr, or HSV.",
+			[Effect.BitPlane] = "Shows one bit of each pixel's value as black or full-intensity. Bit 7 is the most significant.",
+			[Effect.ChromaSubsampling] = "Keeps luminance at full resolution but stores color in larger blocks, as video codecs do.",
+			[Effect.ReduceBitDepth] = "Reduces the number of bits used to store each pixel."
+		};
 
 		private readonly MainForm byteViewForm;
+
+		private Image<Rgba32> loadedImage;
+		private Image<Rgba32> sourceImage;
+		private Image<Rgba32> resultImage;
+		private string imageFileName;
+		private int previewVersion;
+		private bool isUpdatingControls;
 
 		public ChromaPlaygroundForm(MainForm byteViewForm)
 		{
 			this.byteViewForm = byteViewForm;
 			InitializeComponent();
-			SetControlEnabledStates();
+
+			ComboEffect.Items.AddRange(EffectChoices);
+			ComboEffect.SelectedIndex = 0;
+			ApplyFitToWindow();
+			OnEffectChanged();
 		}
 
-		private DisplayedChromaPlaygroundImage DisplayedImage
-		{
-			get => displayedImage;
-			set
-			{
-				displayedImage = value;
-				SetStatusText();
-				SetControlEnabledStates();
-			}
-		}
+		private Effect SelectedEffect => ((Choice<Effect>)ComboEffect.SelectedItem).Value;
 
-		#region Implementations
+		// What's currently on screen, and what saving/exporting acts on.
+		private Image<Rgba32> DisplayedImage => TSBShowOriginal.Checked || resultImage == null ? sourceImage : resultImage;
+
+		#region Loading
 		private void LoadImage(string path)
 		{
 			try
 			{
-				imageFileName = Path.GetFileName(path);
-				rgbImage = Image.Load<Rgba32>(path);
-				yCbCrImage = null;
-				DisplayedImage = DisplayedChromaPlaygroundImage.RGB;
-
-				shouldRunEventHandlers = false;
-				NUDBitPlaneIndex.Value = 7;
-				shouldRunEventHandlers = true;
-
-				SetPictureBoxImage(rgbImage, DisplayedChromaPlaygroundImage.RGB);
-				SetControlEnabledStates();
+				SetNewImage(Image.Load<Rgba32>(path), Path.GetFileName(path));
 			}
-			catch (ImageFormatException)
+			catch (Exception ex) when (ex is ImageFormatException or UnknownImageFormatException or InvalidImageContentException)
 			{
 				MessageBox.Show($"The file at {path} is not a valid image file.", "Invalid Image File",
 					MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
-		private void LoadImageFromByteView(Image<Rgba32> image)
+		private void SetNewImage(Image<Rgba32> image, string fileName)
 		{
-			if (image == null) { return; }
-
-			imageFileName = "From ByteView";
-			rgbImage = image;
-			yCbCrImage = null;
-			DisplayedImage = DisplayedChromaPlaygroundImage.RGB;
-
-			shouldRunEventHandlers = false;
-			NUDBitPlaneIndex.Value = 7;
-			shouldRunEventHandlers = true;
-
-			SetPictureBoxImage(rgbImage, DisplayedChromaPlaygroundImage.RGB);
-			SetControlEnabledStates();
-		}
-
-		private void DisplaySingleColorChannel(ColorChannel channel)
-		{
-			modifiedImage?.Dispose();
-			modifiedImage = null;
-			DisplayedChromaPlaygroundImage newDisplayedImage;
-
-			if (channel is ColorChannel.Red or ColorChannel.Green or ColorChannel.Blue or ColorChannel.Alpha)
-			{
-				modifiedImage = rgbImage.CloneAs<Rgba32>();
-				newDisplayedImage = DisplayedChromaPlaygroundImage.RGB;
-			}
-			else
-			{
-				// The YCbCr image, when unmodified, is just the same as the RGB image.
-				// But we want to keep it separate, so we can make transforms on the RGB image, too.
-				yCbCrImage ??= rgbImage.CloneAs<Rgba32>();
-				modifiedImage = yCbCrImage.CloneAs<Rgba32>();
-				newDisplayedImage = DisplayedChromaPlaygroundImage.YCbCr;
-			}
-
-			ChromaPlaygroundHelpers.MutateImage(modifiedImage,
-				p => ChromaPlaygroundHelpers.GetColorChannel(p, channel));
-			SetPictureBoxImage(modifiedImage, newDisplayedImage);
-		}
-
-		private void DisplayBitPlane(ColorChannel channel, int bitPlaneIndex)
-		{
-			modifiedImage?.Dispose();
-			modifiedImage = rgbImage.CloneAs<Rgba32>();
-			ChromaPlaygroundHelpers.MutateImage(modifiedImage,
-				p => ChromaPlaygroundHelpers.GetBitPlane(p, channel, bitPlaneIndex));
-			SetPictureBoxImage(modifiedImage, DisplayedChromaPlaygroundImage.RGB);
-		}
-
-		private void DisplayRGBBitPlane(int bitPlaneIndex)
-		{
-			modifiedImage?.Dispose();
-			modifiedImage = rgbImage.CloneAs<Rgba32>();
-			ChromaPlaygroundHelpers.MutateImage(modifiedImage,
-				p => ChromaPlaygroundHelpers.GetRGBBitPlane(p, bitPlaneIndex));
-			SetPictureBoxImage(modifiedImage, DisplayedChromaPlaygroundImage.RGB);
-		}
-
-		private void ChromaSubsample(ChromaSubsamplingMode mode)
-		{
-			modifiedImage?.Dispose();
-			modifiedImage = null;
-
-			var baseImageForSubsampling = yCbCrImage.CloneAs<Rgba32>();
-			var subsampledImage = ChromaPlaygroundHelpers.ChromaSubsample(baseImageForSubsampling, mode);
-			modifiedImage = subsampledImage;
-			baseImageForSubsampling.Dispose();
-
-			SetPictureBoxImage(modifiedImage, DisplayedChromaPlaygroundImage.YCbCr);
-		}
-
-		private void SimpleReduceBitDepth(int bitsPerPixel)
-		{
-			modifiedImage?.Dispose();
-			modifiedImage = rgbImage.CloneAs<Rgba32>();
-
-			for (int y = 0; y < modifiedImage.Height; y++)
-			{
-				for (int x = 0; x < modifiedImage.Width; x++)
-				{
-					var originalPixel = modifiedImage[x, y];
-					float red;
-					float green;
-					float blue;
-
-					switch (bitsPerPixel)
-					{
-						case 16:
-							// RGB 5:6:5
-							red = (originalPixel.R >> 3) / 31f;
-							green = (originalPixel.G >> 2) / 63f;
-							blue = (originalPixel.B >> 3) / 31f;
-
-							break;
-						case 8:
-							// RGB 3:3:2
-							red = (originalPixel.R >> 5) / 7f;
-							green = (originalPixel.G >> 5) / 7f;
-							blue = (originalPixel.B >> 6) / 3f;
-
-							break;
-						case 4:
-							// RGB 1:2:1
-							red = (originalPixel.R >> 7) != 0 ? 1f : 0f;
-							green = (originalPixel.G >> 6) / 3f;
-							blue = (originalPixel.B >> 7) != 0 ? 1f : 0f;
-
-							break;
-						default:
-							throw new ArgumentOutOfRangeException(nameof(bitsPerPixel), bitsPerPixel, null);
-					}
-
-					modifiedImage[x, y] = new Rgba32((byte)(red * 255f),
-						(byte)(green * 255f),
-						(byte)(blue * 255f));
-				}
-			}
-
-			SetPictureBoxImage(modifiedImage, DisplayedChromaPlaygroundImage.RGB);
-		}
-
-		private void ReduceBitDepthGrayscale(int bitsPerPixel)
-		{
-			modifiedImage?.Dispose();
-			modifiedImage = rgbImage.CloneAs<Rgba32>();
-
-			// Easy hack to get the image in full grayscale
-			ChromaPlaygroundHelpers.MutateImage(modifiedImage, p => ChromaPlaygroundHelpers.GetColorChannel(p, ColorChannel.Y));
-
-			if (bitsPerPixel is not (8 or 4 or 2 or 1))
-			{
-				throw new ArgumentOutOfRangeException(nameof(bitsPerPixel), bitsPerPixel, "Grayscale bit depths must be 8, 4, 2, or 1.");
-			}
-
-			if (bitsPerPixel == 8)
-			{
-				SetPictureBoxImage(modifiedImage, DisplayedChromaPlaygroundImage.RGB);
-				return;
-			}
-
-			for (int y = 0; y < modifiedImage.Height; y++)
-			{
-				for (int x = 0; x < modifiedImage.Width; x++)
-				{
-					var originalPixel = modifiedImage[x, y];
-					float luma;
-
-					switch (bitsPerPixel)
-					{
-						case 4:
-							luma = (originalPixel.R >> 4) / 15f;
-							break;
-						case 2:
-							luma = (originalPixel.R >> 6) / 3f;
-							break;
-						case 1:
-							luma = (originalPixel.R >> 7) != 0 ? 1f : 0f;
-							break;
-						default:
-							throw new ArgumentOutOfRangeException(nameof(bitsPerPixel), bitsPerPixel, null);
-					}
-
-					var newPixel = (byte)(luma * 255f);
-					modifiedImage[x, y] = new Rgba32(newPixel, newPixel, newPixel, 255);
-				}
-			}
-
-			SetPictureBoxImage(modifiedImage, DisplayedChromaPlaygroundImage.RGB);
-		}
-
-		private void ReduceBitDepthByTopColors(int bitsPerPixel)
-		{
-			modifiedImage?.Dispose();
-			modifiedImage = rgbImage.CloneAs<Rgba32>();
-
-			ChromaPlaygroundHelpers.MutateReduceBitDepthTopColors(modifiedImage, bitsPerPixel);
-
-			SetPictureBoxImage(modifiedImage, DisplayedChromaPlaygroundImage.RGB);
+			imageFileName = fileName;
+			loadedImage = image;
+			sourceImage = image;
+			TrackBitIndex.Value = TrackBitIndex.Maximum;
+			RefreshPreview();
 		}
 		#endregion
 
-		private void SetControlEnabledStates()
+		#region Effects
+		/// <summary>
+		/// Builds a function that applies the currently-configured effect, or null if there is nothing to apply.
+		/// Parameters are read now, on the UI thread, so the function is safe to run in the background.
+		/// </summary>
+		private Func<Image<Rgba32>, Image<Rgba32>> BuildEffect()
 		{
-			var hasRGBImage = rgbImage != null;
-			var hasYCbCrImage = yCbCrImage != null;
-			var rgbDisplayed = DisplayedImage == DisplayedChromaPlaygroundImage.RGB && hasRGBImage;
-			var yCbCrDisplayed = DisplayedImage == DisplayedChromaPlaygroundImage.YCbCr && hasYCbCrImage;
-
-			// The Color Channels controls are enabled if we have an RGB image.
-			RadioRedChannel.Enabled = hasRGBImage;
-			RadioGreenChannel.Enabled = hasRGBImage;
-			RadioBlueChannel.Enabled = hasRGBImage;
-			RadioAlphaChannel.Enabled = hasRGBImage;
-			RadioLuminance.Enabled = hasRGBImage;
-			RadioCb.Enabled = hasRGBImage;
-			RadioCr.Enabled = hasRGBImage;
-			RadioChrominance.Enabled = hasRGBImage;
-			RadioHueChannel.Enabled = hasRGBImage;
-			RadioSaturationChannel.Enabled = hasRGBImage;
-			RadioValueChannel.Enabled = hasRGBImage;
-
-			// The Bit Planes controls are enabled if we have an RGB image and that image is currently being displayed.
-			RadioBitPlaneRed.Enabled = rgbDisplayed;
-			RadioBitPlaneGreen.Enabled = rgbDisplayed;
-			RadioBitPlaneBlue.Enabled = rgbDisplayed;
-			RadioBitPlaneAlpha.Enabled = rgbDisplayed;
-			RadioBitPlaneRGB.Enabled = rgbDisplayed;
-			NUDBitPlaneIndex.Enabled = rgbDisplayed;
-
-			// The Chroma Subsampling controls are enabled if we have a YCbCr image and that image is currently being displayed.
-			Radio444.Enabled = yCbCrDisplayed;
-			Radio422.Enabled = yCbCrDisplayed;
-			Radio420.Enabled = yCbCrDisplayed;
-			Radio411.Enabled = yCbCrDisplayed;
-			Radio811.Enabled = yCbCrDisplayed;
-			Radio1611.Enabled = yCbCrDisplayed;
-			Radio25611.Enabled = yCbCrDisplayed;
-			ButtonChromaSubsamplingSet.Enabled = yCbCrDisplayed;
-
-			// The Reduce Bit Depth controls are enabled if we have an RGB image and that image is currently being displayed.
-			Radio16BPPRGB565.Enabled = rgbDisplayed;
-			Radio16bppTop65536.Enabled = rgbDisplayed;
-			Radio8bppRGB332.Enabled = rgbDisplayed;
-			Radio8BPPTop256.Enabled = rgbDisplayed;
-			Radio8BPPGrayscale.Enabled = rgbDisplayed;
-			Radio4bppRGB121.Enabled = rgbDisplayed;
-			Radio4BPPTop16.Enabled = rgbDisplayed;
-			Radio4BPPGrayscale.Enabled = rgbDisplayed;
-			Radio2BPPTop4.Enabled = rgbDisplayed;
-			Radio2BPPGrayscale.Enabled = rgbDisplayed;
-			Radio1BPPTop2.Enabled = rgbDisplayed;
-			Radio1BPPGrayscale.Enabled = rgbDisplayed;
-
-			// The Analog Signal controls are enabled if we have a YCbCr image and that image is currently being displayed.
-			ButtonSaveSimplerAudio.Enabled = yCbCrDisplayed;
-			ButtonSaveNTSCAudio.Enabled = yCbCrDisplayed;
+			switch (SelectedEffect)
+			{
+				case Effect.ColorChannel:
+				{
+					var channel = ((Choice<ColorChannel>)ComboParameter1.SelectedItem).Value;
+					return source => Mutated(source, p => ChromaPlaygroundHelpers.GetColorChannel(p, channel));
+				}
+				case Effect.BitPlane:
+				{
+					var channel = ((Choice<ColorChannel?>)ComboParameter1.SelectedItem).Value;
+					var bit = TrackBitIndex.Value;
+					return channel is { } single
+						? source => Mutated(source, p => ChromaPlaygroundHelpers.GetBitPlane(p, single, bit))
+						: source => Mutated(source, p => ChromaPlaygroundHelpers.GetRGBBitPlane(p, bit));
+				}
+				case Effect.ChromaSubsampling:
+				{
+					var mode = ((Choice<ChromaSubsamplingMode>)ComboParameter1.SelectedItem).Value;
+					return source => ChromaPlaygroundHelpers.ChromaSubsample(source, mode);
+				}
+				case Effect.ReduceBitDepth:
+				{
+					var method = ((Choice<BitDepthMethod>)ComboParameter1.SelectedItem).Value;
+					var bits = (int)ComboParameter2.SelectedItem;
+					return method switch
+					{
+						BitDepthMethod.Shift => source => Cloned(source, i => ChromaPlaygroundHelpers.MutateReduceBitDepthByShifting(i, bits)),
+						BitDepthMethod.Grayscale => source => Cloned(source, i => ChromaPlaygroundHelpers.MutateReduceBitDepthGrayscale(i, bits)),
+						_ => source => Cloned(source, i => ChromaPlaygroundHelpers.MutateReduceBitDepthTopColors(i, bits))
+					};
+				}
+				default:
+					return null;
+			}
 		}
 
-		private void SetStatusText()
+		private static Image<Rgba32> Cloned(Image<Rgba32> source, Action<Image<Rgba32>> mutate)
 		{
-			var displayedImageName = DisplayedImage switch
-			{
-				DisplayedChromaPlaygroundImage.RGB => "RGB",
-				DisplayedChromaPlaygroundImage.YCbCr => "YCbCr",
-				_ => "Unknown"
-			};
-
-			var otherImageAvailable = DisplayedImage switch
-			{
-				DisplayedChromaPlaygroundImage.RGB => yCbCrImage != null ? " (YCbCr available)" : "",
-				DisplayedChromaPlaygroundImage.YCbCr => rgbImage != null ? " (RGB available)" : "",
-				_ => ""
-			};
-
-			TSSMain.Text = $"{imageFileName} | {rgbImage.Width}x{rgbImage.Height} | Viewing {displayedImageName} image{otherImageAvailable}";
+			var clone = source.Clone();
+			mutate(clone);
+			return clone;
 		}
 
-		private void SetPictureBoxImage(Image<Rgba32> imageSharpImage, DisplayedChromaPlaygroundImage displayedImage)
+		private static Image<Rgba32> Mutated(Image<Rgba32> source, Func<Rgba32, Rgba32> transform) =>
+			Cloned(source, i => ChromaPlaygroundHelpers.MutateImage(i, transform));
+
+		private async void RefreshPreview()
 		{
-			if (imageSharpImage == null)
+			var version = ++previewVersion;
+			var effect = sourceImage == null ? null : BuildEffect();
+			var source = sourceImage;
+
+			Image<Rgba32> newResult = null;
+			if (effect != null)
 			{
-				PictureMain.Image = null;
+				UseWaitCursor = true;
+				try
+				{
+					newResult = await Task.Run(() => effect(source));
+				}
+				catch (Exception ex)
+				{
+					if (version == previewVersion)
+					{
+						UseWaitCursor = false;
+						MessageBox.Show(ex.Message, "Effect Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					}
+					return;
+				}
+			}
+
+			if (version != previewVersion)
+			{
+				// A newer request superseded this one while it was running.
+				newResult?.Dispose();
 				return;
 			}
 
-			var bitmap = imageSharpImage.ToSystemDrawingImage();
-			PictureMain.Image = bitmap;
-			DisplayedImage = displayedImage;
-			LabelAnalogSignalStats.Text = $"{MockNTSCSignalGenerator.GetImageStatsString(imageSharpImage)}\r\n{SimpleSignalGenerator.GetImageStatsString(imageSharpImage)}";
+			UseWaitCursor = false;
+			resultImage?.Dispose();
+			resultImage = newResult;
+			UpdateDisplay();
+		}
+		#endregion
+
+		#region Display
+		private void UpdateDisplay()
+		{
+			var image = DisplayedImage;
+			var hasImage = image != null;
+
+			var oldBitmap = PictureMain.Image;
+			PictureMain.Image = hasImage ? image.ToSystemDrawingImage() : null;
+			oldBitmap?.Dispose();
+
+			TSBSaveAs.Enabled = hasImage;
+			TSDDExportSignal.Enabled = hasImage;
+			TSBKeepResult.Enabled = resultImage != null;
+			TSBShowOriginal.Enabled = resultImage != null;
+			TSBResetEffect.Enabled = hasImage && !ReferenceEquals(sourceImage, loadedImage);
+			ComboEffect.Enabled = hasImage;
+
+			if (!hasImage)
+			{
+				TSSMain.Text = "Open an image to begin.";
+				LabelSignalStats.Text = string.Empty;
+				return;
+			}
+
+			var shown = image == sourceImage
+				? (ReferenceEquals(sourceImage, loadedImage) ? "source image" : "source image (with kept results)")
+				: $"preview: {ComboEffect.Text}";
+			TSSMain.Text = $"{imageFileName} | {image.Width}x{image.Height} | Showing {shown}";
+			LabelSignalStats.Text = $"{MockNTSCSignalGenerator.GetImageStatsString(image)}\r\n{SimpleSignalGenerator.GetImageStatsString(image)}".Trim();
+		}
+
+		private void ApplyFitToWindow()
+		{
+			if (TSBFitToWindow.Checked)
+			{
+				PictureMain.Dock = DockStyle.Fill;
+				PictureMain.SizeMode = PictureBoxSizeMode.Zoom;
+			}
+			else
+			{
+				PictureMain.Dock = DockStyle.None;
+				PictureMain.Location = System.Drawing.Point.Empty;
+				PictureMain.SizeMode = PictureBoxSizeMode.AutoSize;
+			}
+		}
+
+		/// <summary>
+		/// Shows only the parameter controls the selected effect uses, and fills them with its choices.
+		/// </summary>
+		private void OnEffectChanged()
+		{
+			isUpdatingControls = true;
+			try
+			{
+				var effect = SelectedEffect;
+				LabelEffectDescription.Text = EffectDescriptions[effect];
+
+				var hasParameter1 = effect != Effect.None;
+				var hasParameter2 = effect == Effect.ReduceBitDepth;
+				var hasBitIndex = effect == Effect.BitPlane;
+
+				LabelParameter1.Visible = ComboParameter1.Visible = hasParameter1;
+				LabelParameter2.Visible = ComboParameter2.Visible = hasParameter2;
+				LabelBitIndex.Visible = TrackBitIndex.Visible = hasBitIndex;
+
+				ComboParameter1.Items.Clear();
+				switch (effect)
+				{
+					case Effect.ColorChannel:
+						LabelParameter1.Text = "Channel:";
+						ComboParameter1.Items.AddRange(ColorChannelChoices);
+						break;
+					case Effect.BitPlane:
+						LabelParameter1.Text = "Channel:";
+						ComboParameter1.Items.AddRange(BitPlaneChannelChoices);
+						break;
+					case Effect.ChromaSubsampling:
+						LabelParameter1.Text = "Subsampling:";
+						ComboParameter1.Items.AddRange(SubsamplingChoices);
+						break;
+					case Effect.ReduceBitDepth:
+						LabelParameter1.Text = "Method:";
+						LabelParameter2.Text = "Bits per pixel:";
+						ComboParameter1.Items.AddRange(BitDepthMethodChoices);
+						break;
+				}
+
+				if (ComboParameter1.Items.Count > 0)
+				{
+					ComboParameter1.SelectedIndex = 0;
+				}
+
+				PopulateBitDepths();
+				UpdateBitIndexLabel();
+			}
+			finally
+			{
+				isUpdatingControls = false;
+			}
+		}
+
+		private void PopulateBitDepths()
+		{
+			ComboParameter2.Items.Clear();
+			if (SelectedEffect != Effect.ReduceBitDepth) { return; }
+
+			var method = ((Choice<BitDepthMethod>)ComboParameter1.SelectedItem).Value;
+			foreach (var bits in BitDepthsByMethod[method])
+			{
+				ComboParameter2.Items.Add(bits);
+			}
+
+			ComboParameter2.SelectedIndex = 0;
+		}
+
+		private void UpdateBitIndexLabel()
+		{
+			LabelBitIndex.Text = $"Bit index: {TrackBitIndex.Value}" +
+				(TrackBitIndex.Value == 7 ? " (most significant)" : TrackBitIndex.Value == 0 ? " (least significant)" : "");
+		}
+		#endregion
+
+		#region Event handlers
+		private void ComboEffect_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			OnEffectChanged();
+			RefreshPreview();
+		}
+
+		private void ComboParameter1_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (isUpdatingControls) { return; }
+
+			// The methods offer different bit depths, so the depth list follows the method.
+			isUpdatingControls = true;
+			PopulateBitDepths();
+			isUpdatingControls = false;
+
+			RefreshPreview();
+		}
+
+		private void ComboParameter2_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (!isUpdatingControls) { RefreshPreview(); }
+		}
+
+		private void TrackBitIndex_ValueChanged(object sender, EventArgs e)
+		{
+			UpdateBitIndexLabel();
+			if (!isUpdatingControls) { RefreshPreview(); }
 		}
 
 		private void TSBOpenImage_Click(object sender, EventArgs e)
@@ -350,218 +408,74 @@ namespace Celarix.Imaging.ByteView
 			}
 		}
 
-		private void NUDBitPlaneIndex_ValueChanged(object sender, EventArgs e)
-		{
-			if (!shouldRunEventHandlers) { return; }
-
-			if (RadioBitPlaneRed.Checked)
-			{
-				DisplayBitPlane(ColorChannel.Red, (int)NUDBitPlaneIndex.Value);
-			}
-			else if (RadioBitPlaneGreen.Checked)
-			{
-				DisplayBitPlane(ColorChannel.Green, (int)NUDBitPlaneIndex.Value);
-			}
-			else if (RadioBitPlaneBlue.Checked)
-			{
-				DisplayBitPlane(ColorChannel.Blue, (int)NUDBitPlaneIndex.Value);
-			}
-			else if (RadioBitPlaneAlpha.Checked)
-			{
-				DisplayBitPlane(ColorChannel.Alpha, (int)NUDBitPlaneIndex.Value);
-			}
-			else if (RadioBitPlaneRGB.Checked)
-			{
-				DisplayRGBBitPlane((int)NUDBitPlaneIndex.Value);
-			}
-		}
-
-		private void RadioBitPlaneRed_CheckedChanged(object sender, EventArgs e)
-		{
-			if (RadioBitPlaneRed.Checked)
-			{
-				DisplayBitPlane(ColorChannel.Red, (int)NUDBitPlaneIndex.Value);
-			}
-		}
-
-		private void RadioBitPlaneGreen_CheckedChanged(object sender, EventArgs e)
-		{
-			if (RadioBitPlaneGreen.Checked)
-			{
-				DisplayBitPlane(ColorChannel.Green, (int)NUDBitPlaneIndex.Value);
-			}
-		}
-
-		private void RadioBitPlaneBlue_CheckedChanged(object sender, EventArgs e)
-		{
-			if (RadioBitPlaneBlue.Checked)
-			{
-				DisplayBitPlane(ColorChannel.Blue, (int)NUDBitPlaneIndex.Value);
-			}
-		}
-
-		private void RadioBitPlaneAlpha_CheckedChanged(object sender, EventArgs e)
-		{
-			if (RadioBitPlaneAlpha.Checked)
-			{
-				DisplayBitPlane(ColorChannel.Alpha, (int)NUDBitPlaneIndex.Value);
-			}
-		}
-
-		private void RadioBitPlaneRGB_CheckedChanged(object sender, EventArgs e)
-		{
-			if (RadioBitPlaneRGB.Checked)
-			{
-				DisplayRGBBitPlane((int)NUDBitPlaneIndex.Value);
-			}
-		}
-
-		private void TSBConvertToRGB_Click(object sender, EventArgs e)
-		{
-			modifiedImage?.Dispose();
-			modifiedImage = null;
-			SetPictureBoxImage(rgbImage, DisplayedChromaPlaygroundImage.RGB);
-		}
-
-		private void TSBConvertToYCbCr_Click(object sender, EventArgs e)
-		{
-			modifiedImage?.Dispose();
-			modifiedImage = null;
-			yCbCrImage ??= rgbImage.CloneAs<Rgba32>();
-			SetPictureBoxImage(yCbCrImage, DisplayedChromaPlaygroundImage.YCbCr);
-		}
-
-		private void TSBUseCurrent_Click(object sender, EventArgs e)
-		{
-			rgbImage?.Dispose();
-			yCbCrImage?.Dispose();
-			rgbImage = modifiedImage.CloneAs<Rgba32>();
-			yCbCrImage = null;
-			SetPictureBoxImage(rgbImage, DisplayedChromaPlaygroundImage.RGB);
-		}
-
-		private void ButtonChromaSubsamplingSet_Click(object sender, EventArgs e)
-		{
-			if (Radio444.Checked)
-			{
-				ChromaSubsample(ChromaSubsamplingMode.YCbCr444);
-			}
-			else if (Radio422.Checked)
-			{
-				ChromaSubsample(ChromaSubsamplingMode.YCbCr422);
-			}
-			else if (Radio420.Checked)
-			{
-				ChromaSubsample(ChromaSubsamplingMode.YCbCr420);
-			}
-			else if (Radio411.Checked)
-			{
-				ChromaSubsample(ChromaSubsamplingMode.YCbCr411);
-			}
-			else if (Radio811.Checked)
-			{
-				ChromaSubsample(ChromaSubsamplingMode.YCbCr811);
-			}
-			else if (Radio1611.Checked)
-			{
-				ChromaSubsample(ChromaSubsamplingMode.YCbCr1611);
-			}
-			else if (Radio25611.Checked)
-			{
-				ChromaSubsample(ChromaSubsamplingMode.YCbCr25611);
-			}
-		}
-
-		private void ButtonReduceBitDepth_Click(object sender, EventArgs e)
-		{
-			if (Radio16BPPRGB565.Checked) { SimpleReduceBitDepth(16); }
-			else if (Radio8bppRGB332.Checked) { SimpleReduceBitDepth(8); }
-			else if (Radio4bppRGB121.Checked) { SimpleReduceBitDepth(4); }
-			else if (Radio8BPPGrayscale.Checked) { ReduceBitDepthGrayscale(8); }
-			else if (Radio4BPPGrayscale.Checked) { ReduceBitDepthGrayscale(4); }
-			else if (Radio2BPPGrayscale.Checked) { ReduceBitDepthGrayscale(2); }
-			else if (Radio1BPPGrayscale.Checked) { ReduceBitDepthGrayscale(1); }
-			else if (Radio16bppTop65536.Checked) { ReduceBitDepthByTopColors(16); }
-			else if (Radio8BPPTop256.Checked) { ReduceBitDepthByTopColors(8); }
-			else if (Radio4BPPTop16.Checked) { ReduceBitDepthByTopColors(4); }
-			else if (Radio2BPPTop4.Checked) { ReduceBitDepthByTopColors(2); }
-			else if (Radio1BPPTop2.Checked) { ReduceBitDepthByTopColors(1); }
-		}
-
 		private void TSBLoadFromByteView_Click(object sender, EventArgs e)
 		{
-			LoadImageFromByteView(byteViewForm.GetImage());
-		}
-
-		private void RadioRedChannel_CheckedChanged(object sender, EventArgs e)
-		{
-			DisplaySingleColorChannel(ColorChannel.Red);
-		}
-
-		private void RadioGreenChannel_CheckedChanged(object sender, EventArgs e)
-		{
-			DisplaySingleColorChannel(ColorChannel.Green);
-		}
-
-		private void RadioBlueChannel_CheckedChanged(object sender, EventArgs e)
-		{
-			DisplaySingleColorChannel(ColorChannel.Blue);
-		}
-
-		private void RadioAlphaChannel_CheckedChanged(object sender, EventArgs e)
-		{
-			DisplaySingleColorChannel(ColorChannel.Alpha);
-		}
-
-		private void RadioLuminance_CheckedChanged(object sender, EventArgs e)
-		{
-			DisplaySingleColorChannel(ColorChannel.Y);
-		}
-
-		private void RadioCb_CheckedChanged(object sender, EventArgs e)
-		{
-			DisplaySingleColorChannel(ColorChannel.Cb);
-		}
-
-		private void RadioCr_CheckedChanged(object sender, EventArgs e)
-		{
-			DisplaySingleColorChannel(ColorChannel.Cr);
-		}
-
-		private void RadioChrominance_CheckedChanged(object sender, EventArgs e)
-		{
-			DisplaySingleColorChannel(ColorChannel.CbPlusCr);
-		}
-
-		private void RadioHueChannel_CheckedChanged(object sender, EventArgs e)
-		{
-			DisplaySingleColorChannel(ColorChannel.Hue);
-		}
-
-		private void RadioSaturationChannel_CheckedChanged(object sender, EventArgs e)
-		{
-			DisplaySingleColorChannel(ColorChannel.Saturation);
-		}
-
-		private void RadioValueChannel_CheckedChanged(object sender, EventArgs e)
-		{
-			DisplaySingleColorChannel(ColorChannel.Value);
-		}
-
-		private void ButtonSaveNTSCAudio_Click(object sender, EventArgs e)
-		{
-			if (SFDSaveAnalogSignal.ShowDialog() == DialogResult.OK)
+			var image = byteViewForm.GetImage();
+			if (image != null)
 			{
-				MockNTSCSignalGenerator.GenerateMockNTSCSignal(yCbCrImage, SFDSaveAnalogSignal.FileName);
+				SetNewImage(image, "From ByteView");
 			}
 		}
 
-		private void ButtonSaveSimplerAudio_Click(object sender, EventArgs e)
+		private void TSBSaveAs_Click(object sender, EventArgs e)
 		{
-			if (SFDSaveAnalogSignal.ShowDialog() == DialogResult.OK)
+			if (DisplayedImage != null && SFDSaveImage.ShowDialog() == DialogResult.OK)
 			{
-				SimpleSignalGenerator.GenerateSimpleSignal(rgbImage, SFDSaveAnalogSignal.FileName);
+				DisplayedImage.SaveAsPng(SFDSaveImage.FileName);
 			}
 		}
+
+		private void TSBKeepResult_Click(object sender, EventArgs e)
+		{
+			if (resultImage == null) { return; }
+
+			// The old source isn't disposed: a background effect may still be reading it, and it may be the loaded image.
+			sourceImage = resultImage;
+			resultImage = null;
+			TSBShowOriginal.Checked = false;
+
+			// Restart the effect from the new source; for the channel/bit-plane/etc. controls this is just a fresh preview.
+			ComboEffect.SelectedIndex = 0;
+			RefreshPreview();
+		}
+
+		private void TSBRevert_Click(object sender, EventArgs e)
+		{
+			sourceImage = loadedImage;
+			RefreshPreview();
+		}
+
+		private void TSBShowOriginal_CheckedChanged(object sender, EventArgs e) => UpdateDisplay();
+
+		private void TSBFitToWindow_CheckedChanged(object sender, EventArgs e) => ApplyFitToWindow();
+
+		private void TSMISaveNTSCAudio_Click(object sender, EventArgs e) =>
+			ExportSignal(MockNTSCSignalGenerator.GenerateMockNTSCSignal);
+
+		private void TSMISaveSimplerAudio_Click(object sender, EventArgs e) =>
+			ExportSignal(SimpleSignalGenerator.GenerateSimpleSignal);
+
+		private async void ExportSignal(Action<Image<Rgba32>, string> generate)
+		{
+			if (DisplayedImage == null || SFDSaveAnalogSignal.ShowDialog() != DialogResult.OK) { return; }
+
+			// Work on a copy: the preview may be replaced (and disposed) while the export runs.
+			using var image = DisplayedImage.Clone();
+			var fileName = SFDSaveAnalogSignal.FileName;
+			UseWaitCursor = true;
+			try
+			{
+				await Task.Run(() => generate(image, fileName));
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Export Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			finally
+			{
+				UseWaitCursor = false;
+			}
+		}
+		#endregion
 	}
 }

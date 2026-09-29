@@ -1,4 +1,4 @@
-﻿namespace Celarix.Imaging.ByteView
+namespace Celarix.Imaging.ByteView
 {
 	partial class ChromaPlaygroundForm
 	{
@@ -28,837 +28,344 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.Windows.Forms.TabControl TabsOptions;
+			components = new System.ComponentModel.Container();
 			var resources = new System.ComponentModel.ComponentResourceManager(typeof(ChromaPlaygroundForm));
-			TabPageColorChannels = new System.Windows.Forms.TabPage();
-			RadioValueChannel = new System.Windows.Forms.RadioButton();
-			RadioSaturationChannel = new System.Windows.Forms.RadioButton();
-			RadioHueChannel = new System.Windows.Forms.RadioButton();
-			RadioChrominance = new System.Windows.Forms.RadioButton();
-			RadioCr = new System.Windows.Forms.RadioButton();
-			RadioCb = new System.Windows.Forms.RadioButton();
-			RadioLuminance = new System.Windows.Forms.RadioButton();
-			RadioAlphaChannel = new System.Windows.Forms.RadioButton();
-			RadioBlueChannel = new System.Windows.Forms.RadioButton();
-			RadioGreenChannel = new System.Windows.Forms.RadioButton();
-			RadioRedChannel = new System.Windows.Forms.RadioButton();
-			TabPageBitPlanes = new System.Windows.Forms.TabPage();
-			RadioBitPlaneRGB = new System.Windows.Forms.RadioButton();
-			StaticLabelBitPlaneExplanation = new System.Windows.Forms.Label();
-			NUDBitPlaneIndex = new System.Windows.Forms.NumericUpDown();
-			StaticLabelBitPlaneIndex = new System.Windows.Forms.Label();
-			RadioBitPlaneAlpha = new System.Windows.Forms.RadioButton();
-			RadioBitPlaneBlue = new System.Windows.Forms.RadioButton();
-			RadioBitPlaneGreen = new System.Windows.Forms.RadioButton();
-			RadioBitPlaneRed = new System.Windows.Forms.RadioButton();
-			TabPageChromaSubsampling = new System.Windows.Forms.TabPage();
-			Radio25611 = new System.Windows.Forms.RadioButton();
-			Radio1611 = new System.Windows.Forms.RadioButton();
-			Radio811 = new System.Windows.Forms.RadioButton();
-			StaticLabelChromaSubsamplingExplanation = new System.Windows.Forms.Label();
-			ButtonChromaSubsamplingSet = new System.Windows.Forms.Button();
-			Radio411 = new System.Windows.Forms.RadioButton();
-			Radio420 = new System.Windows.Forms.RadioButton();
-			Radio422 = new System.Windows.Forms.RadioButton();
-			Radio444 = new System.Windows.Forms.RadioButton();
-			TabPageReduceBitDepth = new System.Windows.Forms.TabPage();
-			StaticLabelReduceBitDepthExplanation = new System.Windows.Forms.Label();
-			ButtonReduceBitDepth = new System.Windows.Forms.Button();
-			Radio1BPPGrayscale = new System.Windows.Forms.RadioButton();
-			Radio2BPPTop4 = new System.Windows.Forms.RadioButton();
-			Radio1BPPTop2 = new System.Windows.Forms.RadioButton();
-			Radio2BPPGrayscale = new System.Windows.Forms.RadioButton();
-			Radio4BPPGrayscale = new System.Windows.Forms.RadioButton();
-			Radio8BPPGrayscale = new System.Windows.Forms.RadioButton();
-			Radio4BPPTop16 = new System.Windows.Forms.RadioButton();
-			Radio4bppRGB121 = new System.Windows.Forms.RadioButton();
-			Radio8BPPTop256 = new System.Windows.Forms.RadioButton();
-			Radio8bppRGB332 = new System.Windows.Forms.RadioButton();
-			Radio16bppTop65536 = new System.Windows.Forms.RadioButton();
-			Radio16BPPRGB565 = new System.Windows.Forms.RadioButton();
-			TabPageAnalogSignal = new System.Windows.Forms.TabPage();
-			ButtonSaveSimplerAudio = new System.Windows.Forms.Button();
-			ButtonSaveNTSCAudio = new System.Windows.Forms.Button();
-			LabelAnalogSignalStats = new System.Windows.Forms.Label();
 			TSMain = new System.Windows.Forms.ToolStrip();
 			TSBOpenImage = new System.Windows.Forms.ToolStripButton();
 			TSBSaveAs = new System.Windows.Forms.ToolStripButton();
-			TSSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-			TSBConvertToRGB = new System.Windows.Forms.ToolStripButton();
-			TSBConvertToYCbCr = new System.Windows.Forms.ToolStripButton();
-			TSBUseCurrent = new System.Windows.Forms.ToolStripButton();
-			TSSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			TSBLoadFromByteView = new System.Windows.Forms.ToolStripButton();
+			TSSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+			TSBKeepResult = new System.Windows.Forms.ToolStripButton();
+			TSBResetEffect = new System.Windows.Forms.ToolStripButton();
+			TSBShowOriginal = new System.Windows.Forms.ToolStripButton();
+			TSSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+			TSBFitToWindow = new System.Windows.Forms.ToolStripButton();
+			TSDDExportSignal = new System.Windows.Forms.ToolStripDropDownButton();
+			TSMISaveNTSCAudio = new System.Windows.Forms.ToolStripMenuItem();
+			TSMISaveSimplerAudio = new System.Windows.Forms.ToolStripMenuItem();
 			StatusMain = new System.Windows.Forms.StatusStrip();
 			TSSMain = new System.Windows.Forms.ToolStripStatusLabel();
-			panel1 = new System.Windows.Forms.Panel();
+			SplitMain = new System.Windows.Forms.SplitContainer();
+			GroupEffect = new System.Windows.Forms.GroupBox();
+			TableOptions = new System.Windows.Forms.TableLayoutPanel();
+			LabelEffect = new System.Windows.Forms.Label();
+			ComboEffect = new System.Windows.Forms.ComboBox();
+			LabelEffectDescription = new System.Windows.Forms.Label();
+			LabelParameter1 = new System.Windows.Forms.Label();
+			ComboParameter1 = new System.Windows.Forms.ComboBox();
+			LabelParameter2 = new System.Windows.Forms.Label();
+			ComboParameter2 = new System.Windows.Forms.ComboBox();
+			LabelBitIndex = new System.Windows.Forms.Label();
+			TrackBitIndex = new System.Windows.Forms.TrackBar();
+			LabelSignalStats = new System.Windows.Forms.Label();
+			PanelImage = new System.Windows.Forms.Panel();
 			PictureMain = new System.Windows.Forms.PictureBox();
 			OFDOpenImage = new System.Windows.Forms.OpenFileDialog();
 			SFDSaveImage = new System.Windows.Forms.SaveFileDialog();
 			SFDSaveAnalogSignal = new System.Windows.Forms.SaveFileDialog();
-			TabsOptions = new System.Windows.Forms.TabControl();
-			TabsOptions.SuspendLayout();
-			TabPageColorChannels.SuspendLayout();
-			TabPageBitPlanes.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)NUDBitPlaneIndex).BeginInit();
-			TabPageChromaSubsampling.SuspendLayout();
-			TabPageReduceBitDepth.SuspendLayout();
-			TabPageAnalogSignal.SuspendLayout();
 			TSMain.SuspendLayout();
 			StatusMain.SuspendLayout();
-			panel1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)SplitMain).BeginInit();
+			SplitMain.Panel1.SuspendLayout();
+			SplitMain.Panel2.SuspendLayout();
+			SplitMain.SuspendLayout();
+			GroupEffect.SuspendLayout();
+			TableOptions.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)TrackBitIndex).BeginInit();
+			PanelImage.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)PictureMain).BeginInit();
 			SuspendLayout();
-			// 
-			// TabsOptions
-			// 
-			TabsOptions.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			TabsOptions.Controls.Add(TabPageColorChannels);
-			TabsOptions.Controls.Add(TabPageBitPlanes);
-			TabsOptions.Controls.Add(TabPageChromaSubsampling);
-			TabsOptions.Controls.Add(TabPageReduceBitDepth);
-			TabsOptions.Controls.Add(TabPageAnalogSignal);
-			TabsOptions.Location = new System.Drawing.Point(12, 28);
-			TabsOptions.Name = "TabsOptions";
-			TabsOptions.SelectedIndex = 0;
-			TabsOptions.Size = new System.Drawing.Size(785, 134);
-			TabsOptions.TabIndex = 0;
-			// 
-			// TabPageColorChannels
-			// 
-			TabPageColorChannels.Controls.Add(RadioValueChannel);
-			TabPageColorChannels.Controls.Add(RadioSaturationChannel);
-			TabPageColorChannels.Controls.Add(RadioHueChannel);
-			TabPageColorChannels.Controls.Add(RadioChrominance);
-			TabPageColorChannels.Controls.Add(RadioCr);
-			TabPageColorChannels.Controls.Add(RadioCb);
-			TabPageColorChannels.Controls.Add(RadioLuminance);
-			TabPageColorChannels.Controls.Add(RadioAlphaChannel);
-			TabPageColorChannels.Controls.Add(RadioBlueChannel);
-			TabPageColorChannels.Controls.Add(RadioGreenChannel);
-			TabPageColorChannels.Controls.Add(RadioRedChannel);
-			TabPageColorChannels.Location = new System.Drawing.Point(4, 24);
-			TabPageColorChannels.Name = "TabPageColorChannels";
-			TabPageColorChannels.Padding = new System.Windows.Forms.Padding(3);
-			TabPageColorChannels.Size = new System.Drawing.Size(777, 106);
-			TabPageColorChannels.TabIndex = 0;
-			TabPageColorChannels.Text = "Color Channels";
-			TabPageColorChannels.UseVisualStyleBackColor = true;
-			// 
-			// RadioValueChannel
-			// 
-			RadioValueChannel.AutoSize = true;
-			RadioValueChannel.Location = new System.Drawing.Point(220, 56);
-			RadioValueChannel.Name = "RadioValueChannel";
-			RadioValueChannel.Size = new System.Drawing.Size(53, 19);
-			RadioValueChannel.TabIndex = 12;
-			RadioValueChannel.TabStop = true;
-			RadioValueChannel.Text = "Value";
-			RadioValueChannel.UseVisualStyleBackColor = true;
-			RadioValueChannel.CheckedChanged += RadioValueChannel_CheckedChanged;
-			// 
-			// RadioSaturationChannel
-			// 
-			RadioSaturationChannel.AutoSize = true;
-			RadioSaturationChannel.Location = new System.Drawing.Point(220, 31);
-			RadioSaturationChannel.Name = "RadioSaturationChannel";
-			RadioSaturationChannel.Size = new System.Drawing.Size(79, 19);
-			RadioSaturationChannel.TabIndex = 11;
-			RadioSaturationChannel.TabStop = true;
-			RadioSaturationChannel.Text = "Saturation";
-			RadioSaturationChannel.UseVisualStyleBackColor = true;
-			RadioSaturationChannel.CheckedChanged += RadioSaturationChannel_CheckedChanged;
-			// 
-			// RadioHueChannel
-			// 
-			RadioHueChannel.AutoSize = true;
-			RadioHueChannel.Location = new System.Drawing.Point(220, 6);
-			RadioHueChannel.Name = "RadioHueChannel";
-			RadioHueChannel.Size = new System.Drawing.Size(47, 19);
-			RadioHueChannel.TabIndex = 10;
-			RadioHueChannel.TabStop = true;
-			RadioHueChannel.Text = "Hue";
-			RadioHueChannel.UseVisualStyleBackColor = true;
-			RadioHueChannel.CheckedChanged += RadioHueChannel_CheckedChanged;
-			// 
-			// RadioChrominance
-			// 
-			RadioChrominance.AutoSize = true;
-			RadioChrominance.Location = new System.Drawing.Point(73, 81);
-			RadioChrominance.Name = "RadioChrominance";
-			RadioChrominance.Size = new System.Drawing.Size(159, 19);
-			RadioChrominance.TabIndex = 7;
-			RadioChrominance.TabStop = true;
-			RadioChrominance.Text = "Cb and Cr (chrominance)";
-			RadioChrominance.UseVisualStyleBackColor = true;
-			RadioChrominance.CheckedChanged += RadioChrominance_CheckedChanged;
-			// 
-			// RadioCr
-			// 
-			RadioCr.AutoSize = true;
-			RadioCr.Location = new System.Drawing.Point(73, 56);
-			RadioCr.Name = "RadioCr";
-			RadioCr.Size = new System.Drawing.Size(132, 19);
-			RadioCr.TabIndex = 6;
-			RadioCr.TabStop = true;
-			RadioCr.Text = "Cr (red - luminance)";
-			RadioCr.UseVisualStyleBackColor = true;
-			RadioCr.CheckedChanged += RadioCr_CheckedChanged;
-			// 
-			// RadioCb
-			// 
-			RadioCb.AutoSize = true;
-			RadioCb.Location = new System.Drawing.Point(73, 31);
-			RadioCb.Name = "RadioCb";
-			RadioCb.Size = new System.Drawing.Size(141, 19);
-			RadioCb.TabIndex = 5;
-			RadioCb.TabStop = true;
-			RadioCb.Text = "Cb (blue - luminance)";
-			RadioCb.UseVisualStyleBackColor = true;
-			RadioCb.CheckedChanged += RadioCb_CheckedChanged;
-			// 
-			// RadioLuminance
-			// 
-			RadioLuminance.AutoSize = true;
-			RadioLuminance.Location = new System.Drawing.Point(73, 6);
-			RadioLuminance.Name = "RadioLuminance";
-			RadioLuminance.Size = new System.Drawing.Size(99, 19);
-			RadioLuminance.TabIndex = 4;
-			RadioLuminance.TabStop = true;
-			RadioLuminance.Text = "Y (luminance)";
-			RadioLuminance.UseVisualStyleBackColor = true;
-			RadioLuminance.CheckedChanged += RadioLuminance_CheckedChanged;
-			// 
-			// RadioAlphaChannel
-			// 
-			RadioAlphaChannel.AutoSize = true;
-			RadioAlphaChannel.Location = new System.Drawing.Point(6, 81);
-			RadioAlphaChannel.Name = "RadioAlphaChannel";
-			RadioAlphaChannel.Size = new System.Drawing.Size(56, 19);
-			RadioAlphaChannel.TabIndex = 3;
-			RadioAlphaChannel.TabStop = true;
-			RadioAlphaChannel.Text = "Alpha";
-			RadioAlphaChannel.UseVisualStyleBackColor = true;
-			RadioAlphaChannel.CheckedChanged += RadioAlphaChannel_CheckedChanged;
-			// 
-			// RadioBlueChannel
-			// 
-			RadioBlueChannel.AutoSize = true;
-			RadioBlueChannel.Location = new System.Drawing.Point(6, 56);
-			RadioBlueChannel.Name = "RadioBlueChannel";
-			RadioBlueChannel.Size = new System.Drawing.Size(48, 19);
-			RadioBlueChannel.TabIndex = 2;
-			RadioBlueChannel.TabStop = true;
-			RadioBlueChannel.Text = "Blue";
-			RadioBlueChannel.UseVisualStyleBackColor = true;
-			RadioBlueChannel.CheckedChanged += RadioBlueChannel_CheckedChanged;
-			// 
-			// RadioGreenChannel
-			// 
-			RadioGreenChannel.AutoSize = true;
-			RadioGreenChannel.Location = new System.Drawing.Point(6, 31);
-			RadioGreenChannel.Name = "RadioGreenChannel";
-			RadioGreenChannel.Size = new System.Drawing.Size(56, 19);
-			RadioGreenChannel.TabIndex = 1;
-			RadioGreenChannel.TabStop = true;
-			RadioGreenChannel.Text = "Green";
-			RadioGreenChannel.UseVisualStyleBackColor = true;
-			RadioGreenChannel.CheckedChanged += RadioGreenChannel_CheckedChanged;
-			// 
-			// RadioRedChannel
-			// 
-			RadioRedChannel.AutoSize = true;
-			RadioRedChannel.Location = new System.Drawing.Point(6, 6);
-			RadioRedChannel.Name = "RadioRedChannel";
-			RadioRedChannel.Size = new System.Drawing.Size(45, 19);
-			RadioRedChannel.TabIndex = 0;
-			RadioRedChannel.TabStop = true;
-			RadioRedChannel.Text = "Red";
-			RadioRedChannel.UseVisualStyleBackColor = true;
-			RadioRedChannel.CheckedChanged += RadioRedChannel_CheckedChanged;
-			// 
-			// TabPageBitPlanes
-			// 
-			TabPageBitPlanes.Controls.Add(RadioBitPlaneRGB);
-			TabPageBitPlanes.Controls.Add(StaticLabelBitPlaneExplanation);
-			TabPageBitPlanes.Controls.Add(NUDBitPlaneIndex);
-			TabPageBitPlanes.Controls.Add(StaticLabelBitPlaneIndex);
-			TabPageBitPlanes.Controls.Add(RadioBitPlaneAlpha);
-			TabPageBitPlanes.Controls.Add(RadioBitPlaneBlue);
-			TabPageBitPlanes.Controls.Add(RadioBitPlaneGreen);
-			TabPageBitPlanes.Controls.Add(RadioBitPlaneRed);
-			TabPageBitPlanes.Location = new System.Drawing.Point(4, 24);
-			TabPageBitPlanes.Name = "TabPageBitPlanes";
-			TabPageBitPlanes.Padding = new System.Windows.Forms.Padding(3);
-			TabPageBitPlanes.Size = new System.Drawing.Size(777, 106);
-			TabPageBitPlanes.TabIndex = 1;
-			TabPageBitPlanes.Text = "Bit Planes";
-			TabPageBitPlanes.UseVisualStyleBackColor = true;
-			// 
-			// RadioBitPlaneRGB
-			// 
-			RadioBitPlaneRGB.AutoSize = true;
-			RadioBitPlaneRGB.Location = new System.Drawing.Point(76, 6);
-			RadioBitPlaneRGB.Name = "RadioBitPlaneRGB";
-			RadioBitPlaneRGB.Size = new System.Drawing.Size(47, 19);
-			RadioBitPlaneRGB.TabIndex = 11;
-			RadioBitPlaneRGB.Text = "RGB";
-			RadioBitPlaneRGB.UseVisualStyleBackColor = true;
-			RadioBitPlaneRGB.CheckedChanged += RadioBitPlaneRGB_CheckedChanged;
-			// 
-			// StaticLabelBitPlaneExplanation
-			// 
-			StaticLabelBitPlaneExplanation.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-			StaticLabelBitPlaneExplanation.AutoSize = true;
-			StaticLabelBitPlaneExplanation.Location = new System.Drawing.Point(639, 81);
-			StaticLabelBitPlaneExplanation.Name = "StaticLabelBitPlaneExplanation";
-			StaticLabelBitPlaneExplanation.Size = new System.Drawing.Size(132, 15);
-			StaticLabelBitPlaneExplanation.TabIndex = 10;
-			StaticLabelBitPlaneExplanation.Text = "Requires an RGB image.";
-			// 
-			// NUDBitPlaneIndex
-			// 
-			NUDBitPlaneIndex.Location = new System.Drawing.Point(223, 6);
-			NUDBitPlaneIndex.Maximum = new decimal(new int[] { 7, 0, 0, 0 });
-			NUDBitPlaneIndex.Name = "NUDBitPlaneIndex";
-			NUDBitPlaneIndex.Size = new System.Drawing.Size(120, 23);
-			NUDBitPlaneIndex.TabIndex = 9;
-			NUDBitPlaneIndex.Value = new decimal(new int[] { 7, 0, 0, 0 });
-			NUDBitPlaneIndex.ValueChanged += NUDBitPlaneIndex_ValueChanged;
-			// 
-			// StaticLabelBitPlaneIndex
-			// 
-			StaticLabelBitPlaneIndex.AutoSize = true;
-			StaticLabelBitPlaneIndex.Location = new System.Drawing.Point(129, 8);
-			StaticLabelBitPlaneIndex.Name = "StaticLabelBitPlaneIndex";
-			StaticLabelBitPlaneIndex.Size = new System.Drawing.Size(88, 15);
-			StaticLabelBitPlaneIndex.TabIndex = 8;
-			StaticLabelBitPlaneIndex.Text = "Bit plane index:";
-			// 
-			// RadioBitPlaneAlpha
-			// 
-			RadioBitPlaneAlpha.AutoSize = true;
-			RadioBitPlaneAlpha.Location = new System.Drawing.Point(6, 81);
-			RadioBitPlaneAlpha.Name = "RadioBitPlaneAlpha";
-			RadioBitPlaneAlpha.Size = new System.Drawing.Size(56, 19);
-			RadioBitPlaneAlpha.TabIndex = 7;
-			RadioBitPlaneAlpha.Text = "Alpha";
-			RadioBitPlaneAlpha.UseVisualStyleBackColor = true;
-			RadioBitPlaneAlpha.CheckedChanged += RadioBitPlaneAlpha_CheckedChanged;
-			// 
-			// RadioBitPlaneBlue
-			// 
-			RadioBitPlaneBlue.AutoSize = true;
-			RadioBitPlaneBlue.Location = new System.Drawing.Point(6, 56);
-			RadioBitPlaneBlue.Name = "RadioBitPlaneBlue";
-			RadioBitPlaneBlue.Size = new System.Drawing.Size(48, 19);
-			RadioBitPlaneBlue.TabIndex = 6;
-			RadioBitPlaneBlue.Text = "Blue";
-			RadioBitPlaneBlue.UseVisualStyleBackColor = true;
-			RadioBitPlaneBlue.CheckedChanged += RadioBitPlaneBlue_CheckedChanged;
-			// 
-			// RadioBitPlaneGreen
-			// 
-			RadioBitPlaneGreen.AutoSize = true;
-			RadioBitPlaneGreen.Location = new System.Drawing.Point(6, 31);
-			RadioBitPlaneGreen.Name = "RadioBitPlaneGreen";
-			RadioBitPlaneGreen.Size = new System.Drawing.Size(56, 19);
-			RadioBitPlaneGreen.TabIndex = 5;
-			RadioBitPlaneGreen.Text = "Green";
-			RadioBitPlaneGreen.UseVisualStyleBackColor = true;
-			RadioBitPlaneGreen.CheckedChanged += RadioBitPlaneGreen_CheckedChanged;
-			// 
-			// RadioBitPlaneRed
-			// 
-			RadioBitPlaneRed.AutoSize = true;
-			RadioBitPlaneRed.Checked = true;
-			RadioBitPlaneRed.Location = new System.Drawing.Point(6, 6);
-			RadioBitPlaneRed.Name = "RadioBitPlaneRed";
-			RadioBitPlaneRed.Size = new System.Drawing.Size(45, 19);
-			RadioBitPlaneRed.TabIndex = 4;
-			RadioBitPlaneRed.TabStop = true;
-			RadioBitPlaneRed.Text = "Red";
-			RadioBitPlaneRed.UseVisualStyleBackColor = true;
-			RadioBitPlaneRed.CheckedChanged += RadioBitPlaneRed_CheckedChanged;
-			// 
-			// TabPageChromaSubsampling
-			// 
-			TabPageChromaSubsampling.Controls.Add(Radio25611);
-			TabPageChromaSubsampling.Controls.Add(Radio1611);
-			TabPageChromaSubsampling.Controls.Add(Radio811);
-			TabPageChromaSubsampling.Controls.Add(StaticLabelChromaSubsamplingExplanation);
-			TabPageChromaSubsampling.Controls.Add(ButtonChromaSubsamplingSet);
-			TabPageChromaSubsampling.Controls.Add(Radio411);
-			TabPageChromaSubsampling.Controls.Add(Radio420);
-			TabPageChromaSubsampling.Controls.Add(Radio422);
-			TabPageChromaSubsampling.Controls.Add(Radio444);
-			TabPageChromaSubsampling.Location = new System.Drawing.Point(4, 24);
-			TabPageChromaSubsampling.Name = "TabPageChromaSubsampling";
-			TabPageChromaSubsampling.Size = new System.Drawing.Size(777, 106);
-			TabPageChromaSubsampling.TabIndex = 2;
-			TabPageChromaSubsampling.Text = "Chroma Subsampling";
-			TabPageChromaSubsampling.UseVisualStyleBackColor = true;
-			// 
-			// Radio25611
-			// 
-			Radio25611.AutoSize = true;
-			Radio25611.Location = new System.Drawing.Point(189, 56);
-			Radio25611.Name = "Radio25611";
-			Radio25611.Size = new System.Drawing.Size(317, 19);
-			Radio25611.TabIndex = 16;
-			Radio25611.Text = "256:1:1 (VERY non-standard, 256x256 blocks of chroma)";
-			Radio25611.UseVisualStyleBackColor = true;
-			// 
-			// Radio1611
-			// 
-			Radio1611.AutoSize = true;
-			Radio1611.Location = new System.Drawing.Point(189, 31);
-			Radio1611.Name = "Radio1611";
-			Radio1611.Size = new System.Drawing.Size(269, 19);
-			Radio1611.TabIndex = 15;
-			Radio1611.Text = "16:1:1 (non-standard, 16x16 blocks of chroma)";
-			Radio1611.UseVisualStyleBackColor = true;
-			// 
-			// Radio811
-			// 
-			Radio811.AutoSize = true;
-			Radio811.Location = new System.Drawing.Point(189, 6);
-			Radio811.Name = "Radio811";
-			Radio811.Size = new System.Drawing.Size(251, 19);
-			Radio811.TabIndex = 14;
-			Radio811.Text = "8:1:1 (non-standard, 8x8 blocks of chroma)";
-			Radio811.UseVisualStyleBackColor = true;
-			// 
-			// StaticLabelChromaSubsamplingExplanation
-			// 
-			StaticLabelChromaSubsamplingExplanation.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-			StaticLabelChromaSubsamplingExplanation.AutoSize = true;
-			StaticLabelChromaSubsamplingExplanation.Location = new System.Drawing.Point(553, 81);
-			StaticLabelChromaSubsamplingExplanation.Name = "StaticLabelChromaSubsamplingExplanation";
-			StaticLabelChromaSubsamplingExplanation.Size = new System.Drawing.Size(137, 15);
-			StaticLabelChromaSubsamplingExplanation.TabIndex = 13;
-			StaticLabelChromaSubsamplingExplanation.Text = "Requires a YCbCr image.";
-			// 
-			// ButtonChromaSubsamplingSet
-			// 
-			ButtonChromaSubsamplingSet.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-			ButtonChromaSubsamplingSet.Location = new System.Drawing.Point(696, 77);
-			ButtonChromaSubsamplingSet.Name = "ButtonChromaSubsamplingSet";
-			ButtonChromaSubsamplingSet.Size = new System.Drawing.Size(75, 23);
-			ButtonChromaSubsamplingSet.TabIndex = 12;
-			ButtonChromaSubsamplingSet.Text = "Set";
-			ButtonChromaSubsamplingSet.UseVisualStyleBackColor = true;
-			ButtonChromaSubsamplingSet.Click += ButtonChromaSubsamplingSet_Click;
-			// 
-			// Radio411
-			// 
-			Radio411.AutoSize = true;
-			Radio411.Location = new System.Drawing.Point(6, 81);
-			Radio411.Name = "Radio411";
-			Radio411.Size = new System.Drawing.Size(173, 19);
-			Radio411.TabIndex = 11;
-			Radio411.Text = "4:1:1 (4x1 blocks of chroma)";
-			Radio411.UseVisualStyleBackColor = true;
-			// 
-			// Radio420
-			// 
-			Radio420.AutoSize = true;
-			Radio420.Location = new System.Drawing.Point(6, 56);
-			Radio420.Name = "Radio420";
-			Radio420.Size = new System.Drawing.Size(173, 19);
-			Radio420.TabIndex = 10;
-			Radio420.Text = "4:2:0 (2x2 blocks of chroma)";
-			Radio420.UseVisualStyleBackColor = true;
-			// 
-			// Radio422
-			// 
-			Radio422.AutoSize = true;
-			Radio422.Location = new System.Drawing.Point(6, 31);
-			Radio422.Name = "Radio422";
-			Radio422.Size = new System.Drawing.Size(173, 19);
-			Radio422.TabIndex = 9;
-			Radio422.Text = "4:2:2 (2x1 blocks of chroma)";
-			Radio422.UseVisualStyleBackColor = true;
-			// 
-			// Radio444
-			// 
-			Radio444.AutoSize = true;
-			Radio444.Checked = true;
-			Radio444.Location = new System.Drawing.Point(6, 6);
-			Radio444.Name = "Radio444";
-			Radio444.Size = new System.Drawing.Size(177, 19);
-			Radio444.TabIndex = 8;
-			Radio444.TabStop = true;
-			Radio444.Text = "4:4:4 (full resolution chroma)";
-			Radio444.UseVisualStyleBackColor = true;
-			// 
-			// TabPageReduceBitDepth
-			// 
-			TabPageReduceBitDepth.Controls.Add(StaticLabelReduceBitDepthExplanation);
-			TabPageReduceBitDepth.Controls.Add(ButtonReduceBitDepth);
-			TabPageReduceBitDepth.Controls.Add(Radio1BPPGrayscale);
-			TabPageReduceBitDepth.Controls.Add(Radio2BPPTop4);
-			TabPageReduceBitDepth.Controls.Add(Radio1BPPTop2);
-			TabPageReduceBitDepth.Controls.Add(Radio2BPPGrayscale);
-			TabPageReduceBitDepth.Controls.Add(Radio4BPPGrayscale);
-			TabPageReduceBitDepth.Controls.Add(Radio8BPPGrayscale);
-			TabPageReduceBitDepth.Controls.Add(Radio4BPPTop16);
-			TabPageReduceBitDepth.Controls.Add(Radio4bppRGB121);
-			TabPageReduceBitDepth.Controls.Add(Radio8BPPTop256);
-			TabPageReduceBitDepth.Controls.Add(Radio8bppRGB332);
-			TabPageReduceBitDepth.Controls.Add(Radio16bppTop65536);
-			TabPageReduceBitDepth.Controls.Add(Radio16BPPRGB565);
-			TabPageReduceBitDepth.Location = new System.Drawing.Point(4, 24);
-			TabPageReduceBitDepth.Name = "TabPageReduceBitDepth";
-			TabPageReduceBitDepth.Size = new System.Drawing.Size(777, 106);
-			TabPageReduceBitDepth.TabIndex = 3;
-			TabPageReduceBitDepth.Text = "Reduce Bit Depth";
-			TabPageReduceBitDepth.UseVisualStyleBackColor = true;
-			// 
-			// StaticLabelReduceBitDepthExplanation
-			// 
-			StaticLabelReduceBitDepthExplanation.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-			StaticLabelReduceBitDepthExplanation.AutoSize = true;
-			StaticLabelReduceBitDepthExplanation.Location = new System.Drawing.Point(561, 81);
-			StaticLabelReduceBitDepthExplanation.Name = "StaticLabelReduceBitDepthExplanation";
-			StaticLabelReduceBitDepthExplanation.Size = new System.Drawing.Size(132, 15);
-			StaticLabelReduceBitDepthExplanation.TabIndex = 25;
-			StaticLabelReduceBitDepthExplanation.Text = "Requires an RGB image.";
-			// 
-			// ButtonReduceBitDepth
-			// 
-			ButtonReduceBitDepth.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-			ButtonReduceBitDepth.Location = new System.Drawing.Point(699, 77);
-			ButtonReduceBitDepth.Name = "ButtonReduceBitDepth";
-			ButtonReduceBitDepth.Size = new System.Drawing.Size(75, 23);
-			ButtonReduceBitDepth.TabIndex = 24;
-			ButtonReduceBitDepth.Text = "Reduce";
-			ButtonReduceBitDepth.UseVisualStyleBackColor = true;
-			ButtonReduceBitDepth.Click += ButtonReduceBitDepth_Click;
-			// 
-			// Radio1BPPGrayscale
-			// 
-			Radio1BPPGrayscale.AutoSize = true;
-			Radio1BPPGrayscale.Location = new System.Drawing.Point(302, 81);
-			Radio1BPPGrayscale.Name = "Radio1BPPGrayscale";
-			Radio1BPPGrayscale.Size = new System.Drawing.Size(112, 19);
-			Radio1BPPGrayscale.TabIndex = 23;
-			Radio1BPPGrayscale.Text = "1bpp (grayscale)";
-			Radio1BPPGrayscale.UseVisualStyleBackColor = true;
-			// 
-			// Radio2BPPTop4
-			// 
-			Radio2BPPTop4.AutoSize = true;
-			Radio2BPPTop4.Location = new System.Drawing.Point(302, 6);
-			Radio2BPPTop4.Name = "Radio2BPPTop4";
-			Radio2BPPTop4.Size = new System.Drawing.Size(90, 19);
-			Radio2BPPTop4.TabIndex = 22;
-			Radio2BPPTop4.Text = "2bpp (top 4)";
-			Radio2BPPTop4.UseVisualStyleBackColor = true;
-			// 
-			// Radio1BPPTop2
-			// 
-			Radio1BPPTop2.AutoSize = true;
-			Radio1BPPTop2.Location = new System.Drawing.Point(302, 56);
-			Radio1BPPTop2.Name = "Radio1BPPTop2";
-			Radio1BPPTop2.Size = new System.Drawing.Size(125, 19);
-			Radio1BPPTop2.TabIndex = 21;
-			Radio1BPPTop2.Text = "1bpp (top 2 colors)";
-			Radio1BPPTop2.UseVisualStyleBackColor = true;
-			// 
-			// Radio2BPPGrayscale
-			// 
-			Radio2BPPGrayscale.AccessibleRole = System.Windows.Forms.AccessibleRole.None;
-			Radio2BPPGrayscale.AutoSize = true;
-			Radio2BPPGrayscale.Location = new System.Drawing.Point(302, 31);
-			Radio2BPPGrayscale.Name = "Radio2BPPGrayscale";
-			Radio2BPPGrayscale.Size = new System.Drawing.Size(112, 19);
-			Radio2BPPGrayscale.TabIndex = 20;
-			Radio2BPPGrayscale.Text = "2bpp (grayscale)";
-			Radio2BPPGrayscale.UseVisualStyleBackColor = true;
-			// 
-			// Radio4BPPGrayscale
-			// 
-			Radio4BPPGrayscale.AutoSize = true;
-			Radio4BPPGrayscale.Location = new System.Drawing.Point(170, 81);
-			Radio4BPPGrayscale.Name = "Radio4BPPGrayscale";
-			Radio4BPPGrayscale.Size = new System.Drawing.Size(112, 19);
-			Radio4BPPGrayscale.TabIndex = 19;
-			Radio4BPPGrayscale.Text = "4bpp (grayscale)";
-			Radio4BPPGrayscale.UseVisualStyleBackColor = true;
-			// 
-			// Radio8BPPGrayscale
-			// 
-			Radio8BPPGrayscale.AutoSize = true;
-			Radio8BPPGrayscale.Location = new System.Drawing.Point(170, 6);
-			Radio8BPPGrayscale.Name = "Radio8BPPGrayscale";
-			Radio8BPPGrayscale.Size = new System.Drawing.Size(112, 19);
-			Radio8BPPGrayscale.TabIndex = 18;
-			Radio8BPPGrayscale.Text = "8bpp (grayscale)";
-			Radio8BPPGrayscale.UseVisualStyleBackColor = true;
-			// 
-			// Radio4BPPTop16
-			// 
-			Radio4BPPTop16.AutoSize = true;
-			Radio4BPPTop16.Location = new System.Drawing.Point(170, 56);
-			Radio4BPPTop16.Name = "Radio4BPPTop16";
-			Radio4BPPTop16.Size = new System.Drawing.Size(131, 19);
-			Radio4BPPTop16.TabIndex = 17;
-			Radio4BPPTop16.Text = "4bpp (top 16 colors)";
-			Radio4BPPTop16.UseVisualStyleBackColor = true;
-			// 
-			// Radio4bppRGB121
-			// 
-			Radio4bppRGB121.AccessibleRole = System.Windows.Forms.AccessibleRole.None;
-			Radio4bppRGB121.AutoSize = true;
-			Radio4bppRGB121.Location = new System.Drawing.Point(170, 31);
-			Radio4bppRGB121.Name = "Radio4bppRGB121";
-			Radio4bppRGB121.Size = new System.Drawing.Size(112, 19);
-			Radio4bppRGB121.TabIndex = 16;
-			Radio4bppRGB121.Text = "4bpp (RGB 1:2:1)";
-			Radio4bppRGB121.UseVisualStyleBackColor = true;
-			// 
-			// Radio8BPPTop256
-			// 
-			Radio8BPPTop256.AutoSize = true;
-			Radio8BPPTop256.Location = new System.Drawing.Point(6, 81);
-			Radio8BPPTop256.Name = "Radio8BPPTop256";
-			Radio8BPPTop256.Size = new System.Drawing.Size(137, 19);
-			Radio8BPPTop256.TabIndex = 15;
-			Radio8BPPTop256.Text = "8bpp (top 256 colors)";
-			Radio8BPPTop256.UseVisualStyleBackColor = true;
-			// 
-			// Radio8bppRGB332
-			// 
-			Radio8bppRGB332.AutoSize = true;
-			Radio8bppRGB332.Location = new System.Drawing.Point(6, 56);
-			Radio8bppRGB332.Name = "Radio8bppRGB332";
-			Radio8bppRGB332.Size = new System.Drawing.Size(112, 19);
-			Radio8bppRGB332.TabIndex = 14;
-			Radio8bppRGB332.Text = "8bpp (RGB 3:3:2)";
-			Radio8bppRGB332.UseVisualStyleBackColor = true;
-			// 
-			// Radio16bppTop65536
-			// 
-			Radio16bppTop65536.AutoSize = true;
-			Radio16bppTop65536.Location = new System.Drawing.Point(6, 31);
-			Radio16bppTop65536.Name = "Radio16bppTop65536";
-			Radio16bppTop65536.Size = new System.Drawing.Size(158, 19);
-			Radio16bppTop65536.TabIndex = 13;
-			Radio16bppTop65536.Text = "16bpp (top 65,536 colors)";
-			Radio16bppTop65536.UseVisualStyleBackColor = true;
-			// 
-			// Radio16BPPRGB565
-			// 
-			Radio16BPPRGB565.AutoSize = true;
-			Radio16BPPRGB565.Checked = true;
-			Radio16BPPRGB565.Location = new System.Drawing.Point(6, 6);
-			Radio16BPPRGB565.Name = "Radio16BPPRGB565";
-			Radio16BPPRGB565.Size = new System.Drawing.Size(118, 19);
-			Radio16BPPRGB565.TabIndex = 12;
-			Radio16BPPRGB565.TabStop = true;
-			Radio16BPPRGB565.Text = "16bpp (RGB 5:6:5)";
-			Radio16BPPRGB565.UseVisualStyleBackColor = true;
-			// 
-			// TabPageAnalogSignal
-			// 
-			TabPageAnalogSignal.Controls.Add(ButtonSaveSimplerAudio);
-			TabPageAnalogSignal.Controls.Add(ButtonSaveNTSCAudio);
-			TabPageAnalogSignal.Controls.Add(LabelAnalogSignalStats);
-			TabPageAnalogSignal.Location = new System.Drawing.Point(4, 24);
-			TabPageAnalogSignal.Name = "TabPageAnalogSignal";
-			TabPageAnalogSignal.Size = new System.Drawing.Size(777, 106);
-			TabPageAnalogSignal.TabIndex = 4;
-			TabPageAnalogSignal.Text = "Analog Signal";
-			TabPageAnalogSignal.UseVisualStyleBackColor = true;
-			// 
-			// ButtonSaveSimplerAudio
-			// 
-			ButtonSaveSimplerAudio.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-			ButtonSaveSimplerAudio.Location = new System.Drawing.Point(608, 48);
-			ButtonSaveSimplerAudio.Name = "ButtonSaveSimplerAudio";
-			ButtonSaveSimplerAudio.Size = new System.Drawing.Size(163, 23);
-			ButtonSaveSimplerAudio.TabIndex = 3;
-			ButtonSaveSimplerAudio.Text = "Save simpler audio as...";
-			ButtonSaveSimplerAudio.UseVisualStyleBackColor = true;
-			ButtonSaveSimplerAudio.Click += ButtonSaveSimplerAudio_Click;
-			// 
-			// ButtonSaveNTSCAudio
-			// 
-			ButtonSaveNTSCAudio.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-			ButtonSaveNTSCAudio.Location = new System.Drawing.Point(608, 77);
-			ButtonSaveNTSCAudio.Name = "ButtonSaveNTSCAudio";
-			ButtonSaveNTSCAudio.Size = new System.Drawing.Size(163, 23);
-			ButtonSaveNTSCAudio.TabIndex = 2;
-			ButtonSaveNTSCAudio.Text = "Save mock-NTSC audio as...";
-			ButtonSaveNTSCAudio.UseVisualStyleBackColor = true;
-			ButtonSaveNTSCAudio.Click += ButtonSaveNTSCAudio_Click;
-			// 
-			// LabelAnalogSignalStats
-			// 
-			LabelAnalogSignalStats.AutoSize = true;
-			LabelAnalogSignalStats.Location = new System.Drawing.Point(6, 6);
-			LabelAnalogSignalStats.Name = "LabelAnalogSignalStats";
-			LabelAnalogSignalStats.Size = new System.Drawing.Size(121, 15);
-			LabelAnalogSignalStats.TabIndex = 0;
-			LabelAnalogSignalStats.Text = "Please load an image.";
-			// 
+			//
 			// TSMain
-			// 
-			TSMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { TSBOpenImage, TSBSaveAs, TSSeparator1, TSBConvertToRGB, TSBConvertToYCbCr, TSBUseCurrent, TSSeparator2, TSBLoadFromByteView });
+			//
+			TSMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { TSBOpenImage, TSBSaveAs, TSBLoadFromByteView, TSSeparator1, TSBKeepResult, TSBResetEffect, TSBShowOriginal, TSSeparator2, TSBFitToWindow, TSDDExportSignal });
 			TSMain.Location = new System.Drawing.Point(0, 0);
 			TSMain.Name = "TSMain";
-			TSMain.Size = new System.Drawing.Size(809, 25);
-			TSMain.TabIndex = 1;
-			TSMain.Text = "toolStrip1";
-			// 
+			TSMain.Size = new System.Drawing.Size(1000, 25);
+			TSMain.TabIndex = 0;
+			//
 			// TSBOpenImage
-			// 
+			//
 			TSBOpenImage.Image = (System.Drawing.Image)resources.GetObject("TSBOpenImage.Image");
 			TSBOpenImage.ImageTransparentColor = System.Drawing.Color.Magenta;
 			TSBOpenImage.Name = "TSBOpenImage";
-			TSBOpenImage.Size = new System.Drawing.Size(101, 22);
 			TSBOpenImage.Text = "Open Image...";
 			TSBOpenImage.Click += TSBOpenImage_Click;
-			// 
+			//
 			// TSBSaveAs
-			// 
+			//
 			TSBSaveAs.Image = (System.Drawing.Image)resources.GetObject("TSBSaveAs.Image");
 			TSBSaveAs.ImageTransparentColor = System.Drawing.Color.Magenta;
 			TSBSaveAs.Name = "TSBSaveAs";
-			TSBSaveAs.Size = new System.Drawing.Size(73, 22);
-			TSBSaveAs.Text = "Save As..";
-			// 
-			// TSSeparator1
-			// 
-			TSSeparator1.Name = "TSSeparator1";
-			TSSeparator1.Size = new System.Drawing.Size(6, 25);
-			// 
-			// TSBConvertToRGB
-			// 
-			TSBConvertToRGB.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			TSBConvertToRGB.Image = (System.Drawing.Image)resources.GetObject("TSBConvertToRGB.Image");
-			TSBConvertToRGB.ImageTransparentColor = System.Drawing.Color.Magenta;
-			TSBConvertToRGB.Name = "TSBConvertToRGB";
-			TSBConvertToRGB.Size = new System.Drawing.Size(97, 22);
-			TSBConvertToRGB.Text = "View RGB Image";
-			TSBConvertToRGB.Click += TSBConvertToRGB_Click;
-			// 
-			// TSBConvertToYCbCr
-			// 
-			TSBConvertToYCbCr.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			TSBConvertToYCbCr.Image = (System.Drawing.Image)resources.GetObject("TSBConvertToYCbCr.Image");
-			TSBConvertToYCbCr.ImageTransparentColor = System.Drawing.Color.Magenta;
-			TSBConvertToYCbCr.Name = "TSBConvertToYCbCr";
-			TSBConvertToYCbCr.Size = new System.Drawing.Size(109, 22);
-			TSBConvertToYCbCr.Text = "View YCbCr Image";
-			TSBConvertToYCbCr.Click += TSBConvertToYCbCr_Click;
-			// 
-			// TSBUseCurrent
-			// 
-			TSBUseCurrent.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			TSBUseCurrent.Image = (System.Drawing.Image)resources.GetObject("TSBUseCurrent.Image");
-			TSBUseCurrent.ImageTransparentColor = System.Drawing.Color.Magenta;
-			TSBUseCurrent.Name = "TSBUseCurrent";
-			TSBUseCurrent.Size = new System.Drawing.Size(148, 22);
-			TSBUseCurrent.Text = "Use Current as RGB Image";
-			TSBUseCurrent.Click += TSBUseCurrent_Click;
-			// 
-			// TSSeparator2
-			// 
-			TSSeparator2.Name = "TSSeparator2";
-			TSSeparator2.Size = new System.Drawing.Size(6, 25);
-			// 
+			TSBSaveAs.Text = "Save As...";
+			TSBSaveAs.ToolTipText = "Save the image currently shown";
+			TSBSaveAs.Click += TSBSaveAs_Click;
+			//
 			// TSBLoadFromByteView
-			// 
-			TSBLoadFromByteView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			//
 			TSBLoadFromByteView.Image = (System.Drawing.Image)resources.GetObject("TSBLoadFromByteView.Image");
 			TSBLoadFromByteView.ImageTransparentColor = System.Drawing.Color.Magenta;
 			TSBLoadFromByteView.Name = "TSBLoadFromByteView";
-			TSBLoadFromByteView.Size = new System.Drawing.Size(117, 22);
 			TSBLoadFromByteView.Text = "Load from ByteView";
 			TSBLoadFromByteView.Click += TSBLoadFromByteView_Click;
-			// 
+			//
+			// TSSeparator1
+			//
+			TSSeparator1.Name = "TSSeparator1";
+			//
+			// TSBKeepResult
+			//
+			TSBKeepResult.Image = (System.Drawing.Image)resources.GetObject("TSBUseCurrent.Image");
+			TSBKeepResult.ImageTransparentColor = System.Drawing.Color.Magenta;
+			TSBKeepResult.Name = "TSBKeepResult";
+			TSBKeepResult.Text = "Keep Result";
+			TSBKeepResult.ToolTipText = "Make the previewed result the new source image, so another effect can be stacked on it";
+			TSBKeepResult.Click += TSBKeepResult_Click;
+			//
+			// TSBResetEffect
+			//
+			TSBResetEffect.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			TSBResetEffect.Name = "TSBResetEffect";
+			TSBResetEffect.Text = "Revert to Loaded Image";
+			TSBResetEffect.ToolTipText = "Discard every kept result and go back to the image as it was loaded";
+			TSBResetEffect.Click += TSBRevert_Click;
+			//
+			// TSBShowOriginal
+			//
+			TSBShowOriginal.CheckOnClick = true;
+			TSBShowOriginal.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			TSBShowOriginal.Name = "TSBShowOriginal";
+			TSBShowOriginal.Text = "Show Source";
+			TSBShowOriginal.ToolTipText = "Compare: show the source image instead of the effect's result";
+			TSBShowOriginal.CheckedChanged += TSBShowOriginal_CheckedChanged;
+			//
+			// TSSeparator2
+			//
+			TSSeparator2.Name = "TSSeparator2";
+			//
+			// TSBFitToWindow
+			//
+			TSBFitToWindow.Checked = true;
+			TSBFitToWindow.CheckOnClick = true;
+			TSBFitToWindow.CheckState = System.Windows.Forms.CheckState.Checked;
+			TSBFitToWindow.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			TSBFitToWindow.Name = "TSBFitToWindow";
+			TSBFitToWindow.Text = "Fit to Window";
+			TSBFitToWindow.ToolTipText = "Off shows the image at actual size, with scroll bars";
+			TSBFitToWindow.CheckedChanged += TSBFitToWindow_CheckedChanged;
+			//
+			// TSDDExportSignal
+			//
+			TSDDExportSignal.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { TSMISaveNTSCAudio, TSMISaveSimplerAudio });
+			TSDDExportSignal.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			TSDDExportSignal.Name = "TSDDExportSignal";
+			TSDDExportSignal.Text = "Export Analog Signal";
+			//
+			// TSMISaveNTSCAudio
+			//
+			TSMISaveNTSCAudio.Name = "TSMISaveNTSCAudio";
+			TSMISaveNTSCAudio.Text = "Mock-NTSC audio...";
+			TSMISaveNTSCAudio.Click += TSMISaveNTSCAudio_Click;
+			//
+			// TSMISaveSimplerAudio
+			//
+			TSMISaveSimplerAudio.Name = "TSMISaveSimplerAudio";
+			TSMISaveSimplerAudio.Text = "Simpler audio...";
+			TSMISaveSimplerAudio.Click += TSMISaveSimplerAudio_Click;
+			//
 			// StatusMain
-			// 
+			//
 			StatusMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { TSSMain });
-			StatusMain.Location = new System.Drawing.Point(0, 526);
+			StatusMain.Location = new System.Drawing.Point(0, 678);
 			StatusMain.Name = "StatusMain";
-			StatusMain.Size = new System.Drawing.Size(809, 22);
+			StatusMain.Size = new System.Drawing.Size(1000, 22);
 			StatusMain.TabIndex = 2;
-			StatusMain.Text = "statusStrip1";
-			// 
+			//
 			// TSSMain
-			// 
+			//
 			TSSMain.Name = "TSSMain";
-			TSSMain.Size = new System.Drawing.Size(276, 17);
-			TSSMain.Text = "file.jpg | 0x0 | Viewing RGB image (YCbCr available)";
-			// 
-			// panel1
-			// 
-			panel1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			panel1.AutoScroll = true;
-			panel1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			panel1.Controls.Add(PictureMain);
-			panel1.Location = new System.Drawing.Point(16, 168);
-			panel1.Name = "panel1";
-			panel1.Size = new System.Drawing.Size(781, 355);
-			panel1.TabIndex = 3;
-			// 
+			TSSMain.Text = "Open an image to begin.";
+			//
+			// SplitMain
+			//
+			SplitMain.Dock = System.Windows.Forms.DockStyle.Fill;
+			SplitMain.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+			SplitMain.Location = new System.Drawing.Point(0, 25);
+			SplitMain.Name = "SplitMain";
+			SplitMain.Panel1.Controls.Add(GroupEffect);
+			SplitMain.Panel1.Padding = new System.Windows.Forms.Padding(8);
+			SplitMain.Panel2.Controls.Add(PanelImage);
+			SplitMain.Size = new System.Drawing.Size(1000, 653);
+			SplitMain.SplitterDistance = 320;
+			SplitMain.TabIndex = 1;
+			//
+			// GroupEffect
+			//
+			GroupEffect.Controls.Add(TableOptions);
+			GroupEffect.Dock = System.Windows.Forms.DockStyle.Fill;
+			GroupEffect.Name = "GroupEffect";
+			GroupEffect.Padding = new System.Windows.Forms.Padding(8);
+			GroupEffect.TabIndex = 0;
+			GroupEffect.TabStop = false;
+			GroupEffect.Text = "Effect";
+			//
+			// TableOptions
+			//
+			TableOptions.AutoScroll = true;
+			TableOptions.ColumnCount = 1;
+			TableOptions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			TableOptions.Controls.Add(LabelEffect, 0, 0);
+			TableOptions.Controls.Add(ComboEffect, 0, 1);
+			TableOptions.Controls.Add(LabelEffectDescription, 0, 2);
+			TableOptions.Controls.Add(LabelParameter1, 0, 3);
+			TableOptions.Controls.Add(ComboParameter1, 0, 4);
+			TableOptions.Controls.Add(LabelParameter2, 0, 5);
+			TableOptions.Controls.Add(ComboParameter2, 0, 6);
+			TableOptions.Controls.Add(LabelBitIndex, 0, 7);
+			TableOptions.Controls.Add(TrackBitIndex, 0, 8);
+			TableOptions.Controls.Add(LabelSignalStats, 0, 9);
+			TableOptions.Dock = System.Windows.Forms.DockStyle.Fill;
+			TableOptions.Name = "TableOptions";
+			TableOptions.RowCount = 11;
+			for (int i = 0; i < 10; i++)
+			{
+				TableOptions.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			}
+			TableOptions.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			TableOptions.TabIndex = 0;
+			//
+			// LabelEffect
+			//
+			LabelEffect.AutoSize = true;
+			LabelEffect.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+			LabelEffect.Name = "LabelEffect";
+			LabelEffect.Text = "Effect:";
+			//
+			// ComboEffect
+			//
+			ComboEffect.Dock = System.Windows.Forms.DockStyle.Fill;
+			ComboEffect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			ComboEffect.Name = "ComboEffect";
+			ComboEffect.TabIndex = 0;
+			ComboEffect.SelectedIndexChanged += ComboEffect_SelectedIndexChanged;
+			//
+			// LabelEffectDescription
+			//
+			LabelEffectDescription.AutoSize = true;
+			LabelEffectDescription.ForeColor = System.Drawing.SystemColors.GrayText;
+			LabelEffectDescription.Margin = new System.Windows.Forms.Padding(3, 6, 3, 12);
+			LabelEffectDescription.MaximumSize = new System.Drawing.Size(270, 0);
+			LabelEffectDescription.Name = "LabelEffectDescription";
+			//
+			// LabelParameter1
+			//
+			LabelParameter1.AutoSize = true;
+			LabelParameter1.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+			LabelParameter1.Name = "LabelParameter1";
+			//
+			// ComboParameter1
+			//
+			ComboParameter1.Dock = System.Windows.Forms.DockStyle.Fill;
+			ComboParameter1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			ComboParameter1.Name = "ComboParameter1";
+			ComboParameter1.TabIndex = 1;
+			ComboParameter1.SelectedIndexChanged += ComboParameter1_SelectedIndexChanged;
+			//
+			// LabelParameter2
+			//
+			LabelParameter2.AutoSize = true;
+			LabelParameter2.Margin = new System.Windows.Forms.Padding(3, 9, 3, 0);
+			LabelParameter2.Name = "LabelParameter2";
+			//
+			// ComboParameter2
+			//
+			ComboParameter2.Dock = System.Windows.Forms.DockStyle.Fill;
+			ComboParameter2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			ComboParameter2.Name = "ComboParameter2";
+			ComboParameter2.TabIndex = 2;
+			ComboParameter2.SelectedIndexChanged += ComboParameter2_SelectedIndexChanged;
+			//
+			// LabelBitIndex
+			//
+			LabelBitIndex.AutoSize = true;
+			LabelBitIndex.Margin = new System.Windows.Forms.Padding(3, 9, 3, 0);
+			LabelBitIndex.Name = "LabelBitIndex";
+			//
+			// TrackBitIndex
+			//
+			TrackBitIndex.Dock = System.Windows.Forms.DockStyle.Fill;
+			TrackBitIndex.LargeChange = 1;
+			TrackBitIndex.Maximum = 7;
+			TrackBitIndex.Name = "TrackBitIndex";
+			TrackBitIndex.TabIndex = 3;
+			TrackBitIndex.Value = 7;
+			TrackBitIndex.ValueChanged += TrackBitIndex_ValueChanged;
+			//
+			// LabelSignalStats
+			//
+			LabelSignalStats.AutoSize = true;
+			LabelSignalStats.ForeColor = System.Drawing.SystemColors.GrayText;
+			LabelSignalStats.Margin = new System.Windows.Forms.Padding(3, 18, 3, 0);
+			LabelSignalStats.Name = "LabelSignalStats";
+			//
+			// PanelImage
+			//
+			PanelImage.AutoScroll = true;
+			PanelImage.BackColor = System.Drawing.SystemColors.ControlDark;
+			PanelImage.Controls.Add(PictureMain);
+			PanelImage.Dock = System.Windows.Forms.DockStyle.Fill;
+			PanelImage.Name = "PanelImage";
+			PanelImage.TabIndex = 0;
+			//
 			// PictureMain
-			// 
-			PictureMain.Location = new System.Drawing.Point(4, 3);
+			//
+			PictureMain.Dock = System.Windows.Forms.DockStyle.Fill;
 			PictureMain.Name = "PictureMain";
-			PictureMain.Size = new System.Drawing.Size(100, 50);
-			PictureMain.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
-			PictureMain.TabIndex = 0;
+			PictureMain.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
 			PictureMain.TabStop = false;
-			// 
+			//
 			// OFDOpenImage
-			// 
+			//
 			OFDOpenImage.Filter = "All files|*.*";
 			OFDOpenImage.Title = "ByteView - Open Image";
-			// 
+			//
 			// SFDSaveImage
-			// 
-			SFDSaveImage.Filter = "Portable Networked Graphics|*.png|All files|*.*";
+			//
+			SFDSaveImage.DefaultExt = "png";
+			SFDSaveImage.Filter = "Portable Network Graphics|*.png|All files|*.*";
 			SFDSaveImage.Title = "ByteView - Save Image";
-			// 
+			//
 			// SFDSaveAnalogSignal
-			// 
+			//
 			SFDSaveAnalogSignal.DefaultExt = "raw";
 			SFDSaveAnalogSignal.Filter = "Raw Audio (mono, 48kHz, single-precision float)|*.raw|All files|*.*";
 			SFDSaveAnalogSignal.Title = "ByteView - Save Analog Signal";
-			// 
+			//
 			// ChromaPlaygroundForm
-			// 
+			//
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			ClientSize = new System.Drawing.Size(809, 548);
-			Controls.Add(panel1);
+			ClientSize = new System.Drawing.Size(1000, 700);
+			Controls.Add(SplitMain);
 			Controls.Add(StatusMain);
 			Controls.Add(TSMain);
-			Controls.Add(TabsOptions);
+			MinimumSize = new System.Drawing.Size(640, 480);
 			Name = "ChromaPlaygroundForm";
+			StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			Text = "Chroma Playground";
-			TabsOptions.ResumeLayout(false);
-			TabPageColorChannels.ResumeLayout(false);
-			TabPageColorChannels.PerformLayout();
-			TabPageBitPlanes.ResumeLayout(false);
-			TabPageBitPlanes.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)NUDBitPlaneIndex).EndInit();
-			TabPageChromaSubsampling.ResumeLayout(false);
-			TabPageChromaSubsampling.PerformLayout();
-			TabPageReduceBitDepth.ResumeLayout(false);
-			TabPageReduceBitDepth.PerformLayout();
-			TabPageAnalogSignal.ResumeLayout(false);
-			TabPageAnalogSignal.PerformLayout();
 			TSMain.ResumeLayout(false);
 			TSMain.PerformLayout();
 			StatusMain.ResumeLayout(false);
 			StatusMain.PerformLayout();
-			panel1.ResumeLayout(false);
-			panel1.PerformLayout();
+			SplitMain.Panel1.ResumeLayout(false);
+			SplitMain.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)SplitMain).EndInit();
+			SplitMain.ResumeLayout(false);
+			GroupEffect.ResumeLayout(false);
+			TableOptions.ResumeLayout(false);
+			TableOptions.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)TrackBitIndex).EndInit();
+			PanelImage.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)PictureMain).EndInit();
 			ResumeLayout(false);
 			PerformLayout();
@@ -866,72 +373,38 @@
 
 		#endregion
 
-		private System.Windows.Forms.TabControl TabsOptions;
-		private System.Windows.Forms.TabPage TabPageColorChannels;
-		private System.Windows.Forms.TabPage TabPageBitPlanes;
-		private System.Windows.Forms.TabPage TabPageChromaSubsampling;
-		private System.Windows.Forms.TabPage TabPageReduceBitDepth;
-		private System.Windows.Forms.TabPage TabPageAnalogSignal;
 		private System.Windows.Forms.ToolStrip TSMain;
 		private System.Windows.Forms.ToolStripButton TSBOpenImage;
-		private System.Windows.Forms.RadioButton RadioAlphaChannel;
-		private System.Windows.Forms.RadioButton RadioBlueChannel;
-		private System.Windows.Forms.RadioButton RadioGreenChannel;
-		private System.Windows.Forms.RadioButton RadioRedChannel;
 		private System.Windows.Forms.ToolStripButton TSBSaveAs;
+		private System.Windows.Forms.ToolStripButton TSBLoadFromByteView;
 		private System.Windows.Forms.ToolStripSeparator TSSeparator1;
-		private System.Windows.Forms.ToolStripButton TSBConvertToRGB;
-		private System.Windows.Forms.RadioButton RadioChrominance;
-		private System.Windows.Forms.RadioButton RadioCr;
-		private System.Windows.Forms.RadioButton RadioCb;
-		private System.Windows.Forms.RadioButton RadioLuminance;
-		private System.Windows.Forms.NumericUpDown NUDBitPlaneIndex;
-		private System.Windows.Forms.Label StaticLabelBitPlaneIndex;
-		private System.Windows.Forms.RadioButton RadioBitPlaneAlpha;
-		private System.Windows.Forms.RadioButton RadioBitPlaneBlue;
-		private System.Windows.Forms.RadioButton RadioBitPlaneGreen;
-		private System.Windows.Forms.RadioButton RadioBitPlaneRed;
-		private System.Windows.Forms.Label StaticLabelBitPlaneExplanation;
-		private System.Windows.Forms.RadioButton Radio411;
-		private System.Windows.Forms.RadioButton Radio420;
-		private System.Windows.Forms.RadioButton Radio422;
-		private System.Windows.Forms.RadioButton Radio444;
-		private System.Windows.Forms.Label StaticLabelChromaSubsamplingExplanation;
-		private System.Windows.Forms.Button ButtonChromaSubsamplingSet;
-		private System.Windows.Forms.ToolStripButton TSBConvertToYCbCr;
-		private System.Windows.Forms.RadioButton Radio1BPPGrayscale;
-		private System.Windows.Forms.RadioButton Radio2BPPTop4;
-		private System.Windows.Forms.RadioButton Radio1BPPTop2;
-		private System.Windows.Forms.RadioButton Radio2BPPGrayscale;
-		private System.Windows.Forms.RadioButton Radio4BPPGrayscale;
-		private System.Windows.Forms.RadioButton Radio8BPPGrayscale;
-		private System.Windows.Forms.RadioButton Radio4BPPTop16;
-		private System.Windows.Forms.RadioButton Radio4bppRGB121;
-		private System.Windows.Forms.RadioButton Radio8BPPTop256;
-		private System.Windows.Forms.RadioButton Radio8bppRGB332;
-		private System.Windows.Forms.RadioButton Radio16bppTop65536;
-		private System.Windows.Forms.RadioButton Radio16BPPRGB565;
-		private System.Windows.Forms.Label StaticLabelReduceBitDepthExplanation;
-		private System.Windows.Forms.Button ButtonReduceBitDepth;
-		private System.Windows.Forms.Button ButtonSaveNTSCAudio;
-		private System.Windows.Forms.Label LabelAnalogSignalStats;
+		private System.Windows.Forms.ToolStripButton TSBKeepResult;
+		private System.Windows.Forms.ToolStripButton TSBResetEffect;
+		private System.Windows.Forms.ToolStripButton TSBShowOriginal;
+		private System.Windows.Forms.ToolStripSeparator TSSeparator2;
+		private System.Windows.Forms.ToolStripButton TSBFitToWindow;
+		private System.Windows.Forms.ToolStripDropDownButton TSDDExportSignal;
+		private System.Windows.Forms.ToolStripMenuItem TSMISaveNTSCAudio;
+		private System.Windows.Forms.ToolStripMenuItem TSMISaveSimplerAudio;
 		private System.Windows.Forms.StatusStrip StatusMain;
 		private System.Windows.Forms.ToolStripStatusLabel TSSMain;
-		private System.Windows.Forms.Panel panel1;
+		private System.Windows.Forms.SplitContainer SplitMain;
+		private System.Windows.Forms.GroupBox GroupEffect;
+		private System.Windows.Forms.TableLayoutPanel TableOptions;
+		private System.Windows.Forms.Label LabelEffect;
+		private System.Windows.Forms.ComboBox ComboEffect;
+		private System.Windows.Forms.Label LabelEffectDescription;
+		private System.Windows.Forms.Label LabelParameter1;
+		private System.Windows.Forms.ComboBox ComboParameter1;
+		private System.Windows.Forms.Label LabelParameter2;
+		private System.Windows.Forms.ComboBox ComboParameter2;
+		private System.Windows.Forms.Label LabelBitIndex;
+		private System.Windows.Forms.TrackBar TrackBitIndex;
+		private System.Windows.Forms.Label LabelSignalStats;
+		private System.Windows.Forms.Panel PanelImage;
 		private System.Windows.Forms.PictureBox PictureMain;
 		private System.Windows.Forms.OpenFileDialog OFDOpenImage;
 		private System.Windows.Forms.SaveFileDialog SFDSaveImage;
 		private System.Windows.Forms.SaveFileDialog SFDSaveAnalogSignal;
-		private System.Windows.Forms.Button ButtonSaveSimplerAudio;
-		private System.Windows.Forms.ToolStripButton TSBUseCurrent;
-		private System.Windows.Forms.RadioButton RadioValueChannel;
-		private System.Windows.Forms.RadioButton RadioSaturationChannel;
-		private System.Windows.Forms.RadioButton RadioHueChannel;
-		private System.Windows.Forms.RadioButton RadioBitPlaneRGB;
-		private System.Windows.Forms.ToolStripSeparator TSSeparator2;
-		private System.Windows.Forms.ToolStripButton TSBLoadFromByteView;
-		private System.Windows.Forms.RadioButton Radio25611;
-		private System.Windows.Forms.RadioButton Radio1611;
-		private System.Windows.Forms.RadioButton Radio811;
 	}
 }

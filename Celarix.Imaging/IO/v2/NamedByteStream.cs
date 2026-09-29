@@ -59,12 +59,7 @@ namespace Celarix.Imaging.IO.v2
             if (bytesRead == 0)
             {
                 _currentFileIndex++;
-<<<<<<< HEAD
-                NextFile();
-                return NamedStreamReadResult.EndOfFile;
-=======
                 return NextFile() ? NamedStreamReadResult.EndOfFile : NamedStreamReadResult.EndOfStream;
->>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
             }
 
             return NamedStreamReadResult.NotEndOfFile;
@@ -81,11 +76,7 @@ namespace Celarix.Imaging.IO.v2
             return _fileLengths[path];
         }
 
-<<<<<<< HEAD
-        private void NextFile()
-=======
         private bool NextFile()
->>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
         {
             _currentStream?.Dispose();
             _currentStream = null;
@@ -94,14 +85,10 @@ namespace Celarix.Imaging.IO.v2
             {
                 var path = _filePaths[_currentFileIndex];
                 _currentStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-<<<<<<< HEAD
-            }
-=======
                 return true;
             }
 
             return false;
->>>>>>> bbb81b6b1317bbebdce515f20ce11d1e3bc2b9ac
         }
     }
 }

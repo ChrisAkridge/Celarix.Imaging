@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Authors>Chris Akridge</Authors>
     <Company>Akridgetech</Company>
     <Description>A library to perform various imaging tasks, such as drawing any file as a series of pixels, or combining many images into a single image or zoomable canvas.</Description>
