@@ -145,11 +145,13 @@ namespace Celarix.Imaging.ByteView
 		private string imageFileName;
 		private int previewVersion;
 		private bool isUpdatingControls;
+		private VideoProcessForm videoDialog;
 
 		public ChromaPlaygroundForm(MainForm byteViewForm)
 		{
 			this.byteViewForm = byteViewForm;
 			InitializeComponent();
+			FormClosing += ChromaPlaygroundForm_FormClosing;
 
 			ComboEffect.Items.AddRange(EffectChoices);
 			ComboEffect.SelectedIndex = 0;
@@ -241,6 +243,42 @@ namespace Celarix.Imaging.ByteView
 			}
 		}
 
+		/// <summary>
+		/// For the effects whose output size depends on the frame, a function that reports the size without
+		/// running the effect; null for every other effect, which keep the frame's size.
+		/// </summary>
+		private Func<Image<Rgba32>, (int Width, int Height)> BuildOutputSizeMeasure()
+		{
+			if (SelectedEffect != Effect.UniqueColorMap) { return null; }
+
+			var compact = ((Choice<bool>)ComboParameter1.SelectedItem).Value;
+			return compact
+				? UniqueColorMap.GetCompactSize
+				: _ => (UniqueColorMap.FixedSideLength, UniqueColorMap.FixedSideLength);
+		}
+
+		private string BuildEffectDescription()
+		{
+			var parts = new List<string> { ComboEffect.Text };
+			if (ComboParameter1.Visible) { parts.Add(ComboParameter1.Text); }
+			if (ComboParameter2.Visible)
+			{
+				parts.Add($"{ComboParameter2.Text} bits per pixel" + (CheckDither.Checked ? ", dithered" : string.Empty));
+			}
+			if (TrackBitIndex.Visible) { parts.Add($"bit {TrackBitIndex.Value}"); }
+
+			return string.Join(" - ", parts);
+		}
+
+		private string BuildVideoEffectNote()
+		{
+			if (SelectedEffect != Effect.UniqueColorMap) { return null; }
+
+			return ((Choice<bool>)ComboParameter1.SelectedItem).Value
+				? "Compact maps change size from frame to frame, so the video is scanned once first, and every frame is placed on the largest size, on black."
+				: "Fixed maps are 4096x4096 on every frame, about 64 MB per frame uncompressed. Expect very large files and slow processing.";
+		}
+
 		private static Image<Rgba32> Cloned(Image<Rgba32> source, Action<Image<Rgba32>> mutate)
 		{
 			var clone = source.Clone();
@@ -253,6 +291,9 @@ namespace Celarix.Imaging.ByteView
 
 		private async void RefreshPreview()
 		{
+			// Every change to the effect or its settings comes through here, so the open video dialog can follow along.
+			videoDialog?.RefreshEffectDescription();
+
 			var version = ++previewVersion;
 			var effect = sourceImage == null ? null : BuildEffect();
 			var source = sourceImage;
@@ -305,7 +346,6 @@ namespace Celarix.Imaging.ByteView
 			TSBKeepResult.Enabled = resultImage != null;
 			TSBShowOriginal.Enabled = resultImage != null;
 			TSBResetEffect.Enabled = hasImage && !ReferenceEquals(sourceImage, loadedImage);
-			ComboEffect.Enabled = hasImage;
 
 			if (!hasImage)
 			{
@@ -496,6 +536,42 @@ namespace Celarix.Imaging.ByteView
 		{
 			sourceImage = loadedImage;
 			RefreshPreview();
+		}
+
+		private void TSBProcessVideo_Click(object sender, EventArgs e)
+		{
+			// The dialog stays open beside this form, so there is only ever one; a second click brings it back.
+			if (videoDialog is { IsDisposed: false })
+			{
+				videoDialog.Activate();
+				return;
+			}
+
+			videoDialog = new VideoProcessForm(GetVideoEffectSettings);
+			videoDialog.FormClosed += (_, _) => videoDialog = null;
+			videoDialog.Show(this);
+		}
+
+		/// <summary>
+		/// The effect as currently set, for the video dialog to read when it starts a run; null if no effect is chosen.
+		/// </summary>
+		private VideoEffectSettings GetVideoEffectSettings()
+		{
+			var effect = BuildEffect();
+
+			return effect == null
+				? null
+				: new VideoEffectSettings(effect, BuildOutputSizeMeasure(), BuildEffectDescription(), BuildVideoEffectNote());
+		}
+
+		private void ChromaPlaygroundForm_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			if (videoDialog is { IsDisposed: false, IsRunning: true })
+			{
+				e.Cancel = true;
+				MessageBox.Show(this, "A video is being processed. Cancel it or let it finish before closing the playground.",
+					"Chroma Playground", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			}
 		}
 
 		private void TSBShowOriginal_CheckedChanged(object sender, EventArgs e) => UpdateDisplay();

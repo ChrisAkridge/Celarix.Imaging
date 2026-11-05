@@ -41,6 +41,7 @@ namespace Celarix.Imaging.ByteView
 			TSSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			TSBFitToWindow = new System.Windows.Forms.ToolStripButton();
 			TSDDExportSignal = new System.Windows.Forms.ToolStripDropDownButton();
+			TSBProcessVideo = new System.Windows.Forms.ToolStripButton();
 			TSMISaveNTSCAudio = new System.Windows.Forms.ToolStripMenuItem();
 			TSMISaveSimplerAudio = new System.Windows.Forms.ToolStripMenuItem();
 			StatusMain = new System.Windows.Forms.StatusStrip();
@@ -79,7 +80,7 @@ namespace Celarix.Imaging.ByteView
 			//
 			// TSMain
 			//
-			TSMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { TSBOpenImage, TSBSaveAs, TSBLoadFromByteView, TSSeparator1, TSBKeepResult, TSBResetEffect, TSBShowOriginal, TSSeparator2, TSBFitToWindow, TSDDExportSignal });
+			TSMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { TSBOpenImage, TSBSaveAs, TSBLoadFromByteView, TSSeparator1, TSBKeepResult, TSBResetEffect, TSBShowOriginal, TSSeparator2, TSBFitToWindow, TSDDExportSignal, TSBProcessVideo });
 			TSMain.Location = new System.Drawing.Point(0, 0);
 			TSMain.Name = "TSMain";
 			TSMain.Size = new System.Drawing.Size(1000, 25);
@@ -162,6 +163,14 @@ namespace Celarix.Imaging.ByteView
 			TSDDExportSignal.Name = "TSDDExportSignal";
 			TSDDExportSignal.Text = "Export Analog Signal";
 			//
+			// TSBProcessVideo
+			// 
+			TSBProcessVideo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			TSBProcessVideo.Name = "TSBProcessVideo";
+			TSBProcessVideo.Text = "Process Video...";
+			TSBProcessVideo.ToolTipText = "Apply the current effect to every frame of a video file";
+			TSBProcessVideo.Click += TSBProcessVideo_Click;
+			// 
 			// TSMISaveNTSCAudio
 			//
 			TSMISaveNTSCAudio.Name = "TSMISaveNTSCAudio";
@@ -396,6 +405,7 @@ namespace Celarix.Imaging.ByteView
 		private System.Windows.Forms.ToolStripSeparator TSSeparator2;
 		private System.Windows.Forms.ToolStripButton TSBFitToWindow;
 		private System.Windows.Forms.ToolStripDropDownButton TSDDExportSignal;
+		private System.Windows.Forms.ToolStripButton TSBProcessVideo;
 		private System.Windows.Forms.ToolStripMenuItem TSMISaveNTSCAudio;
 		private System.Windows.Forms.ToolStripMenuItem TSMISaveSimplerAudio;
 		private System.Windows.Forms.StatusStrip StatusMain;

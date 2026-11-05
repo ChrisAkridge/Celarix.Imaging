@@ -42,8 +42,7 @@ namespace Celarix.Imaging.Misc
 			}
 			Array.Sort(sortKeys);
 
-			var width = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(sortKeys.Length)));
-			var height = Math.Max(1, (int)Math.Ceiling(sortKeys.Length / (double)width));
+			var (width, height) = CompactDimensions(sortKeys.Length);
 			var map = new Image<Rgba32>(width, height);
 
 			// The first sortKeys.Length cells of the curve receive the colors in order; any leftover cells stay transparent.
@@ -58,6 +57,24 @@ namespace Celarix.Imaging.Misc
 			});
 
 			return map;
+		}
+
+		/// <summary>
+		/// The size <see cref="RenderCompact"/> would produce for the image, without drawing it. Lets a caller (such as
+		/// video processing) find out how big the maps of many images get before committing to a canvas size.
+		/// </summary>
+		public static (int Width, int Height) GetCompactSize(Image<Rgba32> source) =>
+			CompactDimensions(GetDistinctColors(source).Length);
+
+		/// <summary>The side length of the fixed layout's square image.</summary>
+		public const int FixedSideLength = SideLength;
+
+		private static (int Width, int Height) CompactDimensions(int colorCount)
+		{
+			var width = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(colorCount)));
+			var height = Math.Max(1, (int)Math.Ceiling(colorCount / (double)width));
+
+			return (width, height);
 		}
 
 		/// <summary>
