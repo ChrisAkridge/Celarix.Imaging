@@ -1,6 +1,8 @@
 using System;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
+using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
 namespace Celarix.Imaging.ByteViewObservatory;
@@ -8,6 +10,7 @@ namespace Celarix.Imaging.ByteViewObservatory;
 internal sealed class MainForm : Form
 {
     private readonly WebView2 webView;
+    private WebViewBridge? bridge;
 
     public MainForm()
     {
@@ -27,10 +30,49 @@ internal sealed class MainForm : Form
     {
         base.OnLoad(e);
 
-        await webView.EnsureCoreWebView2Async();
-        webView.NavigateToString(
-            "<!doctype html>" +
-            "<html><head><meta charset=\"utf-8\"><title>ByteView Observatory</title></head>" +
-            "<body style=\"margin:0;background:#171717;\"></body></html>");
+        try
+        {
+            await webView.EnsureCoreWebView2Async();
+
+            string webRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+            webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                "byteview.local",
+                webRoot,
+                CoreWebView2HostResourceAccessKind.DenyCors);
+
+            bridge = new WebViewBridge(webView.CoreWebView2);
+            bridge.MessageReceived += Bridge_MessageReceived;
+
+            webView.Source = new Uri("https://byteview.local/index.html");
+        }
+        catch (Exception exception)
+        {
+            MessageBox.Show(
+                this,
+                $"ByteView Observatory could not initialize its WebView2 surface.\n\n{exception.Message}",
+                "ByteView Observatory",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing && bridge is not null)
+        {
+            bridge.MessageReceived -= Bridge_MessageReceived;
+            bridge.Dispose();
+            bridge = null;
+        }
+
+        base.Dispose(disposing);
+    }
+
+    private void Bridge_MessageReceived(object? sender, WebViewMessage message)
+    {
+        if (message.Type == "page.ready")
+        {
+            bridge?.SendHello();
+        }
     }
 }

@@ -16,4 +16,8 @@
     <ProjectReference Include="..\Celarix.Imaging.ByteViewObservatory.Core\Celarix.Imaging.ByteViewObservatory.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="wwwroot\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
